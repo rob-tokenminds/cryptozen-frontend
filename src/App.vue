@@ -1,6 +1,11 @@
 <template>
   <v-app style="background: #e5e5e5">
-    <v-navigation-drawer app color="primary">
+    <v-navigation-drawer
+      @transitionend="transitionend"
+      v-model="drawer"
+      app
+      color="primary"
+    >
       <v-list>
         <v-list-item>
           <v-img
@@ -62,7 +67,11 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item v-for="balance in balances" :key="balance.icon">
+        <v-list-item
+          v-for="balance in balances"
+          :key="balance.icon"
+          :to="`/balance/${balance.icon}`"
+        >
           <v-list-item-avatar tile>
             <v-img :src="require(`./assets/${balance.icon}.svg`)"></v-img>
           </v-list-item-avatar>
@@ -76,7 +85,11 @@
     </v-navigation-drawer>
 
     <v-app-bar app color="white" flat>
-      <v-toolbar-title>{{ $route.name }}</v-toolbar-title>
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-toolbar-title>{{
+        $route.name !== "Balance" ? $route.name : balanceTitle()
+      }}</v-toolbar-title>
+      <v-spacer></v-spacer>
     </v-app-bar>
 
     <!-- Sizes your content based upon application components -->
@@ -92,9 +105,9 @@
 
 <script lang="ts">
 import { Vue, Component, Watch, Ref } from "vue-property-decorator";
-
 @Component({ name: "App", components: {} })
 export default class App extends Vue {
+  drawer = true;
   balances = [
     {
       icon: "usdc",
@@ -117,6 +130,18 @@ export default class App extends Vue {
       name: "BF Token",
     },
   ];
+
+  balanceTitle(): string {
+    const balance = this.balances.find(
+      (b) => b.icon === this.$route.params.coin
+    );
+    if (balance) return `${balance.name} Balance`;
+    else return "";
+  }
+
+  transitionend(data: any): void {
+    console.log(`any`, data);
+  }
 }
 
 // function sleep(ms: number): Promise<unknown> {

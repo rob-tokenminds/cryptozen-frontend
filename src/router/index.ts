@@ -3,6 +3,7 @@ import VueRouter, { RouteConfig } from "vue-router";
 import Home from "../views/Home.vue";
 import History from "../views/History.vue";
 import AddressBook from "../views/AddressBook.vue";
+import Balance from "../views/Balance.vue";
 
 Vue.use(VueRouter);
 
@@ -21,6 +22,11 @@ const routes: Array<RouteConfig> = [
     path: "/address-book",
     name: "Address Book",
     component: AddressBook,
+  },
+  {
+    path: "/balance/:coin",
+    name: "Balance",
+    component: Balance,
   },
 ];
 
