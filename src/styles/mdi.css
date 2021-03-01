@@ -1,0 +1,12 @@
+.mdi:before,
+.mdi-menu::before {
+  content: "\F035C";
+}
+
+.mdi-menu-down::before {
+  content: "\F035D";
+}
+
+.mdi-menu-down-outline::before {
+  content: "\F06B6";
+}

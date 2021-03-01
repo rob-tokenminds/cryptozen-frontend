@@ -4,6 +4,7 @@ import Home from "../views/Home.vue";
 import History from "../views/History.vue";
 import AddressBook from "../views/AddressBook.vue";
 import Balance from "../views/Balance.vue";
+import ReferralRewards from "../views/ReferralRewards.vue";
 
 Vue.use(VueRouter);
 
@@ -27,6 +28,11 @@ const routes: Array<RouteConfig> = [
     path: "/balance/:coin",
     name: "Balance",
     component: Balance,
+  },
+  {
+    path: "/referral/rewards",
+    name: "Referral Rewards",
+    component: ReferralRewards,
   },
 ];
 

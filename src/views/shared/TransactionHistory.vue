@@ -1,7 +1,9 @@
 <template>
   <v-container>
     <v-card tile>
-      <v-card-title class="primary--text">{{ label }}</v-card-title>
+      <v-card-title class="primary--text">{{
+        label ? label : "All Activity"
+      }}</v-card-title>
     </v-card>
     <p class="ma-4">Month/day</p>
 
@@ -101,6 +103,6 @@ import { Vue, Component, Prop } from "vue-property-decorator";
 
 @Component({ name: "TransactionHistory", components: {} })
 export default class TransactionHistory extends Vue {
-  @Prop(String) label = "All Activity";
+  @Prop(String) label!: string;
 }
 </script>

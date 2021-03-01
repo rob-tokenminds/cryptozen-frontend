@@ -15,35 +15,14 @@
 <script lang="ts">
 import { Vue, Component, Watch, Ref } from "vue-property-decorator";
 import TransactionHistory from "./shared/TransactionHistory.vue";
-
+import Balances from "../static/balance";
 @Component({ name: "Balance", components: { TransactionHistory } })
 export default class Balance extends Vue {
-  balances = [
-    {
-      icon: "usdc",
-      name: "USDC",
-    },
-    {
-      icon: "usdt",
-      name: "USDT",
-    },
-    {
-      icon: "eth",
-      name: "Ethereum",
-    },
-    {
-      icon: "dai",
-      name: "DAI",
-    },
-    {
-      icon: "bf",
-      name: "BF Token",
-    },
-  ];
+  balances = Balances;
 
   getBalance(): any {
     const balance = this.balances.find(
-      (b) => b.icon === this.$route.params.coin
+      (b) => b.value === this.$route.params.coin
     );
     return balance;
   }
