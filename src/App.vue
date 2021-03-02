@@ -102,46 +102,49 @@
       <SendMoney @update-dialog="updateSendMoneyDialog"></SendMoney>
     </v-dialog>
 
-    <v-app-bar app color="white" flat>
+    <v-app-bar app color="white" flat height="80">
       <!-- <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon> -->
-      <v-icon class="mr-2" @click.stop="drawer = !drawer" large>{{
-        icons.mdiDotsVertical
-      }}</v-icon>
-      <v-toolbar-title>{{
-        $route.name !== "Balance" ? $route.name : balanceTitle()
-      }}</v-toolbar-title>
 
+      <v-row align="center" align-content="center">
+        <v-col cols="4">
+          <v-row>
+            <v-col cols="1">
+              <v-icon class="ml-n3" @click.stop="drawer = !drawer" large>{{
+                icons.mdiDotsVertical
+              }}</v-icon>
+            </v-col>
+            <v-col cols="8">
+              <v-toolbar-title>{{
+                $route.name !== "Balance" ? $route.name : balanceTitle()
+              }}</v-toolbar-title>
+            </v-col>
+          </v-row>
+        </v-col>
+
+        <v-col cols="5" align-self="center">
+          <ProfileMenu></ProfileMenu>
+        </v-col>
+      </v-row>
+
+      <!-- <v-spacer></v-spacer>
       <v-spacer></v-spacer>
-      <v-menu top nudge-left="250" nudge-bottom="120">
-        <template v-slot:activator="{ on, attrs }">
-          <v-icon v-bind="attrs" v-on="on">{{ icons.mdiBellOutline }}</v-icon>
-        </template>
-        <v-list>
-          <v-list-item>
-            <v-list-item-title>
-              <v-avatar class="mr-2" color="primary" size="10"></v-avatar> Text
-              of notifications !Important</v-list-item-title
-            >
-          </v-list-item>
-          <v-divider></v-divider>
-          <v-list-item>
-            <v-list-item-title>
-              <v-avatar class="mr-2" color="main" size="10"></v-avatar>Text of
-              notifications !Important</v-list-item-title
-            >
-          </v-list-item>
-        </v-list>
-      </v-menu>
-      <div><ProfileMenu></ProfileMenu></div>
+
+      <v-spacer></v-spacer> -->
     </v-app-bar>
 
     <!-- Sizes your content based upon application components -->
     <v-main>
       <!-- Provides the application the proper gutter -->
-      <v-container fluid>
-        <v-container><router-view></router-view></v-container>
-        <!-- If using vue-router -->
-      </v-container>
+
+      <v-row>
+        <v-col cols="12" md="9" sm="9" lg="9" xl="9">
+          <v-container>
+            <router-view></router-view>
+          </v-container>
+        </v-col>
+      </v-row>
+
+      <!-- If using vue-router -->
     </v-main>
   </v-app>
 </template>

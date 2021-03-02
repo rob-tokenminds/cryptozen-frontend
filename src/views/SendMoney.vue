@@ -16,7 +16,7 @@
         <v-divider></v-divider>
         <v-stepper-step :complete="e1 > 3" step=""> Recipient </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step> Review </v-stepper-step>
+        <v-stepper-step step=""> Review </v-stepper-step>
         <v-spacer></v-spacer>
         <div class="mt-2">
           <ProfileMenu></ProfileMenu>
@@ -33,13 +33,12 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch, Ref } from "vue-property-decorator";
+import { Vue, Component } from "vue-property-decorator";
 import ProfileMenu from "./shared/ProfileMenu.vue";
 @Component({ name: "SendMoney", components: { ProfileMenu } })
 export default class SendMoney extends Vue {
   e1 = 1;
   closeDialog(): void {
-    console.log("closeDialog", "closeDialog");
     this.$emit("update-dialog", false);
   }
 }
