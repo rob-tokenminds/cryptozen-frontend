@@ -89,7 +89,7 @@
       </v-dialog>
     </div>
 
-    <v-card tile class="mt-10">
+    <v-card class="mt-10" flat max-width="1100">
       <v-list-item class="">
         <v-list-item-avatar size="60">
           <v-avatar color="main"></v-avatar>

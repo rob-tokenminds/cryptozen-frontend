@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-card class="d-flex">
+    <v-card class="d-flex" max-width="1100">
       <v-row>
         <v-col cols="12" md="8" sm="8" lg="8" xl="8">
           <v-card flat class="d-flex justify-start ma-5">

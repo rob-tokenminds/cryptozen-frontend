@@ -1,9 +1,9 @@
 <template>
   <v-container>
-    <v-card flat>
+    <v-card flat max-width="1100">
       <v-card-subtitle class="primary--text">All Activity</v-card-subtitle>
     </v-card>
-    <v-card class="mt-2" flat>
+    <v-card class="mt-2" flat max-width="1100">
       <v-card-subtitle>Yesterday</v-card-subtitle>
       <v-divider></v-divider>
       <v-expansion-panels multiple flat>

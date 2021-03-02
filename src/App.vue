@@ -101,48 +101,106 @@
     >
       <SendMoney @update-dialog="updateSendMoneyDialog"></SendMoney>
     </v-dialog>
+    <v-app-bar app color="white" flat>
+      <v-app-bar color="white" flat max-width="1120">
+        <v-app-bar-nav-icon
+          v-if="navIcon"
+          @click.stop="drawer = !drawer"
+        ></v-app-bar-nav-icon>
+        <!-- <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon> -->
+        <v-toolbar-title>{{
+          $route.name !== "Balance" ? $route.name : balanceTitle()
+        }}</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-spacer></v-spacer> <v-spacer></v-spacer> <v-spacer></v-spacer>
+        <v-spacer></v-spacer>
+        <v-menu top nudge-left="250" nudge-bottom="120">
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-bind="attrs" v-on="on"
+              ><v-icon>mdi-bell-outline</v-icon></v-btn
+            >
+          </template>
+          <v-list>
+            <v-list-item>
+              <v-list-item-title>
+                <v-avatar class="mr-2" color="primary" size="10"></v-avatar>
+                Text of notifications !Important</v-list-item-title
+              >
+            </v-list-item>
+            <v-divider></v-divider>
+            <v-list-item>
+              <v-list-item-title>
+                <v-avatar class="mr-2" color="main" size="10"></v-avatar>Text of
+                notifications !Important</v-list-item-title
+              >
+            </v-list-item>
+          </v-list>
+        </v-menu>
+        <v-btn icon>
+          <v-avatar color="main" size="50" class="mr-4"></v-avatar
+        ></v-btn>
 
-    <v-app-bar app color="white" flat height="80">
-      <!-- <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon> -->
+        <v-list-item-content v-if="isMobile === false">
+          <v-list-item-title class="primary--text"
+            >0xabc...def</v-list-item-title
+          >
+          <v-list-item-subtitle> emailemail@email.com </v-list-item-subtitle>
+        </v-list-item-content>
+        <v-menu offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-bind="attrs" v-on="on">
+              <v-icon>mdi-chevron-down</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="primary--text"
+                  >Edit Ether number</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="primary--text"
+                  >Tier 1</v-list-item-title
+                >
+                <v-list-item-subtitle
+                  >Referrals until Tier 2</v-list-item-subtitle
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="primary--text"
+                  >Logout</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-menu>
 
-      <v-row align="center" align-content="center">
-        <v-col cols="4">
-          <v-row>
-            <v-col cols="1">
-              <v-icon class="ml-n3" @click.stop="drawer = !drawer" large>{{
-                icons.mdiDotsVertical
-              }}</v-icon>
-            </v-col>
-            <v-col cols="8">
-              <v-toolbar-title>{{
-                $route.name !== "Balance" ? $route.name : balanceTitle()
-              }}</v-toolbar-title>
-            </v-col>
-          </v-row>
-        </v-col>
+        <!-- <template v-slot:extension> -->
+        <!-- <ProfileMenu></ProfileMenu> -->
+        <!-- </template> -->
 
-        <v-col cols="5" align-self="center">
-          <ProfileMenu></ProfileMenu>
-        </v-col>
-      </v-row>
-
-      <!-- <v-spacer></v-spacer>
+        <!-- <v-card class="d-flex justify-end" width="500" flat> </v-card> -->
+        <!-- <v-spacer></v-spacer>
       <v-spacer></v-spacer>
 
       <v-spacer></v-spacer> -->
+      </v-app-bar>
     </v-app-bar>
 
     <!-- Sizes your content based upon application components -->
     <v-main>
       <!-- Provides the application the proper gutter -->
 
-      <v-row>
-        <v-col cols="12" md="9" sm="9" lg="9" xl="9">
-          <v-container>
-            <router-view></router-view>
-          </v-container>
-        </v-col>
-      </v-row>
+      <v-container>
+        <router-view></router-view>
+      </v-container>
 
       <!-- If using vue-router -->
     </v-main>
@@ -171,9 +229,9 @@ export default class App extends Vue {
     mdiBellOutline,
     mdiDotsVertical,
   };
-  drawer = false;
+  drawer = true;
   balances = Balances;
-
+  isMobile = false;
   sendMoneyDialog = false;
 
   balanceTitle(): string {
@@ -184,20 +242,27 @@ export default class App extends Vue {
     else return "";
   }
 
-  mounted(): void {
-    this.drawer = !this.isMobile();
+  @Watch("isMobile")
+  watchIsMobile(value: boolean): void {
+    if (value) this.drawer = false;
+    console.log("this.drawer", this.drawer);
+  }
+  navIcon = false;
+  @Watch("drawer")
+  watchDrawer(value: boolean): void {
+    this.navIcon = !value;
   }
 
-  isMobile(): boolean {
-    if (
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      )
-    ) {
-      return true;
-    } else {
-      return false;
-    }
+  mounted(): void {
+    this.$nextTick(function () {
+      this.setIsMobile();
+    });
+  }
+
+  setIsMobile(): void {
+    this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
   }
 
   updateSendMoneyDialog(value: boolean): void {
