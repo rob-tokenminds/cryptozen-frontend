@@ -1,23 +1,62 @@
 <template>
-  <!-- <v-row align="center" align-content="center">
-    <v-col cols="4" align-self="center"> </v-col>
-    <v-col cols="7" align-self="center"> -->
-  <v-list class="mr-n5" max-height="100" max-width="5000">
-    <v-list-item>
-      <!-- <v-list-item-avatar class="ml-10">
-      
-      </v-list-item-avatar> -->
-      <v-list-item-avatar class="">
-        <v-avatar color="main" size="50"></v-avatar>
-      </v-list-item-avatar>
-      <v-list-item-content class="ml-4 mr-n15">
-        <v-list-item-title class="primary--text">0xabc...def</v-list-item-title>
-        <v-list-item-subtitle> emailemail@email.com </v-list-item-subtitle>
-      </v-list-item-content>
-      <v-list-item-avatar>
+  <v-item-group>
+    <v-row justify="end">
+      <v-col
+        align-self="center"
+        cols="4"
+        md="2"
+        sm="2"
+        lg="2"
+        xl="2"
+        v-if="syncedShowBell"
+      >
+        <v-menu nudge-left="250" nudge-bottom="120" v-if="syncedShowBell">
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-if="syncedShowBell"
+              class="mt-1"
+              icon
+              v-bind="attrs"
+              v-on="on"
+              ><v-icon>mdi-bell-outline</v-icon></v-btn
+            >
+          </template>
+          <v-list>
+            <v-list-item>
+              <v-list-item-title>
+                <v-avatar class="mr-2" color="primary" size="10"></v-avatar>
+                Text of notifications !Important</v-list-item-title
+              >
+            </v-list-item>
+            <v-divider></v-divider>
+            <v-list-item>
+              <v-list-item-title>
+                <v-avatar class="mr-2" color="main" size="10"></v-avatar>Text of
+                notifications !Important</v-list-item-title
+              >
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-col>
+      <v-col align-self="center" cols="3" md="2" sm="2" lg="2" xl="2">
+        <v-btn icon class="mt-1 mr-n5">
+          <v-avatar color="main" size="50" class="mr-4"></v-avatar
+        ></v-btn>
+      </v-col>
+      <v-col align-self="center" cols="4" v-if="isMobile === false">
+        <v-list-item-content class="mr-n10">
+          <v-list-item-title class="primary--text"
+            >0xabc...def</v-list-item-title
+          >
+          <v-list-item-subtitle> emailemail@email.com </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-col>
+      <v-col align-self="center" cols="3" md="2" sm="2" lg="2" xl="2">
         <v-menu offset-y>
           <template v-slot:activator="{ on, attrs }">
-            <v-icon v-bind="attrs" v-on="on">mdi-chevron-down</v-icon>
+            <v-btn class="mt-1" icon v-bind="attrs" v-on="on">
+              <v-icon>mdi-chevron-down</v-icon>
+            </v-btn>
           </template>
           <v-list>
             <v-list-item>
@@ -48,14 +87,17 @@
             </v-list-item>
           </v-list>
         </v-menu>
-      </v-list-item-avatar>
-    </v-list-item>
-  </v-list>
+      </v-col>
+    </v-row>
+  </v-item-group>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch, Ref } from "vue-property-decorator";
+import { Vue, Component, Prop, PropSync } from "vue-property-decorator";
 
 @Component({ name: "ProfileMenu", components: {} })
-export default class ProfileMenu extends Vue {}
+export default class ProfileMenu extends Vue {
+  @Prop(Boolean) readonly isMobile: boolean = false;
+  @PropSync("showBell", { type: Boolean }) syncedShowBell!: boolean;
+}
 </script>
