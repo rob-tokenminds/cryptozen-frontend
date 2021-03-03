@@ -4,6 +4,10 @@
       <!-- <v-toolbar dark color="white"> -->
 
       <v-stepper-header>
+        <v-spacer></v-spacer>
+        <v-spacer></v-spacer>
+        <v-spacer></v-spacer>
+        <v-spacer></v-spacer>
         <v-img
           class="ma-5"
           max-height="60"
@@ -21,7 +25,11 @@
         <v-stepper-step step=""> Review </v-stepper-step>
         <v-spacer></v-spacer>
 
-        <ProfileMenu class="mr-10" :showBell="false"></ProfileMenu>
+        <ProfileMenu :showBell="false"></ProfileMenu>
+        <v-spacer></v-spacer>
+        <v-spacer></v-spacer>
+        <v-spacer></v-spacer>
+        <v-spacer></v-spacer>
       </v-stepper-header>
 
       <v-stepper-items>
@@ -71,13 +79,19 @@
           </p>
 
           <v-card flat class="d-flex justify-center mt-5">
-            <v-card flat width="800">
+            <v-card flat width="600">
               <v-text-field
+                height=""
+                class="text-h5 rounded-0"
+                color="primary"
+                full-width
                 label="You send"
                 outlined
                 value="0"
                 hint="you have 100"
                 persistent-hint
+                type="number"
+                step="0.000001"
               >
                 <template v-slot:append>
                   <v-list-item class="mt-n4">
@@ -92,7 +106,93 @@
                   </v-list-item>
                 </template>
               </v-text-field>
-              <div class="line-lurus"></div>
+
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-subtitle
+                    class="secondary--text text-subtitle-2 text-left"
+                    ><a class="primary--text text-subtitle-2">-23</a> Gas
+                    fee</v-list-item-subtitle
+                  >
+                  <v-list-item-subtitle
+                    class="secondary--text text-subtitle-2 text-left"
+                    ><a class="primary--text text-subtitle-2">-23</a> Transfer
+                    fee</v-list-item-subtitle
+                  >
+                  <v-divider></v-divider>
+                  <v-list-item-subtitle
+                    class="secondary--text text-subtitle-2 text-left"
+                    ><a class="primary--text text-subtitle-2">0</a> Platform fee
+                    (discounted)</v-list-item-subtitle
+                  >
+                </v-list-item-content>
+              </v-list-item>
+              <v-row no-gutters>
+                <v-col cols="8">
+                  <v-text-field
+                    class="text-h5 rounded-0"
+                    color="primary"
+                    label="Recipient gets"
+                    outlined
+                    value="0"
+                    persistent-hint
+                    type="number"
+                    step="0.000001"
+                    flat
+                  >
+                    <!-- <template v-slot:append-outer>
+               
+                </template> -->
+                  </v-text-field>
+                </v-col>
+
+                <v-col cols="4">
+                  <v-select
+                    color="primary"
+                    :items="coins"
+                    item-text="name"
+                    item-value="value"
+                    outlined
+                    v-model="selectedRecipientToken"
+                    class="rounded-0"
+                    height="50"
+                  >
+                    <template v-slot:item="{ item, on, attrs }">
+                      <v-list-item v-bind="attrs" v-on="on">
+                        <v-list-item-avatar tile>
+                          <v-img
+                            :src="require(`../assets/${item.value}.svg`)"
+                          ></v-img>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title
+                            class="primary--text text-subtitle-1"
+                            >{{ item.name }}</v-list-item-title
+                          >
+                        </v-list-item-content>
+                      </v-list-item>
+                    </template>
+
+                    <template v-slot:selection="{ item }">
+                      <v-list-item>
+                        <v-list-item-avatar tile>
+                          <v-img
+                            :src="require(`../assets/${item.value}.svg`)"
+                          ></v-img>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title
+                            class="primary--text text-subtitle-1"
+                            >{{ item.name }}</v-list-item-title
+                          >
+                        </v-list-item-content>
+                      </v-list-item>
+                    </template>
+                  </v-select>
+                </v-col>
+              </v-row>
+
+              <!--  -->
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="primary" outlined @click="e1 = 1"> Back </v-btn>
@@ -103,9 +203,238 @@
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <v-btn color="primary" @click="e1 = 1"> Continue </v-btn>
+          <v-card flat class="d-flex justify-center">
+            <v-card flat>
+              <p class="text-center primary--text text-h5">
+                Who are you sending money to?
+              </p>
 
-          <v-btn text> Cancel </v-btn>
+              <v-card flat>
+                <v-card-text>Select Recipient</v-card-text>
+              </v-card>
+
+              <v-card elevation="2" class="mx-auto" height="100" width="800">
+                <v-card-text @click="e1 = 4">
+                  <v-list-item>
+                    <v-list-item-avatar tile>
+                      <v-icon large color="primary">mdi-home-outline</v-icon>
+                    </v-list-item-avatar>
+                    <v-list-item-content>
+                      <v-list-item-title class="primary--text text-h6"
+                        >Address Book</v-list-item-title
+                      >
+                    </v-list-item-content>
+
+                    <v-spacer></v-spacer> <v-spacer></v-spacer>
+                    <v-list-item-content>
+                      <v-icon>mdi-chevron-right</v-icon>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-card-text>
+              </v-card>
+
+              <v-card
+                elevation="2"
+                class="mx-auto mt-2"
+                height="100"
+                width="800"
+              >
+                <v-card-text @click="e1 = 4">
+                  <v-list-item>
+                    <v-list-item-avatar tile>
+                      <v-icon large color="primary">mdi-wallet-outline</v-icon>
+                    </v-list-item-avatar>
+                    <v-list-item-content>
+                      <v-list-item-title class="primary--text text-h6"
+                        >Your Wallet</v-list-item-title
+                      >
+                    </v-list-item-content>
+
+                    <v-spacer></v-spacer> <v-spacer></v-spacer>
+                    <v-list-item-content>
+                      <v-icon>mdi-chevron-right</v-icon>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-card-text>
+              </v-card>
+
+              <v-card
+                elevation="2"
+                class="mx-auto mt-2"
+                height="100"
+                width="800"
+              >
+                <v-card-text @click="e1 = 4">
+                  <v-list-item>
+                    <v-list-item-avatar tile>
+                      <v-icon large color="primary">mdi-plus</v-icon>
+                    </v-list-item-avatar>
+                    <v-list-item-content>
+                      <v-list-item-title class="primary--text text-h6"
+                        >New Recipient</v-list-item-title
+                      >
+                    </v-list-item-content>
+
+                    <v-spacer></v-spacer> <v-spacer></v-spacer>
+                    <v-list-item-content>
+                      <v-icon>mdi-chevron-right</v-icon>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-card-text>
+              </v-card>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" outlined @click="e1 = 1"> Back </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-card>
+        </v-stepper-content>
+
+        <v-stepper-content step="4">
+          <p class="text-center primary--text text-h5">Review</p>
+
+          <v-card flat class="d-flex justify-center mt-5">
+            <v-card flat width="600">
+              <v-card flat width="600">
+                <v-text-field
+                  height=""
+                  class="text-h5 rounded-0"
+                  color="primary"
+                  full-width
+                  label="You send"
+                  outlined
+                  value="0"
+                  hint="you have 100"
+                  persistent-hint
+                  type="number"
+                  step="0.000001"
+                >
+                  <template v-slot:append>
+                    <v-list-item class="mt-n4">
+                      <v-list-item-avatar tile>
+                        <v-img :src="require(`../assets/usdc.svg`)"></v-img>
+                      </v-list-item-avatar>
+                      <v-list-item-content>
+                        <v-list-item-title class="primary--text text-subtitle-1"
+                          >USDC</v-list-item-title
+                        >
+                      </v-list-item-content>
+                    </v-list-item>
+                  </template>
+                </v-text-field>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle
+                      class="secondary--text text-subtitle-2 text-left"
+                      ><a class="primary--text text-subtitle-2">-23</a> Gas
+                      fee</v-list-item-subtitle
+                    >
+                    <v-list-item-subtitle
+                      class="secondary--text text-subtitle-2 text-left"
+                      ><a class="primary--text text-subtitle-2">-23</a> Transfer
+                      fee</v-list-item-subtitle
+                    >
+                    <v-divider></v-divider>
+                    <v-list-item-subtitle
+                      class="secondary--text text-subtitle-2 text-left"
+                      ><a class="primary--text text-subtitle-2">0</a> Platform
+                      fee (discounted)</v-list-item-subtitle
+                    >
+                  </v-list-item-content>
+                </v-list-item>
+                <v-row no-gutters>
+                  <v-col cols="8">
+                    <v-text-field
+                      class="text-h5 rounded-0"
+                      color="primary"
+                      label="Recipient gets"
+                      outlined
+                      value="0"
+                      persistent-hint
+                      type="number"
+                      step="0.000001"
+                      flat
+                    >
+                      <!-- <template v-slot:append-outer>
+               
+                </template> -->
+                    </v-text-field>
+                  </v-col>
+
+                  <v-col cols="4">
+                    <v-select
+                      color="primary"
+                      :items="coins"
+                      item-text="name"
+                      item-value="value"
+                      outlined
+                      v-model="selectedRecipientToken"
+                      class="rounded-0"
+                      height="50"
+                    >
+                      <template v-slot:item="{ item, on, attrs }">
+                        <v-list-item v-bind="attrs" v-on="on">
+                          <v-list-item-avatar tile>
+                            <v-img
+                              :src="require(`../assets/${item.value}.svg`)"
+                            ></v-img>
+                          </v-list-item-avatar>
+                          <v-list-item-content>
+                            <v-list-item-title
+                              class="primary--text text-subtitle-1"
+                              >{{ item.name }}</v-list-item-title
+                            >
+                          </v-list-item-content>
+                        </v-list-item>
+                      </template>
+
+                      <template v-slot:selection="{ item }">
+                        <v-list-item>
+                          <v-list-item-avatar tile>
+                            <v-img
+                              :src="require(`../assets/${item.value}.svg`)"
+                            ></v-img>
+                          </v-list-item-avatar>
+                          <v-list-item-content>
+                            <v-list-item-title
+                              class="primary--text text-subtitle-1"
+                              >{{ item.name }}</v-list-item-title
+                            >
+                          </v-list-item-content>
+                        </v-list-item>
+                      </template>
+                    </v-select>
+                  </v-col>
+                </v-row>
+
+                <!--  -->
+              </v-card>
+
+              <p>To</p>
+              <v-card width="600">
+                <v-list-item class="">
+                  <v-list-item-avatar size="60">
+                    <v-avatar color="main"></v-avatar>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    <v-list-item-title class="primary--text ma-2"
+                      >Username</v-list-item-title
+                    >
+                    <v-list-item-subtitle class="ma-2"
+                      >0xabcdefgeahskehelhske
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-card>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" outlined @click="e1 = 3"> Back </v-btn>
+                <v-btn color="primary"> Send </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-card>
         </v-stepper-content>
 
         <v-btn outlined color="secondary" @click="closeDialog" class="ma-5">
@@ -119,12 +448,16 @@
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
 import ProfileMenu from "./shared/ProfileMenu.vue";
+import Balances from "../static/balance";
 @Component({ name: "SendMoney", components: { ProfileMenu } })
 export default class SendMoney extends Vue {
   e1 = 1;
   closeDialog(): void {
     this.$emit("update-dialog", false);
   }
+
+  coins = Balances;
+  selectedRecipientToken = "usdt";
 }
 </script>
 

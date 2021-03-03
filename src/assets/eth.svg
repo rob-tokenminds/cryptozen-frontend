@@ -1,7 +1,7 @@
 <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<rect x="24.7487" width="35" height="35" transform="rotate(45 24.7487 0)" fill="white"/>
+<rect x="24.7488" width="35" height="35" transform="rotate(45 24.7488 0)" fill="white"/>
 <mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="50" height="50">
-<rect x="24.7487" width="35" height="35" transform="rotate(45 24.7487 0)" fill="white"/>
+<rect x="24.7488" width="35" height="35" transform="rotate(45 24.7488 0)" fill="white"/>
 </mask>
 <g mask="url(#mask0)">
 <rect x="4" y="7" width="42" height="35" fill="url(#pattern0)"/>
