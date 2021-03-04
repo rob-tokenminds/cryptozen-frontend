@@ -9,6 +9,7 @@ dependencies:
   bignumber.js: 9.0.1
   ethers: 5.0.31
   from-exponential: 1.0.0
+  human-readable-numbers: 0.9.5
   uuid: 8.3.2
   validator: 13.5.2
   vue: 2.6.12
@@ -4828,6 +4829,10 @@ packages:
     dev: true
     resolution:
       integrity: sha1-7AbBDgo0wPL68Zn3/X/Hj//QPHM=
+  /human-readable-numbers/0.9.5:
+    dev: false
+    resolution:
+      integrity: sha512-VC1uYLm7FR+4UkLaQdXPLodz7xTVLBte3X6iMCYK/uPJywoHyEZfR40+kCN4YqYd+FNCPJAJNYv2CSMvAprgsQ==
   /human-signals/1.1.1:
     dev: true
     engines:
@@ -10254,6 +10259,7 @@ specifiers:
   eslint-plugin-vue: ^7.7.0
   ethers: ^5.0.31
   from-exponential: ^1.0.0
+  human-readable-numbers: ^0.9.5
   prettier: ^2.2.1
   sass: ^1.32.8
   sass-loader: ^10.1.1

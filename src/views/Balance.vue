@@ -1,8 +1,8 @@
 <template>
   <div>
     <v-container>
-      <v-btn color="secondary">Send {{ getBalance().name }}</v-btn>
-      <v-btn color="secondary" class="ml-1">Swap {{ getBalance().name }}</v-btn>
+      <v-btn color="secondary">Send {{ getBalance.name }}</v-btn>
+      <v-btn color="secondary" class="ml-1">Swap {{ getBalance.name }}</v-btn>
       <v-btn color="secondary" class="ml-1">Lock Compound</v-btn>
     </v-container>
 
@@ -27,7 +27,7 @@ export default class Balance extends Vue {
     return balance;
   }
 
-  balanceTitle(): string {
+  get balanceTitle(): string {
     const balance = this.getBalance();
     if (balance) return `${balance.name} Balance`;
     else return "";

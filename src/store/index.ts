@@ -2,7 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import CurrencyModel from "../models/CurrencyModel";
 import Web3 from "web3";
-import { BalanceInterface } from "../static/balance";
+import Balances, { BalanceInterface } from "../static/balance";
 import ERC20Abi from "../static/erc20abi";
 
 export interface updateCoinBalanceParams {
@@ -17,26 +17,39 @@ export default new Vuex.Store({
     currencyBalances: Array<CurrencyModel>(),
     selectedAddress: "",
     chainId: 1,
+    balances: Balances,
   },
   mutations: {
-    pushBalance(state, ethereumBalanceModel: CurrencyModel) {
+    pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
       state.currencyBalances.push(ethereumBalanceModel);
+    },
+    pushBalance(state, balance: BalanceInterface) {
+      const findIndex = state.balances.findIndex(
+        (b) => b.value.toLowerCase() === balance.value.toLowerCase()
+      );
+      state.balances.splice(findIndex, 1, balance);
     },
   },
   actions: {
-    updateCoinBalance(
+    async updateCoinBalance(
       { commit, state },
       { web3, coin }: updateCoinBalanceParams
     ) {
       if (coin.value === "eth") {
-        web3.eth.getBalance(state.selectedAddress).then((balanceInWei) => {
-          const ethBalance = new CurrencyModel(
-            state.selectedAddress,
-            web3.utils.fromWei(balanceInWei, "ether"),
-            coin.value
-          );
-          commit("pushBalance", ethBalance);
-        });
+        await web3.eth
+          .getBalance(state.selectedAddress)
+          .then((balanceInWei) => {
+            const ethBalance = new CurrencyModel(
+              state.selectedAddress,
+              web3.utils.fromWei(balanceInWei, "ether"),
+              coin.value
+            );
+            commit("pushCurrencyBalances", ethBalance);
+            commit(
+              "pushBalance",
+              Object.assign(coin, { currency: ethBalance })
+            );
+          });
       } else {
         if (coin.decimal && coin.contractAddress) {
           let contractAddress = coin.contractAddress?.MAINNET;
@@ -44,7 +57,7 @@ export default new Vuex.Store({
             contractAddress = coin.contractAddress?.ROPSTEN;
           }
           const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
-          contract.methods
+          await contract.methods
             .balanceOf(state.selectedAddress)
             .call({ from: state.selectedAddress })
             .then((unscaledBalance: number) => {
@@ -57,7 +70,11 @@ export default new Vuex.Store({
                   BN.toString(),
                   coin.value
                 );
-                commit("pushBalance", ethBalance);
+                commit("pushCurrencyBalances", ethBalance);
+                commit(
+                  "pushBalance",
+                  Object.assign(coin, { currency: ethBalance })
+                );
               }
             });
         }
@@ -78,6 +95,20 @@ export default new Vuex.Store({
       return state.currencyBalances.filter(
         (c) => c.address.toLowerCase() === state.selectedAddress.toLowerCase()
       );
+    },
+    coinsWithCurrencyBalance(state) {
+      const currentSelectedBalances: CurrencyModel[] = state.currencyBalances.filter(
+        (c) => c.address.toLowerCase() === state.selectedAddress.toLowerCase()
+      );
+      const coins: BalanceInterface[] = [];
+
+      for (const coin of Balances) {
+        const currency = currentSelectedBalances.find(
+          (c) => c.coin.toLowerCase() === coin.value.toLowerCase()
+        );
+        coins.push(Object.assign(coin, { currency }));
+      }
+      return coins;
     },
   },
 });

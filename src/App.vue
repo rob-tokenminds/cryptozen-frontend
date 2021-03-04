@@ -79,7 +79,7 @@
         </v-list-item>
 
         <v-list-item
-          v-for="balance in balances"
+          v-for="balance in $store.state.balances"
           :key="balance.value"
           :to="`/balance/${balance.value}`"
         >
@@ -87,9 +87,14 @@
             <v-img :src="require(`./assets/${balance.value}.svg`)"></v-img>
           </v-list-item-avatar>
           <v-list-item-content>
-            <v-list-item-title class="white--text text-subtitle-1">{{
-              balance.name
-            }}</v-list-item-title>
+            <v-list-item-title class="white--text text-subtitle-1"
+              >{{
+                balance.currency
+                  ? getHrNumber(Number(balance.currency.balance))
+                  : "0"
+              }}
+              {{ balance.name }}</v-list-item-title
+            >
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -135,7 +140,7 @@
 
 <script lang="ts">
 import { Vue, Component, Watch, Ref } from "vue-property-decorator";
-import Balances from "./static/balance";
+import Balances, { BalanceInterface } from "./static/balance";
 import {
   mdiHomeOutline,
   mdiClockOutline,
@@ -147,6 +152,8 @@ import SendMoney from "./views/SendMoney.vue";
 import ProfileMenu from "./views/shared/ProfileMenu.vue";
 import Web3 from "web3";
 import { AbstractProvider } from "web3-core";
+import CurrencyModel from "./models/CurrencyModel";
+import HRNumber from "human-readable-numbers";
 // import { Signer } from "ethers";
 interface Window {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -164,15 +171,14 @@ export default class App extends Vue {
     mdiDotsVertical,
   };
   drawer = true;
-  balances = Balances;
+
   isMobile = false;
   sendMoneyDialog = false;
   web3!: Web3;
 
   balanceTitle(): string {
-    const balance = this.balances.find(
-      (b) => b.value === this.$route.params.coin
-    );
+    const balances: BalanceInterface[] = this.$store.state.balances;
+    const balance = balances.find((b) => b.value === this.$route.params.coin);
     if (balance) return `${balance.name} Balance`;
     else return "";
   }
@@ -186,6 +192,22 @@ export default class App extends Vue {
   @Watch("drawer")
   watchDrawer(value: boolean): void {
     this.navIcon = !value;
+  }
+
+  getBalance(balance: BalanceInterface): string {
+    const currentSelectedBalances: CurrencyModel[] = this.$store.getters[
+      "getCurrentSelectedBalances"
+    ];
+    const currency = currentSelectedBalances.find(
+      (c) => c.coin.toLowerCase() === balance.value.toLowerCase()
+    );
+    if (currency) {
+      return Number(currency.balance).toFixed(2);
+    } else return "0";
+  }
+
+  getHrNumber(number: number): string {
+    return HRNumber.toHumanString(number);
   }
 
   async init(): Promise<void> {
@@ -225,8 +247,9 @@ export default class App extends Vue {
             "updateSelectedAddress",
             window.ethereum.selectedAddress
           );
-          for (const balance of this.balances) {
-            this.$store.dispatch("updateCoinBalance", {
+          const balances: BalanceInterface[] = this.$store.state.balances;
+          for (const balance of balances) {
+            await this.$store.dispatch("updateCoinBalance", {
               web3: this.web3,
               coin: balance,
             });

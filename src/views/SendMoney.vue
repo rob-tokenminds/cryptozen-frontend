@@ -45,7 +45,7 @@
               </v-card>
 
               <v-card
-                v-for="coin in coinsWithCurrencyBalance"
+                v-for="coin in $store.state.balances"
                 :key="coin.value"
                 elevation="2"
                 class="mx-auto mt-2"
@@ -245,8 +245,6 @@ import { Vue, Component } from "vue-property-decorator";
 import ProfileMenu from "./shared/ProfileMenu.vue";
 import SelectAmount from "./shared/SelectAmount.vue";
 import Balances, { BalanceInterface } from "../static/balance";
-import EthereumBalanceModel from "../models/CurrencyModel";
-import CurrencyModel from "../models/CurrencyModel";
 @Component({ name: "SendMoney", components: { ProfileMenu, SelectAmount } })
 export default class SendMoney extends Vue {
   e1 = 1;
@@ -260,22 +258,6 @@ export default class SendMoney extends Vue {
   swapAmount = 0;
   setSwapAmount(value: number): void {
     this.swapAmount = Number(value);
-  }
-
-  get coinsWithCurrencyBalance(): BalanceInterface[] {
-    const currentSelectedBalances: CurrencyModel[] = this.$store.getters[
-      "getCurrentSelectedBalances"
-    ];
-    const coins: BalanceInterface[] = [];
-
-    for (const coin of this.coins) {
-      const currency = currentSelectedBalances.find(
-        (c) => c.coin.toLowerCase() === coin.value.toLowerCase()
-      );
-      coins.push(Object.assign(coin, { currency }));
-    }
-    console.log("coins", coins);
-    return coins;
   }
 }
 </script>
