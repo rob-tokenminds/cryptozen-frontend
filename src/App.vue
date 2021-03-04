@@ -146,7 +146,8 @@ import {
 import SendMoney from "./views/SendMoney.vue";
 import ProfileMenu from "./views/shared/ProfileMenu.vue";
 import Web3 from "web3";
-
+import { AbstractProvider } from "web3-core";
+// import { Signer } from "ethers";
 interface Window {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ethereum: any;
@@ -166,7 +167,7 @@ export default class App extends Vue {
   balances = Balances;
   isMobile = false;
   sendMoneyDialog = false;
-  ethereum!: Web3;
+  web3!: Web3;
 
   balanceTitle(): string {
     const balance = this.balances.find(
@@ -187,29 +188,61 @@ export default class App extends Vue {
     this.navIcon = !value;
   }
 
+  async init(): Promise<void> {
+    if (typeof window.ethereum === undefined) {
+      alert(
+        "Metamask is not installed, please install metamask to use this Dapps"
+      );
+    } else {
+      this.web3 = new Web3(window.ethereum);
+
+      const currentProvider = this.web3.currentProvider;
+      if (currentProvider !== null && currentProvider !== undefined) {
+        await this.web3.eth.requestAccounts();
+        const message = `Hi there, we are requesting your wallet signature to login into this app. Your wallet signature will be used for encrypt/decrypt your data.`;
+        const params = [message, window.ethereum.selectedAddress];
+        const signature = await new Promise((resolve, reject) => {
+          (currentProvider as AbstractProvider).sendAsync(
+            {
+              jsonrpc: "1",
+              method: "personal_sign",
+              params,
+            },
+            (error, result) => {
+              if (error) {
+                resolve(false);
+              } else {
+                resolve(result?.result);
+              }
+            }
+          );
+        });
+        if (signature) {
+          console.log("signature", signature);
+
+          await this.$store.dispatch("updateChainId", this.web3);
+          await this.$store.dispatch(
+            "updateSelectedAddress",
+            window.ethereum.selectedAddress
+          );
+          for (const balance of this.balances) {
+            this.$store.dispatch("updateCoinBalance", {
+              web3: this.web3,
+              coin: balance,
+            });
+          }
+        } else {
+          alert(`Please sign the Signature Request`);
+          await this.init();
+        }
+      }
+    }
+  }
+
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
       this.setIsMobile();
-
-      if (typeof window.ethereum === undefined) {
-        alert(
-          "Metamask is not installed, please install metamask to use this Dapps"
-        );
-      } else {
-        this.ethereum = new Web3(window.ethereum);
-        await this.ethereum.eth.requestAccounts();
-        await this.$store.dispatch("updateChainId", this.ethereum);
-        await this.$store.dispatch(
-          "updateSelectedAddress",
-          window.ethereum.selectedAddress
-        );
-        for (const balance of this.balances) {
-          this.$store.dispatch("updateCoinBalance", {
-            web3: this.ethereum,
-            coin: balance,
-          });
-        }
-      }
+      await this.init();
     });
   }
 
