@@ -145,6 +145,13 @@ import {
 } from "@mdi/js";
 import SendMoney from "./views/SendMoney.vue";
 import ProfileMenu from "./views/shared/ProfileMenu.vue";
+import Web3 from "web3";
+
+interface Window {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ethereum: any;
+}
+declare const window: Window;
 
 @Component({ name: "App", components: { SendMoney, ProfileMenu } })
 export default class App extends Vue {
@@ -159,6 +166,7 @@ export default class App extends Vue {
   balances = Balances;
   isMobile = false;
   sendMoneyDialog = false;
+  ethereum!: Web3;
 
   balanceTitle(): string {
     const balance = this.balances.find(
@@ -179,9 +187,29 @@ export default class App extends Vue {
     this.navIcon = !value;
   }
 
-  mounted(): void {
-    this.$nextTick(function () {
+  async mounted(): Promise<void> {
+    this.$nextTick(async () => {
       this.setIsMobile();
+
+      if (typeof window.ethereum === undefined) {
+        alert(
+          "Metamask is not installed, please install metamask to use this Dapps"
+        );
+      } else {
+        this.ethereum = new Web3(window.ethereum);
+        await this.ethereum.eth.requestAccounts();
+        await this.$store.dispatch("updateChainId", this.ethereum);
+        await this.$store.dispatch(
+          "updateSelectedAddress",
+          window.ethereum.selectedAddress
+        );
+        for (const balance of this.balances) {
+          this.$store.dispatch("updateCoinBalance", {
+            web3: this.ethereum,
+            coin: balance,
+          });
+        }
+      }
     });
   }
 

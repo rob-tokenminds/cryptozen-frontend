@@ -45,9 +45,9 @@
       </v-col>
       <v-col align-self="center" cols="4" v-if="isMobile === false">
         <v-list-item-content class="mr-n10">
-          <v-list-item-title class="primary--text"
-            >0xabc...def</v-list-item-title
-          >
+          <v-list-item-title class="primary--text">{{
+            shortSelectedAddress
+          }}</v-list-item-title>
           <v-list-item-subtitle> emailemail@email.com </v-list-item-subtitle>
         </v-list-item-content>
       </v-col>
@@ -99,5 +99,21 @@ import { Vue, Component, Prop, PropSync } from "vue-property-decorator";
 export default class ProfileMenu extends Vue {
   @Prop(Boolean) readonly isMobile: boolean = false;
   @PropSync("showBell", { type: Boolean }) syncedShowBell!: boolean;
+
+  get selectedAddress(): string {
+    return this.$store.getters["getSelectedAddress"];
+  }
+
+  get shortSelectedAddress(): string {
+    if (this.selectedAddress)
+      return `${this.selectedAddress.substring(
+        0,
+        6
+      )}....${this.selectedAddress.substring(
+        this.selectedAddress.length - 4,
+        this.selectedAddress.length
+      )}`;
+    else return "0x...00";
+  }
 }
 </script>
