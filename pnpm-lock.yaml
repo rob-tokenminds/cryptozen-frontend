@@ -10,6 +10,7 @@ dependencies:
   ethers: 5.0.31
   from-exponential: 1.0.0
   human-readable-numbers: 0.9.5
+  reflect-metadata: 0.1.13
   uuid: 8.3.2
   validator: 13.5.2
   vue: 2.6.12
@@ -7599,6 +7600,10 @@ packages:
       node: '>= 0.10'
     resolution:
       integrity: sha1-hSBLVNuoLVdC4oyWdW70OvUOM4Q=
+  /reflect-metadata/0.1.13:
+    dev: false
+    resolution:
+      integrity: sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==
   /regex-not/1.0.2:
     dependencies:
       extend-shallow: 3.0.2
@@ -10261,6 +10266,7 @@ specifiers:
   from-exponential: ^1.0.0
   human-readable-numbers: ^0.9.5
   prettier: ^2.2.1
+  reflect-metadata: ^0.1.13
   sass: ^1.32.8
   sass-loader: ^10.1.1
   stylus: ^0.54.8

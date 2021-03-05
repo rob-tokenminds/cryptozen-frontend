@@ -106,7 +106,9 @@
       hide-overlay
       transition="dialog-bottom-transition"
     >
-      <SendMoney @update-dialog="updateSendMoneyDialog"></SendMoney>
+      <v-card>
+        <SendMoney :step="1" @update-dialog="updateSendMoneyDialog"></SendMoney>
+      </v-card>
     </v-dialog>
     <v-app-bar app color="white" flat>
       <v-app-bar color="white" flat max-width="1120">
@@ -116,7 +118,7 @@
         ></v-app-bar-nav-icon>
         <!-- <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon> -->
         <v-toolbar-title>{{
-          $route.name !== "Balance" ? $route.name : balanceTitle()
+          $route.name !== "Balance" ? $route.name : balanceTitle
         }}</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
@@ -139,8 +141,8 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch, Ref } from "vue-property-decorator";
-import Balances, { BalanceInterface } from "./static/balance";
+import { Vue, Component, Watch } from "vue-property-decorator";
+import { BalanceInterface } from "./static/balance";
 import {
   mdiHomeOutline,
   mdiClockOutline,
@@ -176,7 +178,7 @@ export default class App extends Vue {
   sendMoneyDialog = false;
   web3!: Web3;
 
-  balanceTitle(): string {
+  get balanceTitle(): string {
     const balances: BalanceInterface[] = this.$store.state.balances;
     const balance = balances.find((b) => b.value === this.$route.params.coin);
     if (balance) return `${balance.name} Balance`;

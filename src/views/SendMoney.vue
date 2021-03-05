@@ -1,5 +1,5 @@
 <template>
-  <v-card flat height="10000">
+  <v-card flat>
     <v-stepper v-model="e1">
       <!-- <v-toolbar dark color="white"> -->
 
@@ -66,7 +66,9 @@
                     <v-list-item-content>
                       <v-list-item-title
                         class="primary--text text-subtitle-1"
-                        >{{ coin.currency.balance }}</v-list-item-title
+                        >{{
+                          coin.currency ? coin.currency.balance : 0
+                        }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="">{{
                         coin.name
@@ -241,12 +243,30 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import ProfileMenu from "./shared/ProfileMenu.vue";
 import SelectAmount from "./shared/SelectAmount.vue";
 import Balances, { BalanceInterface } from "../static/balance";
 @Component({ name: "SendMoney", components: { ProfileMenu, SelectAmount } })
 export default class SendMoney extends Vue {
+  @Prop({ type: Number }) readonly step!: number;
+  @Prop({ type: Object }) readonly currentSelected!: BalanceInterface;
+
+  @Watch("selectedCurrencySync")
+  watchSelectedCurrencySync(value: BalanceInterface): void {
+    this.selectedCurrency = value;
+  }
+
+  @Watch("step")
+  watchStep(value: number): void {
+    this.e1 = value;
+  }
+
+  mounted(): void {
+    if (this.step) this.e1 = this.step;
+    if (this.currentSelected) this.selectedCurrency = this.currentSelected;
+  }
+
   e1 = 1;
   coinSelected = "";
   closeDialog(): void {

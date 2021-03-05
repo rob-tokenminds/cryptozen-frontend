@@ -4,12 +4,11 @@
       height=""
       class="text-h5 rounded-0"
       color="primary"
-      full-width
-      label="You send"
+      :label="label"
       outlined
       :max="selectedCurrency.currency.balance"
       v-model="swapAmount"
-      :hint="`you have ${selectedCurrency.currency.balance}`"
+      :hint="hint"
       persistent-hint
       type="number"
       :step="0.000001"
@@ -30,9 +29,28 @@
           </v-list-item-content>
         </v-list-item>
       </template>
+
+      <template v-slot:message="{ message }">
+        <p v-if="selectedCurrency.currency">
+          You have
+          <a
+            class="primary--text font-weight-bold"
+            @click="swapAmount = selectedCurrency.currency.balance"
+            >{{ selectedCurrency.currency.balance }}</a
+          >
+        </p>
+        <p v-else>{{ message }}</p>
+      </template>
     </v-text-field>
 
-    <v-list-item>
+    <v-list-item class="mt-n5">
+      <v-divider
+        class="mr-2 mb-4 bala"
+        elevation="10"
+        vertical
+        inset
+      ></v-divider>
+
       <v-list-item-content>
         <v-list-item-subtitle class="secondary--text text-subtitle-2 text-left"
           ><a class="primary--text text-subtitle-2">-23</a> Gas
@@ -42,7 +60,7 @@
           ><a class="primary--text text-subtitle-2">-23</a> Transfer
           fee</v-list-item-subtitle
         >
-        <v-divider></v-divider>
+        <v-divider class=""></v-divider>
         <v-list-item-subtitle class="secondary--text text-subtitle-2 text-left"
           ><a class="primary--text text-subtitle-2">0</a> Platform fee
           (discounted)</v-list-item-subtitle
@@ -111,8 +129,10 @@
     <!--  -->
     <v-card-actions v-if="!disableActionButton">
       <v-spacer></v-spacer>
-      <v-btn color="primary" outlined @click="prevStep()"> Back </v-btn>
-      <v-btn color="primary" @click="nextStep()"> Continue </v-btn>
+      <v-btn color="primary" v-if="!disableBack" outlined @click="prevStep()">
+        Back
+      </v-btn>
+      <v-btn color="primary" @click="nextStep()"> {{ continueLabel }} </v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -128,17 +148,25 @@ export default class SelectAmount extends Vue {
   @Prop(Object) readonly selectedCurrency!: BalanceInterface;
   @Prop(Number) readonly setSwapAmount!: number;
   @Prop(Boolean) readonly disableActionButton!: boolean;
+  @Prop(String) readonly setLabel!: string;
+  @Prop(Boolean) readonly disableBack!: boolean;
+  @Prop(String) readonly setContinueLabel!: string;
 
+  continueLabel = "Continue";
   selectedRecipientToken = "usdt";
   coins = balances;
   swapAmount = 0;
-
+  label = "You send";
+  hint = `you have ${this.selectedCurrency?.currency?.balance}`;
+  // hint = `<span class=&quot;red--text&quot;>Red hint</span>`;
   mounted(): void {
-    this.swapAmount = this.setSwapAmount;
+    if (this.setLabel) this.label = this.setLabel;
+    if (this.setSwapAmount) this.swapAmount = this.setSwapAmount;
+    if (this.setContinueLabel) this.continueLabel = this.setContinueLabel;
   }
 
   @Watch("setSwapAmount")
-  watchSetSwapAmount(value: number) {
+  watchSetSwapAmount(value: number): void {
     this.swapAmount = value;
   }
 
@@ -156,3 +184,9 @@ export default class SelectAmount extends Vue {
   }
 }
 </script>
+
+<style scoped>
+.bala {
+  border: 0.5px solid #005672;
+}
+</style>
