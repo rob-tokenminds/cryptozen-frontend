@@ -75,10 +75,10 @@
           label="Recipient gets"
           outlined
           value="0"
-          persistent-hint
           type="number"
           step="0.000001"
           flat
+          height="50"
         >
           <!-- <template v-slot:append-outer>
                

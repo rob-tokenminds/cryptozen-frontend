@@ -1,6 +1,6 @@
 <template>
   <v-card flat>
-    <v-stepper v-model="e1">
+    <v-stepper v-model="e1" class="elevation-0">
       <!-- <v-toolbar dark color="white"> -->
 
       <v-stepper-header>
@@ -25,10 +25,14 @@
         <v-stepper-step step=""> Review </v-stepper-step>
         <v-spacer></v-spacer>
 
-        <ProfileMenu :showBell="false"></ProfileMenu>
+        <ProfileMenu class="mt-1" :showBell="false"></ProfileMenu>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
+
+        <v-icon color="primary" large class="mb-3" @click="closeDialog"
+          >mdi-close</v-icon
+        >
         <v-spacer></v-spacer>
       </v-stepper-header>
 
@@ -233,10 +237,6 @@
             </v-card>
           </v-card>
         </v-stepper-content>
-
-        <v-btn outlined color="secondary" @click="closeDialog" class="ma-5">
-          Cancel
-        </v-btn>
       </v-stepper-items>
     </v-stepper>
   </v-card>

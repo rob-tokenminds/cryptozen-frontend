@@ -10,7 +10,7 @@
         xl="2"
         v-if="syncedShowBell"
       >
-        <v-menu nudge-left="250" nudge-bottom="120" v-if="syncedShowBell">
+        <v-menu nudge-left="250" nudge-bottom="50" v-if="syncedShowBell">
           <template v-slot:activator="{ on, attrs }">
             <v-btn
               v-if="syncedShowBell"
@@ -43,7 +43,11 @@
           <v-avatar color="main" size="50" class="mr-4"></v-avatar
         ></v-btn>
       </v-col>
-      <v-col align-self="center" cols="4" v-if="isMobile === false">
+      <v-col
+        align-self="center"
+        :cols="syncedShowBell ? 4 : 5"
+        v-if="isMobile === false"
+      >
         <v-list-item-content class="mr-n10">
           <v-list-item-title class="primary--text">{{
             shortSelectedAddress
@@ -54,7 +58,7 @@
       <v-col align-self="center" cols="3" md="2" sm="2" lg="2" xl="2">
         <v-menu offset-y>
           <template v-slot:activator="{ on, attrs }">
-            <v-btn class="mt-1" icon v-bind="attrs" v-on="on">
+            <v-btn class="mt-1 mr-6" icon v-bind="attrs" v-on="on">
               <v-icon>mdi-chevron-down</v-icon>
             </v-btn>
           </template>

@@ -1,5 +1,5 @@
 <template>
-  <v-stepper v-model="e1">
+  <v-stepper v-model="e1" class="elevation-0">
     <v-stepper-header>
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
@@ -19,6 +19,9 @@
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
+      <v-icon color="primary" large class="mb-3" @click="closeDialog"
+        >mdi-close</v-icon
+      >
       <v-spacer></v-spacer>
     </v-stepper-header>
     <v-stepper-items flat>
@@ -41,9 +44,6 @@
           </v-card>
         </v-card>
       </v-stepper-content>
-      <v-btn outlined color="secondary" @click="closeDialog" class="ma-5">
-        Cancel
-      </v-btn>
     </v-stepper-items>
   </v-stepper>
 </template>
@@ -56,7 +56,7 @@ import { BalanceInterface } from "../static/balance";
 @Component({ name: "SwapMoney", components: { ProfileMenu, SelectAmount } })
 export default class SwapMoney extends Vue {
   @Prop({ type: Object }) readonly selectedCurrency!: BalanceInterface;
-
+  e1 = 1;
   swapAmount = 0;
   setSwapAmount(value: number): void {
     this.swapAmount = Number(value);
