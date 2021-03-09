@@ -5,6 +5,7 @@ import History from "../views/History.vue";
 import AddressBook from "../views/AddressBook.vue";
 import Balance from "../views/Balance.vue";
 import ReferralRewards from "../views/ReferralRewards.vue";
+import EmailVerification from "../views/EmailVerification.vue";
 
 Vue.use(VueRouter);
 
@@ -33,6 +34,11 @@ const routes: Array<RouteConfig> = [
     path: "/referral/rewards",
     name: "Referral Rewards",
     component: ReferralRewards,
+  },
+  {
+    path: "/email/verification",
+    name: "Email Verification",
+    component: EmailVerification,
   },
 ];
 

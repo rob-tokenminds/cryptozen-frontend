@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
@@ -8,6 +10,10 @@ import vuetify from "./plugins/vuetify";
 import "@mdi/font/css/materialdesignicons.css";
 import "./styles/main.scss";
 import VueNativeNotification from "vue-native-notification";
+import VueCookies from "vue-cookies";
+
+Vue.use(VueCookies);
+Vue.$cookies.config("1d");
 Vue.config.productionTip = false;
 Vue.use(VueNativeNotification, {
   // Automatic permission request before

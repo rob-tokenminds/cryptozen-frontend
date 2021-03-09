@@ -52,7 +52,7 @@
           <v-list-item-title class="primary--text">{{
             shortSelectedAddress
           }}</v-list-item-title>
-          <v-list-item-subtitle> emailemail@email.com </v-list-item-subtitle>
+          <v-list-item-subtitle> {{ myEmail }} </v-list-item-subtitle>
         </v-list-item-content>
       </v-col>
       <v-col align-self="center" cols="3" md="2" sm="2" lg="2" xl="2">
@@ -63,10 +63,10 @@
             </v-btn>
           </template>
           <v-list>
-            <v-list-item>
+            <v-list-item @click="editYourEmail = true">
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Edit Ether number</v-list-item-title
+                  >Edit Your email</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -82,7 +82,7 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider></v-divider>
-            <v-list-item>
+            <v-list-item @click="logout()">
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
                   >Logout</v-list-item-title
@@ -91,6 +91,30 @@
             </v-list-item>
           </v-list>
         </v-menu>
+
+        <v-dialog v-model="editYourEmail" width="500">
+          <v-card>
+            <v-container>
+              <v-text-field
+                label="Your Email"
+                v-model="yourEmail"
+              ></v-text-field>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" outlined @click="editYourEmail = false">
+                  Cancel
+                </v-btn>
+                <v-btn
+                  color="primary"
+                  :loading="loadingUpdateEmail"
+                  @click="updateEmail()"
+                >
+                  Submit
+                </v-btn>
+              </v-card-actions>
+            </v-container>
+          </v-card>
+        </v-dialog>
       </v-col>
     </v-row>
   </v-item-group>
@@ -104,8 +128,34 @@ export default class ProfileMenu extends Vue {
   @Prop(Boolean) readonly isMobile: boolean = false;
   @PropSync("showBell", { type: Boolean }) syncedShowBell!: boolean;
 
+  editYourEmail = false;
+  yourEmail = this.myEmail;
+
   get selectedAddress(): string {
     return this.$store.getters["getSelectedAddress"];
+  }
+
+  get myEmail(): string {
+    const profile = this.$store.getters["getProfile"];
+    if (profile?.email) {
+      return profile.email;
+    }
+    return "";
+  }
+
+  loadingUpdateEmail = false;
+  async updateEmail(): Promise<void> {
+    this.loadingUpdateEmail = true;
+    await this.$store.dispatch("setEmail", this.yourEmail);
+    this.loadingUpdateEmail = false;
+    this.editYourEmail = false;
+  }
+
+  logout(): void {
+    this.$cookies.remove("cryptozen_token");
+    this.$store.state.profile = null;
+    this.$store.state.currencyBalances = null;
+    this.$store.state.balances = null;
   }
 
   get shortSelectedAddress(): string {

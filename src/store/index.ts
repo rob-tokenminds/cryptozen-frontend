@@ -1,9 +1,10 @@
 import Vue from "vue";
-import Vuex from "vuex";
+import Vuex, { StoreOptions } from "vuex";
 import CurrencyModel from "../models/CurrencyModel";
 import Web3 from "web3";
 import Balances, { BalanceInterface } from "../static/balance";
 import ERC20Abi from "../static/erc20abi";
+import { Fetcher, ProfileInterface } from "./fetcher";
 
 export interface updateCoinBalanceParams {
   web3: Web3;
@@ -12,12 +13,23 @@ export interface updateCoinBalanceParams {
 
 Vue.use(Vuex);
 
-export default new Vuex.Store({
+export interface storeInterface {
+  currencyBalances: CurrencyModel[];
+  selectedAddress: string;
+  chainId: number;
+  balances: BalanceInterface[];
+  words: string;
+  profile: ProfileInterface | null;
+}
+
+const store: StoreOptions<storeInterface> = {
   state: {
-    currencyBalances: Array<CurrencyModel>(),
+    currencyBalances: [],
     selectedAddress: "",
     chainId: 1,
     balances: Balances,
+    words: "",
+    profile: null,
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -86,6 +98,36 @@ export default new Vuex.Store({
     async updateChainId({ state }, web3: Web3) {
       state.chainId = await web3.eth.getChainId();
     },
+
+    async getLoginWord() {
+      return await Fetcher.getLoginWords();
+    },
+    async login({ state }, { address, signature }) {
+      const accessToken = await Fetcher.login(address, signature);
+      Vue.$cookies.set("cryptozen_token", accessToken);
+      return accessToken;
+    },
+    async getProfile({ state }) {
+      Vue.$cookies.get("cryptozen_token");
+      const profile = await Fetcher.getProfile(
+        Vue.$cookies.get("cryptozen_token")
+      );
+      state.profile = profile;
+
+      return profile;
+    },
+    async setEmail({ state }, email) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const emailData = await Fetcher.updateEmail(token, email);
+      if (emailData) {
+        alert(
+          `we've sent an verification link to your email, please verify your email to keep use our platform`
+        );
+        if (state.profile) {
+          Vue.set(state.profile, "email", emailData);
+        }
+      }
+    },
   },
   getters: {
     getSelectedAddress(state) {
@@ -110,5 +152,13 @@ export default new Vuex.Store({
       }
       return coins;
     },
+    getAccessToken(state) {
+      return Vue.$cookies.get("cryptozen_token");
+    },
+    getProfile(state) {
+      return state.profile;
+    },
   },
-});
+};
+
+export default new Vuex.Store(store);
