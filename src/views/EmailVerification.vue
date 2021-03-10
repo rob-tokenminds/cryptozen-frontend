@@ -28,6 +28,8 @@ export default class EmailVerification extends Vue {
             "verification link is Invalid or expired, please request new verification email"
           );
         }
+      } else {
+        alert("invalid parameters, please check your email again");
       }
     } catch (e) {
       alert(

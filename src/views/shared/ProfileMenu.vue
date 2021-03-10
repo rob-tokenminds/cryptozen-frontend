@@ -18,7 +18,7 @@
               icon
               v-bind="attrs"
               v-on="on"
-              ><v-icon>mdi-bell-outline</v-icon></v-btn
+              ><v-icon>{{ bellNotification }}</v-icon></v-btn
             >
           </template>
           <v-list>
@@ -121,6 +121,7 @@
 </template>
 
 <script lang="ts">
+import { Fetcher } from "../../store/fetcher";
 import { Vue, Component, Prop, PropSync } from "vue-property-decorator";
 
 @Component({ name: "ProfileMenu", components: {} })
@@ -145,10 +146,37 @@ export default class ProfileMenu extends Vue {
 
   loadingUpdateEmail = false;
   async updateEmail(): Promise<void> {
-    this.loadingUpdateEmail = true;
-    await this.$store.dispatch("setEmail", this.yourEmail);
-    this.loadingUpdateEmail = false;
-    this.editYourEmail = false;
+    try {
+      this.loadingUpdateEmail = true;
+      await this.$store.dispatch("setEmail", this.yourEmail);
+      this.loadingUpdateEmail = false;
+      this.editYourEmail = false;
+    } catch (e) {
+      this.loadingUpdateEmail = false;
+    }
+  }
+
+  mounted(): void {
+    this.checkNotification();
+  }
+  newNotif = false;
+  get bellNotification(): string {
+    if (this.newNotif) {
+      return "mdi-bell-badge-outline";
+    } else {
+      return "mdi-bell-outline";
+    }
+  }
+  async checkNotification(): Promise<void> {
+    let accessToken = this.$cookies.get("cryptozen_token");
+    if (accessToken) {
+      const newNotif = await Fetcher.checkNewNotification(accessToken);
+      if (newNotif) {
+        this.newNotif = newNotif;
+      }
+    }
+    await sleep(5000);
+    await this.checkNotification();
   }
 
   logout(): void {
@@ -169,5 +197,9 @@ export default class ProfileMenu extends Vue {
       )}`;
     else return "0x...00";
   }
+}
+
+function sleep(ms: number): Promise<unknown> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 </script>

@@ -4,7 +4,7 @@ import CurrencyModel from "../models/CurrencyModel";
 import Web3 from "web3";
 import Balances, { BalanceInterface } from "../static/balance";
 import ERC20Abi from "../static/erc20abi";
-import { Fetcher, ProfileInterface } from "./fetcher";
+import { Fetcher, ProfileInterface, AddressBookInterface } from "./fetcher";
 
 export interface updateCoinBalanceParams {
   web3: Web3;
@@ -20,6 +20,22 @@ export interface storeInterface {
   balances: BalanceInterface[];
   words: string;
   profile: ProfileInterface | null;
+  addressBooks: AddressBookInterface[];
+  web3: Web3 | null;
+  socket: {
+    isConnected: boolean;
+    message: string;
+    reconnectError: boolean;
+  };
+}
+
+export interface createWalletInterface {
+  name: string;
+  address: string;
+  currency: string;
+  email: string;
+  plainEmail: string;
+  sendEmail: boolean;
 }
 
 const store: StoreOptions<storeInterface> = {
@@ -30,6 +46,13 @@ const store: StoreOptions<storeInterface> = {
     balances: Balances,
     words: "",
     profile: null,
+    addressBooks: [],
+    web3: null,
+    socket: {
+      isConnected: false,
+      message: "",
+      reconnectError: false,
+    },
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -41,6 +64,19 @@ const store: StoreOptions<storeInterface> = {
       );
       state.balances.splice(findIndex, 1, balance);
     },
+    // SOCKET_ONMESSAGE(state, message) {
+    //   state.socket.message = message;
+    // },
+    // SOCKET_ONOPEN(state, event) {
+    //   Vue.prototype.$socket = event.currentTarget;
+    //   state.socket.isConnected = true;
+    // },
+    // SOCKET_ONCLOSE(state, event) {
+    //   state.socket.isConnected = false;
+    // },
+    // SOCKET_ONERROR(state, event) {
+    //   console.error(state, event);
+    // },
   },
   actions: {
     async updateCoinBalance(
@@ -128,6 +164,31 @@ const store: StoreOptions<storeInterface> = {
         }
       }
     },
+    async createWallet({ state }, params: createWalletInterface) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const addressBookData = await Fetcher.createWallet(
+        token,
+        params.name,
+        params.address,
+        params.currency,
+        params.email,
+        params.sendEmail,
+        params.plainEmail
+      );
+      state.addressBooks.push(addressBookData);
+      return addressBookData;
+    },
+    async getAddressBookList({ state }) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const addressBooks = await Fetcher.getAddressBookList(token);
+      for (const addressBook of addressBooks) {
+        if (!state.addressBooks.find((a) => addressBook.id === a.id))
+          state.addressBooks.push(addressBook);
+      }
+    },
+    setWeb3({ state }, web3: Web3) {
+      state.web3 = web3;
+    },
   },
   getters: {
     getSelectedAddress(state) {
@@ -152,11 +213,14 @@ const store: StoreOptions<storeInterface> = {
       }
       return coins;
     },
-    getAccessToken(state) {
-      return Vue.$cookies.get("cryptozen_token");
-    },
     getProfile(state) {
       return state.profile;
+    },
+    getAddressBooks(state) {
+      return state.addressBooks;
+    },
+    getWeb3(state) {
+      return state.web3;
     },
   },
 };

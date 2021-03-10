@@ -11,6 +11,7 @@ import "@mdi/font/css/materialdesignicons.css";
 import "./styles/main.scss";
 import VueNativeNotification from "vue-native-notification";
 import VueCookies from "vue-cookies";
+// import VueNativeSock from "vue-native-websocket";
 
 Vue.use(VueCookies);
 Vue.$cookies.config("1d");
@@ -20,6 +21,7 @@ Vue.use(VueNativeNotification, {
   // showing notification (default: true)
   requestOnNotify: true,
 });
+// Vue.use(VueNativeSock, process.env.VUE_APP_WEBSOCKET_URL, { store });
 new Vue({
   vuetify,
   router,

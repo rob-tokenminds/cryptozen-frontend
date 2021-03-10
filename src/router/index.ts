@@ -6,6 +6,7 @@ import AddressBook from "../views/AddressBook.vue";
 import Balance from "../views/Balance.vue";
 import ReferralRewards from "../views/ReferralRewards.vue";
 import EmailVerification from "../views/EmailVerification.vue";
+import CreateAddressBook from "../views/CreateAddressBook.vue";
 
 Vue.use(VueRouter);
 
@@ -39,6 +40,11 @@ const routes: Array<RouteConfig> = [
     path: "/email/verification",
     name: "Email Verification",
     component: EmailVerification,
+  },
+  {
+    path: "/create-address-book",
+    name: "Create Address Book",
+    component: CreateAddressBook,
   },
 ];
 

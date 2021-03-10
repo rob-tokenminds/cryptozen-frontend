@@ -1,8 +1,77 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 const BACKEND_URL = process.env.VUE_APP_BACKEND_URL;
 export class Fetcher {
+  private static async get(
+    path: string,
+    config: AxiosRequestConfig = {}
+  ): Promise<AxiosResponse> {
+    try {
+      const axiosGet = await axios.get(`${BACKEND_URL}${path}`, config);
+      return axiosGet;
+    } catch (error) {
+      let message: any = "";
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        message = error.response.data;
+      } else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        message = error.request;
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        message = error.message;
+      }
+      if (message.message) {
+        message = message.message;
+      }
+      console.log("message", message);
+      console.log(error.config);
+      alert(message);
+      throw new Error(message);
+    }
+  }
+
+  private static async post(
+    path: string,
+    params: any = {},
+    config: AxiosRequestConfig = {}
+  ): Promise<AxiosResponse> {
+    try {
+      const axiosPost = await axios.post(
+        `${BACKEND_URL}${path}`,
+        params,
+        config
+      );
+      return axiosPost;
+    } catch (error) {
+      let message: any = "";
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        message = error.response.data;
+      } else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        message = error.request;
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        message = error.message;
+      }
+      if (message.message) {
+        message = message.message;
+      }
+      console.log("message", message);
+      console.log(error.config);
+      alert(message);
+      throw new Error(message);
+    }
+  }
+
   static async getLoginWords(): Promise<string> {
-    const fetch = await axios.get(`${BACKEND_URL}/user/words`);
+    const fetch = await Fetcher.get(`/user/words`);
     return fetch.data.words;
   }
 
@@ -15,7 +84,7 @@ export class Fetcher {
   }
 
   static async getProfile(token: string): Promise<ProfileInterface> {
-    const fetch = await axios.get(`${BACKEND_URL}/user/profile`, {
+    const fetch = await Fetcher.get(`/user/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     // console.log("fetch.data", fetch.data);
@@ -23,8 +92,8 @@ export class Fetcher {
   }
 
   static async updateEmail(token: string, email: string): Promise<string> {
-    const fetch = await axios.post(
-      `${BACKEND_URL}/user/email/update`,
+    const fetch = await Fetcher.post(
+      `/user/email/update`,
       {
         email,
       },
@@ -40,9 +109,65 @@ export class Fetcher {
     email: string,
     id: string
   ): Promise<boolean> {
-    const fetch = await axios.get(`${BACKEND_URL}/user/email/verify`, {
+    const fetch = await Fetcher.get(`/user/email/verify`, {
       headers: { Authorization: `Bearer ${token}` },
       params: { email, id },
+    });
+    return fetch.data;
+  }
+
+  static async createWallet(
+    token: string,
+    name: string,
+    address: string,
+    currency: string,
+    email: string,
+    sendEmail: boolean,
+    plainEmail: string
+  ): Promise<AddressBookInterface> {
+    const fetch = await Fetcher.post(
+      `/user/address-book/create`,
+      {
+        name,
+        address,
+        currency,
+        email,
+        sendEmail,
+        plainEmail,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return fetch.data;
+  }
+
+  static async getAddressBookList(
+    token: string
+  ): Promise<AddressBookInterface[]> {
+    const fetch = await Fetcher.get(`/user/address-book/list`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return fetch.data;
+  }
+
+  static async getAddressBook(id: string): Promise<AddressBookInterface> {
+    const fetch = await Fetcher.get(`/user/address-book/get/${id}`);
+    return fetch.data;
+  }
+
+  static async submitAddressBook(
+    id: string,
+    address: string
+  ): Promise<boolean> {
+    const fetch = await Fetcher.post(`/user/address-book/submit`, {
+      id,
+      address,
+    });
+    return fetch.data;
+  }
+
+  static async checkNewNotification(token: string): Promise<boolean> {
+    const fetch = await Fetcher.get(`/user/notification/new`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
     return fetch.data;
   }
@@ -65,4 +190,39 @@ export interface ProfileInterface {
   email_verified: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface UserInterface {
+  id: string;
+  name: string;
+  email: string;
+  addresses: UserAddressInterface[];
+  address_books: AddressBookInterface[];
+  active: boolean;
+  email_verified: boolean;
+  user?: UserInterface;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface UserAddressInterface {
+  id: string;
+  user_id: string;
+  user: UserInterface;
+  address: string;
+  hashed_signature: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface AddressBookInterface {
+  id: string;
+  user_id: string;
+  user: UserInterface;
+  email: string;
+  currency: string;
+  name: string;
+  address: string;
+  created_at: Date;
+  updated_at: Date;
 }

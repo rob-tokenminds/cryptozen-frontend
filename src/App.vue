@@ -1,5 +1,8 @@
 <template>
-  <v-app style="background: #e5e5e5">
+  <v-app
+    style="background: #e5e5e5"
+    v-if="$route.path !== `/create-address-book`"
+  >
     <v-navigation-drawer v-model="drawer" app color="primary">
       <v-list>
         <v-list-item>
@@ -138,6 +141,22 @@
       <!-- If using vue-router -->
     </v-main>
   </v-app>
+
+  <v-app v-else>
+    <!-- Provides the application the proper gutter -->
+
+    <v-main>
+      <!-- Provides the application the proper gutter -->
+
+      <v-container>
+        <router-view isMobile="isMobile"></router-view>
+      </v-container>
+
+      <!-- If using vue-router -->
+    </v-main>
+
+    <!-- If using vue-router -->
+  </v-app>
 </template>
 
 <script lang="ts">
@@ -219,10 +238,10 @@ export default class App extends Vue {
       );
     } else {
       this.web3 = new Web3(window.ethereum);
-
+      await this.$store.dispatch("setWeb3", this.web3);
       const currentProvider = this.web3.currentProvider;
       if (currentProvider !== null && currentProvider !== undefined) {
-        let accessToken = this.$store.getters["getAccessToken"];
+        let accessToken = this.$cookies.get("cryptozen_token");
         if (!accessToken) {
           await this.web3.eth.requestAccounts();
           const message = await this.$store.dispatch("getLoginWord");
@@ -257,6 +276,12 @@ export default class App extends Vue {
             if (!profile) {
               throw new Error(`Token is expired, will relogin`);
             }
+            // this.$socket.send(
+            //   JSON.stringify({
+            //     event: "notification",
+            //     data: { id: profile.id },
+            //   })
+            // );
             await this.$store.dispatch("updateChainId", this.web3);
             await this.$store.dispatch(
               "updateSelectedAddress",
@@ -270,7 +295,9 @@ export default class App extends Vue {
               });
             }
           } catch (e) {
+            console.log("e", e);
             alert(`Token is expired, will relogin`);
+
             this.$cookies.remove("cryptozen_token");
             await this.init();
           }
@@ -285,7 +312,7 @@ export default class App extends Vue {
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
       this.setIsMobile();
-      await this.init();
+      if (this.$route.path !== `/create-address-book`) await this.init();
     });
   }
 

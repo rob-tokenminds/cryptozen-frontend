@@ -8,6 +8,7 @@ dependencies:
   abi-decoder: 2.4.0
   axios: 0.21.1
   bignumber.js: 9.0.1
+  crypto-js: 4.0.0
   ethers: 5.0.31
   from-exponential: 1.0.0
   human-readable-numbers: 0.9.5
@@ -18,6 +19,7 @@ dependencies:
   vue-class-component: 7.2.6_vue@2.6.12
   vue-cookies: 1.7.4
   vue-native-notification: 1.1.1
+  vue-native-websocket: 2.0.14
   vue-property-decorator: 9.1.2_2dc4252c5371093c9ebcca71536ac4e9
   vue-router: 3.5.1
   vuetify: 2.4.5_vue@2.6.12
@@ -2640,6 +2642,10 @@ packages:
       randomfill: 1.0.4
     resolution:
       integrity: sha512-fz4spIh+znjO2VjL+IdhEpRJ3YN6sMzITSBijk6FK2UvTqruSQW+/cCZTSNsMiZNvUeq0CqurF+dAbyiGOY6Wg==
+  /crypto-js/4.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-bzHZN8Pn+gS7DQA6n+iUmBfl0hO5DJq++QP3U6uTucDtk/0iGpXd/Gg7CGR0p8tJhofJyaKoWBuJI4eAO00BBg==
   /css-color-names/0.0.4:
     dev: true
     resolution:
@@ -9451,6 +9457,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-UnMjJvhmI+Vp40hcb8EswEJqg2O2fsxSmJbDqlbIglfmCiL62TYMKwcSU7ESjSTBDI+4wOXKzGZGR7jfr//MVw==
+  /vue-native-websocket/2.0.14:
+    dev: false
+    resolution:
+      integrity: sha512-oK8+xG1gmqRs4JngHGwEc4zWoRjsdMB20Sz8pemkh4lW2Vr2676/cDRtd30aGnO2xF7Oxf003wS5JO0kypUsCw==
   /vue-property-decorator/9.1.2_2dc4252c5371093c9ebcca71536ac4e9:
     dependencies:
       vue: 2.6.12
@@ -10291,6 +10301,7 @@ specifiers:
   abi-decoder: ^2.4.0
   axios: ^0.21.1
   bignumber.js: ^9.0.1
+  crypto-js: ^4.0.0
   eslint: ^7.21.0
   eslint-plugin-prettier: ^3.3.1
   eslint-plugin-vue: ^7.7.0
@@ -10312,6 +10323,7 @@ specifiers:
   vue-cli-plugin-vuetify: ^2.2.2
   vue-cookies: ^1.7.4
   vue-native-notification: ^1.1.1
+  vue-native-websocket: ^2.0.14
   vue-property-decorator: ^9.1.2
   vue-router: ^3.5.1
   vue-svg-loader: ^0.16.0

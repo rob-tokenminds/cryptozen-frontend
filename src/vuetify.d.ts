@@ -15,3 +15,11 @@ declare module "from-exponential" {
   function fromExponential(string: string): string;
   export = fromExponential;
 }
+
+declare module "vue-native-websocket";
+
+interface Window {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ethereum: any;
+}
+declare const window: Window;

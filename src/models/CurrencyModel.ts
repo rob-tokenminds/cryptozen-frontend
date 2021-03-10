@@ -1,5 +1,3 @@
-import { BalanceInterface } from "../static/balance";
-
 export default class CurrencyModel {
   address!: string;
   balance!: string;
