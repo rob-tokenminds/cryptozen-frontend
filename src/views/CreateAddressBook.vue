@@ -12,11 +12,7 @@
     <v-card flat class="d-flex justify-center" v-if="$route.query.id">
       <v-card flat width="1000" v-if="!success">
         <p class="text-center text-h6">
-          Hi {{ email }} ! One of our user with email {{ userEmail }} is asking
-          for your {{ currency }} address.
-        </p>
-        <p class="text-center text-h6 mt-n4">
-          One of our user with email {{ userEmail }} is asking for your
+          Hi ! One of our user with email {{ userEmail }} is asking for your
           {{ currency }} address.
         </p>
         <p class="text-center text-h6 mt-n4">
@@ -62,7 +58,7 @@ export default class CreateAddressBook extends Vue {
 
       if (id) {
         const addressBookData = await Fetcher.getAddressBook(id as string);
-        if (addressBookData.email) {
+        if (addressBookData.address) {
           this.success = true;
         }
         this.email = addressBookData.email;

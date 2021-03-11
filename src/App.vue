@@ -113,7 +113,7 @@
         <SendMoney :step="1" @update-dialog="updateSendMoneyDialog"></SendMoney>
       </v-card>
     </v-dialog>
-    <v-app-bar app color="white" flat>
+    <v-app-bar app color="white" flat :prominent="isMobile">
       <v-app-bar color="white" flat max-width="1120">
         <v-app-bar-nav-icon
           v-if="navIcon"
@@ -123,10 +123,21 @@
         <v-toolbar-title>{{
           $route.name !== "Balance" ? $route.name : balanceTitle
         }}</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-spacer></v-spacer>
+        <v-spacer v-if="!isMobile"></v-spacer>
 
-        <ProfileMenu :showBell="true" :isMobile="isMobile"></ProfileMenu>
+        <template v-if="isMobile" v-slot:extension>
+          <ProfileMenu
+            v-if="isMobile"
+            class="ml-n7"
+            :showBell="true"
+            :isMobile="isMobile"
+          ></ProfileMenu>
+        </template>
+        <ProfileMenu
+          v-if="!isMobile"
+          :showBell="true"
+          :isMobile="isMobile"
+        ></ProfileMenu>
       </v-app-bar>
     </v-app-bar>
 
@@ -193,9 +204,12 @@ export default class App extends Vue {
   };
   drawer = true;
 
-  isMobile = false;
   sendMoneyDialog = false;
   web3!: Web3;
+
+  get isMobile(): boolean {
+    return this.$vuetify.breakpoint.xsOnly;
+  }
 
   get balanceTitle(): string {
     const balances: BalanceInterface[] = this.$store.state.balances;
@@ -299,11 +313,15 @@ export default class App extends Vue {
             alert(`Token is expired, will relogin`);
 
             this.$cookies.remove("cryptozen_token");
-            await this.init();
+            this.$router.push("/");
+            location.reload();
+            // await this.init();
           }
         } else {
           alert(`Please sign the Signature Request`);
-          await this.init();
+          this.$router.push("/");
+          location.reload();
+          // await this.init();
         }
       }
     }
@@ -311,16 +329,15 @@ export default class App extends Vue {
 
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
-      this.setIsMobile();
       if (this.$route.path !== `/create-address-book`) await this.init();
     });
   }
 
-  setIsMobile(): void {
-    this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
-  }
+  // setIsMobile(): void {
+  //   this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+  //     navigator.userAgent
+  //   );
+  // }
 
   updateSendMoneyDialog(value: boolean): void {
     console.log("value", value);

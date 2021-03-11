@@ -27,6 +27,16 @@ export interface storeInterface {
     message: string;
     reconnectError: boolean;
   };
+  notifications: UserNotification[];
+}
+
+export interface UserNotification {
+  id: string;
+  user_id: string;
+  message: string;
+  url: string;
+  is_read: boolean;
+  created_at: string;
 }
 
 export interface createWalletInterface {
@@ -53,6 +63,7 @@ const store: StoreOptions<storeInterface> = {
       message: "",
       reconnectError: false,
     },
+    notifications: [],
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -189,6 +200,25 @@ const store: StoreOptions<storeInterface> = {
     setWeb3({ state }, web3: Web3) {
       state.web3 = web3;
     },
+    async getNotifications({ state }) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const notifications = await Fetcher.getNotifications(token);
+      for (const notification of notifications) {
+        if (!state.notifications.find((a) => notification.id === a.id))
+          state.notifications.push(notification);
+      }
+    },
+    async setNotificationIsRead({ state }, notification: UserNotification) {
+      await Fetcher.markAsRead(notification.id);
+      const index = state.notifications.findIndex(
+        (n) => n.id === notification.id
+      );
+      state.notifications.splice(
+        index,
+        1,
+        Object.assign(notification, { is_read: true })
+      );
+    },
   },
   getters: {
     getSelectedAddress(state) {
@@ -221,6 +251,9 @@ const store: StoreOptions<storeInterface> = {
     },
     getWeb3(state) {
       return state.web3;
+    },
+    getNotifications(state) {
+      return state.notifications;
     },
   },
 };

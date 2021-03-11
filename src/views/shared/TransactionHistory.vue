@@ -88,10 +88,21 @@
 </template>
 
 <script lang="ts">
+import { Fetcher } from "@/store/fetcher";
 import { Vue, Component, Prop } from "vue-property-decorator";
+import Web3 from "web3";
 
 @Component({ name: "TransactionHistory", components: {} })
 export default class TransactionHistory extends Vue {
   @Prop(String) label!: string;
+
+  async mounted(): Promise<void> {
+    const address = window.ethereum.selectedAddress;
+    // let lastBlock = await Fetcher.getLastBlockFromAddress(address);
+    // if (!lastBlock) {
+    //   lastBlock = Number(process.env.VUE_APP_LAST_BLOCK);
+    // }
+    const web3 = this.$store.getters["getWeb3"] as Web3;
+  }
 }
 </script>

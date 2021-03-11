@@ -1,64 +1,63 @@
 <template>
-  <v-item-group>
-    <v-row justify="end">
-      <v-col
-        align-self="center"
-        cols="4"
-        md="2"
-        sm="2"
-        lg="2"
-        xl="2"
-        v-if="syncedShowBell"
-      >
-        <v-menu nudge-left="250" nudge-bottom="50" v-if="syncedShowBell">
-          <template v-slot:activator="{ on, attrs }">
+  <v-list flat dense class="mt-n2" width="350" height="70">
+    <v-list-item flat dense>
+      <v-list-item-icon v-if="syncedShowBell">
+        <v-menu
+          nudge-bottom="50"
+          v-if="syncedShowBell"
+          v-model="notificationMenu"
+        >
+          <template v-slot:activator>
             <v-btn
+              class="mr-n10"
+              @click="getNotifications()"
+              :loading="getNotificationsLoading"
               v-if="syncedShowBell"
-              class="mt-1"
               icon
-              v-bind="attrs"
-              v-on="on"
               ><v-icon>{{ bellNotification }}</v-icon></v-btn
             >
           </template>
           <v-list>
-            <v-list-item>
+            <div v-if="notifications.length">
+              <div v-for="notification in notifications" :key="notification.id">
+                <v-list-item @click="toNotification(notification)">
+                  <v-list-item-title>
+                    <v-avatar
+                      class="mr-2"
+                      :color="notification.is_read ? `main` : `primary`"
+                      size="10"
+                    ></v-avatar>
+                    {{ notification.message }}</v-list-item-title
+                  >
+                </v-list-item>
+                <v-divider></v-divider>
+              </div>
+            </div>
+
+            <v-list-item v-else>
               <v-list-item-title>
                 <v-avatar class="mr-2" color="primary" size="10"></v-avatar>
-                Text of notifications !Important</v-list-item-title
-              >
-            </v-list-item>
-            <v-divider></v-divider>
-            <v-list-item>
-              <v-list-item-title>
-                <v-avatar class="mr-2" color="main" size="10"></v-avatar>Text of
-                notifications !Important</v-list-item-title
+                No notifications</v-list-item-title
               >
             </v-list-item>
           </v-list>
         </v-menu>
-      </v-col>
-      <v-col align-self="center" cols="3" md="2" sm="2" lg="2" xl="2">
-        <v-btn icon class="mt-1 mr-n5">
-          <v-avatar color="main" size="50" class="mr-4"></v-avatar
-        ></v-btn>
-      </v-col>
-      <v-col
-        align-self="center"
-        :cols="syncedShowBell ? 4 : 5"
-        v-if="isMobile === false"
-      >
-        <v-list-item-content class="mr-n10">
-          <v-list-item-title class="primary--text">{{
-            shortSelectedAddress
-          }}</v-list-item-title>
-          <v-list-item-subtitle> {{ myEmail }} </v-list-item-subtitle>
-        </v-list-item-content>
-      </v-col>
-      <v-col align-self="center" cols="3" md="2" sm="2" lg="2" xl="2">
+      </v-list-item-icon>
+
+      <v-list-item-avatar class="mr-2 ml-n2" v-if="!isMobile">
+        <v-avatar color="main" size="50"></v-avatar>
+      </v-list-item-avatar>
+
+      <v-list-item-content class="">
+        <v-list-item-title class="primary--text">{{
+          shortSelectedAddress
+        }}</v-list-item-title>
+        <v-list-item-subtitle> {{ myEmail }} </v-list-item-subtitle>
+      </v-list-item-content>
+      <v-list-item-icon>
         <v-menu offset-y>
           <template v-slot:activator="{ on, attrs }">
-            <v-btn class="mt-1 mr-6" icon v-bind="attrs" v-on="on">
+            <v-btn icon v-bind="attrs" v-on="on">
               <v-icon>mdi-chevron-down</v-icon>
             </v-btn>
           </template>
@@ -91,39 +90,36 @@
             </v-list-item>
           </v-list>
         </v-menu>
-
-        <v-dialog v-model="editYourEmail" width="500">
-          <v-card>
-            <v-container>
-              <v-text-field
-                label="Your Email"
-                v-model="yourEmail"
-              ></v-text-field>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" outlined @click="editYourEmail = false">
-                  Cancel
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  :loading="loadingUpdateEmail"
-                  @click="updateEmail()"
-                >
-                  Submit
-                </v-btn>
-              </v-card-actions>
-            </v-container>
-          </v-card>
-        </v-dialog>
-      </v-col>
-    </v-row>
-  </v-item-group>
+      </v-list-item-icon>
+      <v-dialog v-model="editYourEmail" width="500">
+        <v-card>
+          <v-container>
+            <v-text-field label="Your Email" v-model="yourEmail"></v-text-field>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="primary" outlined @click="editYourEmail = false">
+                Cancel
+              </v-btn>
+              <v-btn
+                color="primary"
+                :loading="loadingUpdateEmail"
+                @click="updateEmail()"
+              >
+                Submit
+              </v-btn>
+            </v-card-actions>
+          </v-container>
+        </v-card>
+      </v-dialog>
+    </v-list-item>
+  </v-list>
 </template>
 
 <script lang="ts">
 import { Fetcher } from "../../store/fetcher";
 import { Vue, Component, Prop, PropSync } from "vue-property-decorator";
-
+import { UserNotification } from "@/store";
+import { mdiBellAlertOutline } from "@mdi/js";
 @Component({ name: "ProfileMenu", components: {} })
 export default class ProfileMenu extends Vue {
   @Prop(Boolean) readonly isMobile: boolean = false;
@@ -144,6 +140,12 @@ export default class ProfileMenu extends Vue {
     return "";
   }
 
+  async toNotification(notification: UserNotification): Promise<void> {
+    this.$router.push(notification.url);
+    this.notificationMenu = false;
+    await this.$store.dispatch("setNotificationIsRead", notification);
+  }
+
   loadingUpdateEmail = false;
   async updateEmail(): Promise<void> {
     try {
@@ -157,25 +159,47 @@ export default class ProfileMenu extends Vue {
   }
 
   mounted(): void {
-    this.checkNotification();
+    this.$nextTick(() => {
+      this.checkNotification();
+      // this.getNotifications();
+    });
   }
+  notificationMenu = false;
+  getNotificationsLoading = false;
+  async getNotifications(): Promise<void> {
+    this.getNotificationsLoading = true;
+    await this.$store.dispatch("getNotifications");
+    this.getNotificationsLoading = false;
+    this.notificationMenu = true;
+  }
+
+  get notifications(): Promise<UserNotification> {
+    const notifications = this.$store.getters["getNotifications"];
+    console.log("notifications", notifications);
+    return notifications;
+  }
+
   newNotif = false;
   get bellNotification(): string {
     if (this.newNotif) {
-      return "mdi-bell-badge-outline";
+      return mdiBellAlertOutline;
     } else {
       return "mdi-bell-outline";
     }
   }
   async checkNotification(): Promise<void> {
-    let accessToken = this.$cookies.get("cryptozen_token");
-    if (accessToken) {
-      const newNotif = await Fetcher.checkNewNotification(accessToken);
+    const profile = this.$store.getters["getProfile"];
+    if (profile && profile.id) {
+      const newNotif = await Fetcher.checkNewNotification(profile.id);
+      console.log("newNotif", newNotif);
       if (newNotif) {
         this.newNotif = newNotif;
       }
+      await sleep(10000);
+    } else {
+      await sleep(5000);
     }
-    await sleep(5000);
+
     await this.checkNotification();
   }
 

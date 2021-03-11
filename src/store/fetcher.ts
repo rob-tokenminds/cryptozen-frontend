@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { UserNotification } from ".";
 const BACKEND_URL = process.env.VUE_APP_BACKEND_URL;
 export class Fetcher {
   private static async get(
@@ -165,11 +166,40 @@ export class Fetcher {
     return fetch.data;
   }
 
-  static async checkNewNotification(token: string): Promise<boolean> {
-    const fetch = await Fetcher.get(`/user/notification/new`, {
+  static async checkNewNotification(userId: string): Promise<boolean> {
+    const fetch = await Fetcher.get(`/user/notification/new/${userId}`);
+    return fetch.data;
+  }
+  static async getNotifications(token: string): Promise<UserNotification[]> {
+    const fetch = await Fetcher.get(`/user/notifications`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return fetch.data;
+  }
+
+  static async markAsRead(notificationId: string): Promise<boolean> {
+    const fetch = await Fetcher.get(
+      `/user/notification/mark-as-read/${notificationId}`
+    );
+    return fetch.data;
+  }
+
+  static async getLastBlockFromAddress(address: string): Promise<number> {
+    const fetch = await Fetcher.get(
+      `/user/transactions/get/last-block/${address.toLowerCase()}`
+    );
+    return Number(fetch.data ? fetch.data : 0);
+  }
+
+  static async setLastBlockToAddress(
+    address: string,
+    blockNumber: number
+  ): Promise<boolean> {
+    await Fetcher.post(`/user/transactions/set/last-block`, {
+      address,
+      blockNumber,
+    });
+    return true;
   }
 }
 
