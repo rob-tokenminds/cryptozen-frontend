@@ -88,21 +88,37 @@
 </template>
 
 <script lang="ts">
-import { Fetcher } from "@/store/fetcher";
+import { TransactionInterface } from "@/store/fetcher";
 import { Vue, Component, Prop } from "vue-property-decorator";
-import Web3 from "web3";
 
 @Component({ name: "TransactionHistory", components: {} })
 export default class TransactionHistory extends Vue {
   @Prop(String) label!: string;
 
-  async mounted(): Promise<void> {
-    const address = window.ethereum.selectedAddress;
-    // let lastBlock = await Fetcher.getLastBlockFromAddress(address);
-    // if (!lastBlock) {
-    //   lastBlock = Number(process.env.VUE_APP_LAST_BLOCK);
-    // }
-    const web3 = this.$store.getters["getWeb3"] as Web3;
+  get transactions(): TransactionInterface[] {
+    return this.$store.getters["getTransactions"];
   }
+
+  async mounted(): Promise<void> {
+    this.$nextTick(async () => {
+      await this.getTransactions();
+    });
+  }
+
+  async getTransactions(): Promise<void> {
+    if (window.ethereum.selectedAddress) {
+      await this.$store.dispatch(
+        "getTransactions",
+        window.ethereum.selectedAddress
+      );
+    } else {
+      await sleep(5000);
+      await this.getTransactions();
+    }
+  }
+}
+
+function sleep(ms: number): Promise<unknown> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 </script>

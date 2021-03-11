@@ -184,22 +184,14 @@ export class Fetcher {
     return fetch.data;
   }
 
-  static async getLastBlockFromAddress(address: string): Promise<number> {
-    const fetch = await Fetcher.get(
-      `/user/transactions/get/last-block/${address.toLowerCase()}`
-    );
-    return Number(fetch.data ? fetch.data : 0);
-  }
-
-  static async setLastBlockToAddress(
-    address: string,
-    blockNumber: number
-  ): Promise<boolean> {
-    await Fetcher.post(`/user/transactions/set/last-block`, {
-      address,
-      blockNumber,
+  static async getTransactions(
+    token: string,
+    address: string
+  ): Promise<TransactionInterface[]> {
+    const fetch = await Fetcher.get(`/user/transactions/${address}`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
-    return true;
+    return fetch.data;
   }
 }
 
@@ -253,6 +245,29 @@ export interface AddressBookInterface {
   currency: string;
   name: string;
   address: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface TransactionInterface {
+  id: string;
+  user_id: string;
+  user?: UserInterface;
+  blockNumber: number;
+  timestamp: number;
+  hash: string;
+  nonce: number;
+  from: string;
+  to: string;
+  value: number;
+  contractAddress?: string;
+  tokenName?: string;
+  tokenSymbol?: string;
+  tokenDecimal?: number;
+  transactionIndex?: number;
+  isError: boolean;
+  isToken: boolean;
+  isInternal: boolean;
   created_at: Date;
   updated_at: Date;
 }

@@ -4,7 +4,12 @@ import CurrencyModel from "../models/CurrencyModel";
 import Web3 from "web3";
 import Balances, { BalanceInterface } from "../static/balance";
 import ERC20Abi from "../static/erc20abi";
-import { Fetcher, ProfileInterface, AddressBookInterface } from "./fetcher";
+import {
+  Fetcher,
+  ProfileInterface,
+  AddressBookInterface,
+  TransactionInterface,
+} from "./fetcher";
 
 export interface updateCoinBalanceParams {
   web3: Web3;
@@ -28,6 +33,7 @@ export interface storeInterface {
     reconnectError: boolean;
   };
   notifications: UserNotification[];
+  transactions: TransactionInterface[];
 }
 
 export interface UserNotification {
@@ -64,6 +70,7 @@ const store: StoreOptions<storeInterface> = {
       reconnectError: false,
     },
     notifications: [],
+    transactions: [],
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -218,6 +225,20 @@ const store: StoreOptions<storeInterface> = {
         1,
         Object.assign(notification, { is_read: true })
       );
+    },
+    async getTransactions({ state }, address) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const transactions = await Fetcher.getTransactions(token, address);
+      if (transactions.length) {
+        for (const transaction of transactions) {
+          const checkTrx = state.transactions.findIndex(
+            (t) => t.id === transaction.id
+          );
+          if (!checkTrx) {
+            state.transactions.push(transaction);
+          }
+        }
+      }
     },
   },
   getters: {
