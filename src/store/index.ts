@@ -10,14 +10,12 @@ import {
   AddressBookInterface,
   TransactionInterface,
 } from "./fetcher";
+// import VuexPersistence from "vuex-persist";
 
 export interface updateCoinBalanceParams {
   web3: Web3;
   coin: BalanceInterface;
 }
-
-Vue.use(Vuex);
-
 export interface storeInterface {
   currencyBalances: CurrencyModel[];
   selectedAddress: string;
@@ -34,7 +32,13 @@ export interface storeInterface {
   };
   notifications: UserNotification[];
   transactions: TransactionInterface[];
+  isLogin: boolean;
 }
+// const vuexLocal = new VuexPersistence<storeInterface>({
+//   storage: window.localStorage,
+//   // reducer: (state) => ({ transactions: state.transactions }),
+// });
+Vue.use(Vuex);
 
 export interface UserNotification {
   id: string;
@@ -71,6 +75,7 @@ const store: StoreOptions<storeInterface> = {
     },
     notifications: [],
     transactions: [],
+    isLogin: false,
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -166,6 +171,7 @@ const store: StoreOptions<storeInterface> = {
       const profile = await Fetcher.getProfile(
         Vue.$cookies.get("cryptozen_token")
       );
+      state.isLogin = true;
       state.profile = profile;
 
       return profile;
@@ -226,12 +232,16 @@ const store: StoreOptions<storeInterface> = {
         Object.assign(notification, { is_read: true })
       );
     },
-    async getTransactions({ state }, address) {
+    async getTransactions({ state }, { address, currency }) {
       const token = Vue.$cookies.get("cryptozen_token");
-      const transactions = await Fetcher.getTransactions(token, address);
+      const transactions = await Fetcher.getTransactions(
+        token,
+        address,
+        currency
+      );
       if (transactions.length) {
         for (const transaction of transactions) {
-          const checkTrx = state.transactions.findIndex(
+          const checkTrx = state.transactions.find(
             (t) => t.id === transaction.id
           );
           if (!checkTrx) {
@@ -276,7 +286,11 @@ const store: StoreOptions<storeInterface> = {
     getNotifications(state) {
       return state.notifications;
     },
+    getTransactions(state) {
+      return state.transactions;
+    },
   },
+  // plugins: [vuexLocal.plugin],
 };
 
 export default new Vuex.Store(store);

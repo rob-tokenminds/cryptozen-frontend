@@ -23,6 +23,7 @@
     "from-exponential": "^1.0.0",
     "human-readable-numbers": "^0.9.5",
     "reflect-metadata": "^0.1.13",
+    "shleemy": "^1.2.2",
     "uuid": "^8.3.2",
     "validator": "^13.5.2",
     "vue": "^2.6.12",

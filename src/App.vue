@@ -281,6 +281,7 @@ export default class App extends Vue {
               address: window.ethereum.selectedAddress,
               signature,
             });
+            location.reload();
           }
         }
 
@@ -290,12 +291,14 @@ export default class App extends Vue {
             if (!profile) {
               throw new Error(`Token is expired, will relogin`);
             }
+            this.$store.state.isLogin = true;
             // this.$socket.send(
             //   JSON.stringify({
             //     event: "notification",
             //     data: { id: profile.id },
             //   })
             // );
+
             await this.$store.dispatch("updateChainId", this.web3);
             await this.$store.dispatch(
               "updateSelectedAddress",

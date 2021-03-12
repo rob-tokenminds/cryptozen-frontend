@@ -13,6 +13,7 @@ dependencies:
   from-exponential: 1.0.0
   human-readable-numbers: 0.9.5
   reflect-metadata: 0.1.13
+  shleemy: 1.2.2
   uuid: 8.3.2
   validator: 13.5.2
   vue: 2.6.12
@@ -8140,6 +8141,10 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-7gk3UZ9kOfPLIAbslLzyWeGiEqx9e3rxwZM0KE6EL8GlGwjym9Mrlx5/p33bWTu9YG6vcS4MBxYZDHYr5lr8BQ==
+  /shleemy/1.2.2:
+    dev: false
+    resolution:
+      integrity: sha512-w6/eQeTCTIqla+r9cxGK+fC10jv9JotaUWZsw2O/ncqkq6thcZMNI4S73dtoG4SXsYEaWJI3uzBRgEHt+rY6Vg==
   /signal-exit/3.0.3:
     dev: true
     resolution:
@@ -10312,6 +10317,7 @@ specifiers:
   reflect-metadata: ^0.1.13
   sass: ^1.32.8
   sass-loader: ^10.1.1
+  shleemy: ^1.2.2
   stylus: ^0.54.8
   stylus-loader: ^3.0.2
   ts-node: ^9.1.1

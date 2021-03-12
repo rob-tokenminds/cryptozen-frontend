@@ -118,77 +118,88 @@
               <v-card flat>
                 <v-card-text>Select Recipient</v-card-text>
               </v-card>
+              <v-card flat class="mx-auto" width="800">
+                <v-expansion-panels class="mb-2">
+                  <v-expansion-panel @click="getAddressBooks()">
+                    <v-expansion-panel-header>
+                      <v-list-item>
+                        <v-list-item-avatar tile>
+                          <v-icon large color="primary"
+                            >mdi-home-outline</v-icon
+                          >
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title class="primary--text text-h6"
+                            >Address Book</v-list-item-title
+                          >
+                        </v-list-item-content>
+                      </v-list-item></v-expansion-panel-header
+                    >
+                    <v-expansion-panel-content>
+                      <v-card flat :loading="loadingAddressBooks">
+                        <v-container>
+                          <!-- <v-skeleton-loader
+                            v-if="loadingAddressBooks"
+                            type="card"
+                          ></v-skeleton-loader> -->
+                          <v-card
+                            v-for="addressBook in addressBooks"
+                            :key="addressBook.id"
+                          ></v-card>
+                        </v-container>
+                      </v-card>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                </v-expansion-panels>
 
-              <v-card elevation="2" class="mx-auto" height="100" width="800">
+                <v-expansion-panels class="mb-2">
+                  <v-expansion-panel>
+                    <v-expansion-panel-header>
+                      <v-list-item>
+                        <v-list-item-avatar tile>
+                          <v-icon large color="primary"
+                            >mdi-wallet-outline</v-icon
+                          >
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title class="primary--text text-h6"
+                            >Your Wallet</v-list-item-title
+                          >
+                        </v-list-item-content>
+                      </v-list-item></v-expansion-panel-header
+                    >
+                    <v-expansion-panel-content>
+                      Some content
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                </v-expansion-panels>
+
+                <!-- <v-card elevation="2" class="mx-auto" height="100" width="800">
                 <v-card-text @click="e1 = 4">
-                  <v-list-item>
-                    <v-list-item-avatar tile>
-                      <v-icon large color="primary">mdi-home-outline</v-icon>
-                    </v-list-item-avatar>
-                    <v-list-item-content>
-                      <v-list-item-title class="primary--text text-h6"
-                        >Address Book</v-list-item-title
-                      >
-                    </v-list-item-content>
-
-                    <v-spacer></v-spacer> <v-spacer></v-spacer>
-                    <v-list-item-content>
-                      <v-icon>mdi-chevron-right</v-icon>
-                    </v-list-item-content>
-                  </v-list-item>
+                
                 </v-card-text>
+              </v-card> -->
+
+                <v-expansion-panels class="mb-2">
+                  <v-expansion-panel>
+                    <v-expansion-panel-header>
+                      <v-list-item>
+                        <v-list-item-avatar tile>
+                          <v-icon large color="primary">mdi-plus</v-icon>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title class="primary--text text-h6"
+                            >New Recipient</v-list-item-title
+                          >
+                        </v-list-item-content>
+                      </v-list-item></v-expansion-panel-header
+                    >
+                    <v-expansion-panel-content>
+                      Some content
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                </v-expansion-panels>
               </v-card>
-
-              <v-card
-                elevation="2"
-                class="mx-auto mt-2"
-                height="100"
-                width="800"
-              >
-                <v-card-text @click="e1 = 4">
-                  <v-list-item>
-                    <v-list-item-avatar tile>
-                      <v-icon large color="primary">mdi-wallet-outline</v-icon>
-                    </v-list-item-avatar>
-                    <v-list-item-content>
-                      <v-list-item-title class="primary--text text-h6"
-                        >Your Wallet</v-list-item-title
-                      >
-                    </v-list-item-content>
-
-                    <v-spacer></v-spacer> <v-spacer></v-spacer>
-                    <v-list-item-content>
-                      <v-icon>mdi-chevron-right</v-icon>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-card-text>
-              </v-card>
-
-              <v-card
-                elevation="2"
-                class="mx-auto mt-2"
-                height="100"
-                width="800"
-              >
-                <v-card-text @click="e1 = 4">
-                  <v-list-item>
-                    <v-list-item-avatar tile>
-                      <v-icon large color="primary">mdi-plus</v-icon>
-                    </v-list-item-avatar>
-                    <v-list-item-content>
-                      <v-list-item-title class="primary--text text-h6"
-                        >New Recipient</v-list-item-title
-                      >
-                    </v-list-item-content>
-
-                    <v-spacer></v-spacer> <v-spacer></v-spacer>
-                    <v-list-item-content>
-                      <v-icon>mdi-chevron-right</v-icon>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-card-text>
-              </v-card>
-
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="primary" outlined @click="e1 = 2"> Back </v-btn>
@@ -247,6 +258,7 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import ProfileMenu from "./shared/ProfileMenu.vue";
 import SelectAmount from "./shared/SelectAmount.vue";
 import Balances, { BalanceInterface } from "../static/balance";
+import { AddressBookInterface } from "@/store/fetcher";
 @Component({ name: "SendMoney", components: { ProfileMenu, SelectAmount } })
 export default class SendMoney extends Vue {
   @Prop({ type: Number }) readonly step!: number;
@@ -255,6 +267,23 @@ export default class SendMoney extends Vue {
   @Watch("selectedCurrencySync")
   watchSelectedCurrencySync(value: BalanceInterface): void {
     this.selectedCurrency = value;
+  }
+
+  get addressBooks(): AddressBookInterface[] {
+    return this.$store.getters["getAddressBooks"];
+  }
+  loadingAddressBooks = false;
+  // @Watch("e1")
+  // async watchE1(value: number): Promise<void> {
+  //   if (value === 3) {
+
+  //   }
+  // }
+
+  async getAddressBooks(): Promise<void> {
+    this.loadingAddressBooks = true;
+    await this.$store.dispatch("getAddressBookList");
+    this.loadingAddressBooks = false;
   }
 
   @Watch("step")

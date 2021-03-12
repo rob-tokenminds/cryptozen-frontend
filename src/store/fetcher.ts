@@ -186,10 +186,12 @@ export class Fetcher {
 
   static async getTransactions(
     token: string,
-    address: string
+    address: string,
+    currency = ""
   ): Promise<TransactionInterface[]> {
     const fetch = await Fetcher.get(`/user/transactions/${address}`, {
       headers: { Authorization: `Bearer ${token}` },
+      params: { currency },
     });
     return fetch.data;
   }
@@ -259,7 +261,7 @@ export interface TransactionInterface {
   nonce: number;
   from: string;
   to: string;
-  value: number;
+  value: string;
   contractAddress?: string;
   tokenName?: string;
   tokenSymbol?: string;

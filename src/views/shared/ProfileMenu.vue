@@ -7,13 +7,15 @@
           v-if="syncedShowBell"
           v-model="notificationMenu"
         >
-          <template v-slot:activator>
+          <template v-slot:activator="{ on, attrs }">
             <v-btn
               class="mr-n10"
               @click="getNotifications()"
               :loading="getNotificationsLoading"
               v-if="syncedShowBell"
               icon
+              v-bind="attrs"
+              v-on="on"
               ><v-icon>{{ bellNotification }}</v-icon></v-btn
             >
           </template>
@@ -65,7 +67,7 @@
             <v-list-item @click="editYourEmail = true">
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Edit Your email</v-list-item-title
+                  >Edit Your profile</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
