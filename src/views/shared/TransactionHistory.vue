@@ -188,6 +188,9 @@ export default class TransactionHistory extends Vue {
     this.$nextTick(async () => {
       if (this.$store.state.isLogin) {
         await this.getTransactions();
+      } else {
+        await sleep(5000);
+        await this.getTransactions();
       }
     });
   }
