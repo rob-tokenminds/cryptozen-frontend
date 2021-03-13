@@ -175,6 +175,7 @@ export default class AddressBook extends Vue {
         currency: this.addAWalletCurrency.toLowerCase(),
         email: null,
         sendEmail: false,
+        type: "wallet",
       });
       this.createWalletLoading = false;
       this.addAWallet = false;
@@ -244,13 +245,9 @@ export default class AddressBook extends Vue {
           email,
           plainEmail: this.addARecipientEmail ? this.addARecipientEmail : null,
           sendEmail: !this.addARecipientWalletAddress,
+          type: "recipient",
         });
-        this.createWalletLoading = false;
-        this.addARecipient = false;
-        this.addARecipientName = "";
-        this.addARecipientWalletAddress = "";
-        this.addARecipientCurrency = "";
-        this.addARecipientEmail = "";
+
         if (!this.addARecipientWalletAddress) {
           alert(
             "Recipient has been successfully added. The account holder will be notified by email to add the address"
@@ -258,6 +255,12 @@ export default class AddressBook extends Vue {
         } else {
           alert("Recipient has been successfully added");
         }
+        this.createWalletLoading = false;
+        this.addARecipient = false;
+        this.addARecipientName = "";
+        this.addARecipientWalletAddress = "";
+        this.addARecipientCurrency = "";
+        this.addARecipientEmail = "";
       }
     } catch (e) {
       // console.log("e", e);

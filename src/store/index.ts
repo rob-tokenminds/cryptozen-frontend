@@ -56,6 +56,7 @@ export interface createWalletInterface {
   email: string;
   plainEmail: string;
   sendEmail: boolean;
+  type: string;
 }
 
 const store: StoreOptions<storeInterface> = {
@@ -197,7 +198,8 @@ const store: StoreOptions<storeInterface> = {
         params.currency,
         params.email,
         params.sendEmail,
-        params.plainEmail
+        params.plainEmail,
+        params.type
       );
       state.addressBooks.push(addressBookData);
       return addressBookData;

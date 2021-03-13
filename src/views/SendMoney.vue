@@ -142,10 +142,31 @@
                             v-if="loadingAddressBooks"
                             type="card"
                           ></v-skeleton-loader> -->
+
                           <v-card
-                            v-for="addressBook in addressBooks"
+                            v-for="addressBook of addressBooks"
                             :key="addressBook.id"
-                          ></v-card>
+                            class="mb-2"
+                            @click="
+                              selectedAddress = addressBook;
+                              e1 = 4;
+                            "
+                          >
+                            <v-list-item class="">
+                              <v-list-item-avatar size="60">
+                                <v-avatar color="main"></v-avatar>
+                              </v-list-item-avatar>
+                              <v-list-item-content>
+                                <v-list-item-title class="primary--text ma-2"
+                                  >{{ addressBook.currency.toUpperCase() }} |
+                                  {{ addressBook.name }}</v-list-item-title
+                                >
+                                <v-list-item-subtitle class="ma-2"
+                                  >{{ addressBook.address }}
+                                </v-list-item-subtitle>
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-card>
                         </v-container>
                       </v-card>
                     </v-expansion-panel-content>
@@ -153,7 +174,7 @@
                 </v-expansion-panels>
 
                 <v-expansion-panels class="mb-2">
-                  <v-expansion-panel>
+                  <v-expansion-panel @click="getAddressBooks()">
                     <v-expansion-panel-header>
                       <v-list-item>
                         <v-list-item-avatar tile>
@@ -169,7 +190,26 @@
                       </v-list-item></v-expansion-panel-header
                     >
                     <v-expansion-panel-content>
-                      Some content
+                      <v-card
+                        v-for="addressBook of addressBooksWallet"
+                        :key="addressBook.id"
+                        class="mb-2"
+                      >
+                        <v-list-item class="">
+                          <v-list-item-avatar size="60">
+                            <v-avatar color="main"></v-avatar>
+                          </v-list-item-avatar>
+                          <v-list-item-content>
+                            <v-list-item-title class="primary--text ma-2"
+                              >{{ addressBook.currency.toUpperCase() }} |
+                              {{ addressBook.name }}</v-list-item-title
+                            >
+                            <v-list-item-subtitle class="ma-2"
+                              >{{ addressBook.address }}
+                            </v-list-item-subtitle>
+                          </v-list-item-content>
+                        </v-list-item>
+                      </v-card>
                     </v-expansion-panel-content>
                   </v-expansion-panel>
                 </v-expansion-panels>
@@ -195,7 +235,46 @@
                       </v-list-item></v-expansion-panel-header
                     >
                     <v-expansion-panel-content>
-                      Some content
+                      <v-card>
+                        <v-container>
+                          <v-container>
+                            <v-text-field
+                              v-model="addARecipientName"
+                              label="Wallet Name"
+                            ></v-text-field>
+
+                            <v-text-field
+                              v-model="addARecipientEmail"
+                              label="Account Holder email address"
+                            ></v-text-field>
+                            <v-text-field
+                              v-model="addARecipientWalletAddress"
+                              label="Wallet Address"
+                            ></v-text-field>
+                          </v-container>
+
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+
+                            <v-btn
+                              color="secondary"
+                              outlined
+                              @click="addARecipient = false"
+                            >
+                              Cancel
+                            </v-btn>
+
+                            <v-btn
+                              color="secondary"
+                              @click="createRecipient()"
+                              :loading="createWalletLoading"
+                            >
+                              Add a Recipient
+                            </v-btn>
+                            <v-spacer></v-spacer>
+                          </v-card-actions>
+                        </v-container>
+                      </v-card>
                     </v-expansion-panel-content>
                   </v-expansion-panel>
                 </v-expansion-panels>
@@ -224,17 +303,18 @@
                 @prev-step="e1 = 3"
               ></SelectAmount>
               <p>To</p>
-              <v-card class="mb-2">
+              <v-card class="mb-2" v-if="selectedAddress">
                 <v-list-item class="">
                   <v-list-item-avatar size="60">
                     <v-avatar color="main"></v-avatar>
                   </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title class="primary--text ma-2"
-                      >Username</v-list-item-title
+                      >{{ selectedAddress.currency.toUpperCase() }} |
+                      {{ selectedAddress.name }}</v-list-item-title
                     >
                     <v-list-item-subtitle class="ma-2"
-                      >0xabcdefgeahskehelhske
+                      >{{ selectedAddress.address }}
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -259,14 +339,113 @@ import ProfileMenu from "./shared/ProfileMenu.vue";
 import SelectAmount from "./shared/SelectAmount.vue";
 import Balances, { BalanceInterface } from "../static/balance";
 import { AddressBookInterface } from "@/store/fetcher";
+import Web3 from "web3";
+import { AbstractProvider } from "web3-core";
+import CryptoJS from "crypto-js";
 @Component({ name: "SendMoney", components: { ProfileMenu, SelectAmount } })
 export default class SendMoney extends Vue {
   @Prop({ type: Number }) readonly step!: number;
   @Prop({ type: Object }) readonly currentSelected!: BalanceInterface;
 
+  addARecipientEmail = "";
+  addARecipientWalletAddress = "";
+  addARecipientName = "";
+  createWalletLoading = false;
+  selectedAddress: AddressBookInterface | "" = "";
+
+  async createRecipient(): Promise<void> {
+    try {
+      this.createWalletLoading = true;
+      let allowSubmit = true;
+      let signature = null;
+      if (this.selectedCurrency) {
+        if (this.addARecipientEmail) {
+          const web3 = this.$store.getters["getWeb3"] as Web3;
+          if (web3) {
+            const message = `We are requesting your signature again to encrypt the email address. Your signature won't be saved on the server`;
+            const params = [message, window.ethereum.selectedAddress];
+            const currentProvider = web3.currentProvider;
+            signature = await new Promise((resolve, reject) => {
+              (currentProvider as AbstractProvider).sendAsync(
+                {
+                  jsonrpc: "1",
+                  method: "personal_sign",
+                  params,
+                },
+                (error, result) => {
+                  if (error) {
+                    resolve(false);
+                  } else {
+                    resolve(result?.result);
+                  }
+                }
+              );
+            });
+
+            if (!signature) {
+              alert(`Please sign the signature request`);
+              allowSubmit = false;
+              this.createWalletLoading = false;
+            }
+          } else {
+            allowSubmit = false;
+            alert(`Cannot initialize Web3.js`);
+          }
+        }
+        if (allowSubmit) {
+          let email = null;
+          if (signature) {
+            email = CryptoJS.AES.encrypt(
+              this.addARecipientEmail,
+              signature as string
+            ).toString();
+          }
+          await this.$store.dispatch("createWallet", {
+            name: this.addARecipientName,
+            address: this.addARecipientWalletAddress
+              ? this.addARecipientWalletAddress
+              : null,
+            currency: this.selectedCurrency.value.toLowerCase(),
+            email,
+            plainEmail: this.addARecipientEmail
+              ? this.addARecipientEmail
+              : null,
+            sendEmail: !this.addARecipientWalletAddress,
+            type: "recipient",
+          });
+          this.createWalletLoading = false;
+
+          if (!this.addARecipientWalletAddress) {
+            alert(
+              "Recipient has been successfully added. The account holder will be notified by email to add the address"
+            );
+          } else {
+            alert("Recipient has been successfully added");
+          }
+          this.addARecipientName = "";
+          this.addARecipientWalletAddress = "";
+          this.selectedCurrency = "";
+          this.addARecipientEmail = "";
+        }
+      } else {
+        alert(`no selected Currency`);
+      }
+    } catch (e) {
+      // console.log("e", e);
+      // alert(e.message);
+      this.createWalletLoading = false;
+    }
+  }
+
   @Watch("selectedCurrencySync")
   watchSelectedCurrencySync(value: BalanceInterface): void {
     this.selectedCurrency = value;
+  }
+
+  get addressBooksWallet(): AddressBookInterface[] {
+    return this.$store.getters["getAddressBooks"].filter(
+      (a: AddressBookInterface) => a.type === "wallet"
+    );
   }
 
   get addressBooks(): AddressBookInterface[] {
