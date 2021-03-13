@@ -186,19 +186,14 @@ export default class TransactionHistory extends Vue {
 
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
-      if (this.$store.state.isLogin) {
-        await this.getTransactions();
-      } else {
-        await sleep(5000);
-        await this.getTransactions();
-      }
+      await this.getTransactions();
     });
   }
 
   async getTransactions(): Promise<void> {
     try {
       this.loadingTransactions = true;
-      if (window.ethereum.selectedAddress) {
+      if (window.ethereum.selectedAddress && this.$store.state.isLogin) {
         await this.$store.dispatch("getAddressBookList");
         await this.$store.dispatch("getTransactions", {
           address: window.ethereum.selectedAddress,
