@@ -59,6 +59,13 @@ export interface createWalletInterface {
   type: string;
 }
 
+export interface updateWalletInterface {
+  name: string;
+  address: string;
+  currency: string;
+  id: string;
+}
+
 const store: StoreOptions<storeInterface> = {
   state: {
     currencyBalances: [],
@@ -203,6 +210,28 @@ const store: StoreOptions<storeInterface> = {
       );
       state.addressBooks.push(addressBookData);
       return addressBookData;
+    },
+    async updateWallet({ state }, params: updateWalletInterface) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const addressBook = await Fetcher.updateWallet(
+        token,
+        params.id,
+        params.name,
+        params.address,
+        params.currency
+      );
+      const addressBookDataIndex = state.addressBooks.findIndex(
+        (a) => a.id === params.id
+      );
+      state.addressBooks.splice(addressBookDataIndex, 1, addressBook);
+    },
+    async deleteWallet({ state }, id: string) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      await Fetcher.deleteWallet(token, id);
+      const addressBookDataIndex = state.addressBooks.findIndex(
+        (a) => a.id === id
+      );
+      state.addressBooks.splice(addressBookDataIndex, 1);
     },
     async getAddressBookList({ state }) {
       const token = Vue.$cookies.get("cryptozen_token");

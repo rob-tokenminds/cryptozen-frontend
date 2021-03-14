@@ -143,6 +143,38 @@ export class Fetcher {
     return fetch.data;
   }
 
+  static async updateWallet(
+    token: string,
+    id: string,
+    name: string,
+    address: string,
+    currency: string
+  ): Promise<AddressBookInterface> {
+    const fetch = await Fetcher.post(
+      `/user/address-book/update`,
+      {
+        id,
+        name,
+        address,
+        currency,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return fetch.data;
+  }
+
+  static async deleteWallet(
+    token: string,
+    id: string
+  ): Promise<AddressBookInterface> {
+    const fetch = await Fetcher.get(
+      `/user/address-book/delete/${id}`,
+
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return fetch.data;
+  }
+
   static async getAddressBookList(
     token: string
   ): Promise<AddressBookInterface[]> {

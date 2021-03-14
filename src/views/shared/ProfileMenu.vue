@@ -3,6 +3,8 @@
     <v-list-item flat dense>
       <v-list-item-icon v-if="syncedShowBell">
         <v-menu
+          bottom
+          left
           nudge-bottom="50"
           v-if="syncedShowBell"
           v-model="notificationMenu"
