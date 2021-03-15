@@ -152,8 +152,8 @@ export default class TransactionHistory extends Vue {
 
   getStatus(transaction: TransactionInterface): string {
     if (
-      transaction.to.toLowerCase() ===
-      window.ethereum.selectedAddress.toLowerCase()
+      transaction.to?.toLowerCase() ===
+      window.ethereum.selectedAddress?.toLowerCase()
     ) {
       return "Received";
     } else {
@@ -167,13 +167,14 @@ export default class TransactionHistory extends Vue {
     ];
 
     const addressBook = addressBooks.find(
-      (a) => a.address.toLowerCase() === address.toLowerCase()
+      (a) => a.address?.toLowerCase() === address?.toLowerCase()
     );
     if (addressBook) {
       return addressBook.name;
     } else {
       if (
-        address.toLowerCase() === window.ethereum.selectedAddress.toLowerCase()
+        address?.toLowerCase() ===
+        window.ethereum.selectedAddress?.toLowerCase()
       )
         return "Current address";
       else return address;
