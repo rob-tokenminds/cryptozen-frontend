@@ -229,6 +229,18 @@ export class Fetcher {
     });
     return fetch.data;
   }
+
+  static async getSyncTransactions(
+    token: string,
+    address: string,
+    currency = ""
+  ): Promise<TransactionInterface[]> {
+    const fetch = await Fetcher.get(`/user/transactions/sync/${address}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { currency },
+    });
+    return fetch.data;
+  }
 }
 
 export interface AddressInterface {

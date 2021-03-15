@@ -3,8 +3,16 @@
     <v-card flat max-width="1100" class="mb-2">
       <v-card-subtitle class="primary--text">All Activity</v-card-subtitle>
     </v-card>
+
     <v-skeleton-loader
       max-width="1100"
+      class="mb-2"
+      v-if="loadingSyncTransactions"
+      type="expansion-panels, expansion-panel-header, list-item, ist-item-avatar, list-item-two-line"
+    ></v-skeleton-loader>
+    <v-skeleton-loader
+      max-width="1100"
+      class="mb-2"
       v-if="loadingTransactions"
       type="expansion-panels, expansion-panel-header, list-item, ist-item-avatar, list-item-two-line"
     ></v-skeleton-loader>
@@ -187,7 +195,27 @@ export default class TransactionHistory extends Vue {
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
       await this.getTransactions();
+      this.getSyncTransactions();
     });
+  }
+  loadingSyncTransactions = false;
+  async getSyncTransactions(): Promise<void> {
+    try {
+      this.loadingSyncTransactions = true;
+      if (window.ethereum.selectedAddress && this.$store.state.isLogin) {
+        await this.$store.dispatch("getSyncTransactions", {
+          address: window.ethereum.selectedAddress,
+          // currency: this.$route.params.coin ? this.$route.params.coin : "",
+          currency: "",
+        });
+      } else {
+        await sleep(5000);
+        await this.getTransactions();
+      }
+      this.loadingSyncTransactions = false;
+    } catch (e) {
+      this.loadingSyncTransactions = false;
+    }
   }
 
   async getTransactions(): Promise<void> {

@@ -281,6 +281,24 @@ const store: StoreOptions<storeInterface> = {
         }
       }
     },
+    async getSyncTransactions({ state }, { address, currency }) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const transactions = await Fetcher.getSyncTransactions(
+        token,
+        address,
+        currency
+      );
+      if (transactions.length) {
+        for (const transaction of transactions) {
+          const checkTrx = state.transactions.find(
+            (t) => t.id === transaction.id
+          );
+          if (!checkTrx) {
+            state.transactions.push(transaction);
+          }
+        }
+      }
+    },
   },
   getters: {
     getSelectedAddress(state) {
