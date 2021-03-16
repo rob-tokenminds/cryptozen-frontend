@@ -94,7 +94,7 @@
 
         <v-stepper-content step="2">
           <p class="text-center primary--text text-h5">
-            You are sending on behalf of Bruce Wayne
+            You are sending on behalf of {{ selectedEthereumAddress }}
           </p>
           <v-card flat class="d-flex justify-center">
             <SelectAmount
@@ -236,7 +236,7 @@
                     >
                     <v-expansion-panel-content>
                       <v-card>
-                        <v-container>
+                        <v-container v-if="!newAddressBookSubmitted">
                           <v-container>
                             <v-text-field
                               v-model="addARecipientName"
@@ -274,6 +274,42 @@
                             <v-spacer></v-spacer>
                           </v-card-actions>
                         </v-container>
+
+                        <v-container v-else-if="!newSubmittedAddressBook">
+                          <v-card-text
+                            >New address has been submitted, please wait until
+                            recipient submit the address</v-card-text
+                          >
+                        </v-container>
+
+                        <v-card
+                          class="mb-2"
+                          v-if="newSubmittedAddressBook"
+                          @click="
+                            selectedAddress = newSubmittedAddressBook;
+                            e1 = 4;
+                          "
+                        >
+                          <v-list-item class="">
+                            <v-list-item-avatar size="60">
+                              <v-avatar color="main"></v-avatar>
+                            </v-list-item-avatar>
+                            <v-list-item-content>
+                              <v-list-item-title class="primary--text ma-2"
+                                >{{
+                                  newSubmittedAddressBook.currency.toUpperCase()
+                                }}
+                                |
+                                {{
+                                  newSubmittedAddressBook.name
+                                }}</v-list-item-title
+                              >
+                              <v-list-item-subtitle class="ma-2"
+                                >{{ newSubmittedAddressBook.address }}
+                              </v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-card>
                       </v-card>
                     </v-expansion-panel-content>
                   </v-expansion-panel>
@@ -338,20 +374,31 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import ProfileMenu from "./shared/ProfileMenu.vue";
 import SelectAmount from "./shared/SelectAmount.vue";
 import Balances, { BalanceInterface } from "../static/balance";
-import { AddressBookInterface } from "@/store/fetcher";
+import { AddressBookInterface, Fetcher } from "@/store/fetcher";
 import Web3 from "web3";
 import { AbstractProvider } from "web3-core";
 import CryptoJS from "crypto-js";
+import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
+
+const EventSource = NativeEventSource || EventSourcePolyfill;
+// OR: may also need to set as global property
+global.EventSource = NativeEventSource || EventSourcePolyfill;
 @Component({ name: "SendMoney", components: { ProfileMenu, SelectAmount } })
 export default class SendMoney extends Vue {
   @Prop({ type: Number }) readonly step!: number;
   @Prop({ type: Object }) readonly currentSelected!: BalanceInterface;
+
+  get selectedEthereumAddress(): string {
+    return window.ethereum.selectedAddress;
+  }
 
   addARecipientEmail = "";
   addARecipientWalletAddress = "";
   addARecipientName = "";
   createWalletLoading = false;
   selectedAddress: AddressBookInterface | "" = "";
+  newSubmittedAddressBook: AddressBookInterface | "" = "";
+  newAddressBookSubmitted = false;
 
   async createRecipient(): Promise<void> {
     try {
@@ -365,7 +412,7 @@ export default class SendMoney extends Vue {
             const message = `We are requesting your signature again to encrypt the email address. Your signature won't be saved on the server`;
             const params = [message, window.ethereum.selectedAddress];
             const currentProvider = web3.currentProvider;
-            signature = await new Promise((resolve, reject) => {
+            signature = await new Promise((resolve) => {
               (currentProvider as AbstractProvider).sendAsync(
                 {
                   jsonrpc: "1",
@@ -400,7 +447,7 @@ export default class SendMoney extends Vue {
               signature as string
             ).toString();
           }
-          await this.$store.dispatch("createWallet", {
+          const addressBookData = await this.$store.dispatch("createWallet", {
             name: this.addARecipientName,
             address: this.addARecipientWalletAddress
               ? this.addARecipientWalletAddress
@@ -414,12 +461,14 @@ export default class SendMoney extends Vue {
             type: "recipient",
           });
           this.createWalletLoading = false;
-
+          this.newAddressBookSubmitted = true;
           if (!this.addARecipientWalletAddress) {
+            this.checkSubmittedAddresBook(addressBookData.id);
             alert(
               "Recipient has been successfully added. The account holder will be notified by email to add the address"
             );
           } else {
+            this.newSubmittedAddressBook = addressBookData;
             alert("Recipient has been successfully added");
           }
           this.addARecipientName = "";
@@ -434,6 +483,18 @@ export default class SendMoney extends Vue {
       // console.log("e", e);
       // alert(e.message);
       this.createWalletLoading = false;
+    }
+  }
+
+  async checkSubmittedAddresBook(id: string): Promise<void> {
+    const token = Vue.$cookies.get("cryptozen_token");
+    const addressBookData = await Fetcher.getSubmittedAddressBook(token, id);
+    console.log("addressBookData", addressBookData);
+    if (addressBookData) {
+      this.newSubmittedAddressBook = addressBookData;
+    } else {
+      await sleep(30000);
+      await this.checkSubmittedAddresBook(id);
     }
   }
 
@@ -488,21 +549,8 @@ export default class SendMoney extends Vue {
     this.swapAmount = Number(value);
   }
 }
-</script>
 
-<style>
-.line-lurus {
-  /* Line 2 */
-
-  position: absolute;
-  left: 6.17%;
-  right: 75.31%;
-  top: 98%;
-  bottom: 2%;
-
-  /* Main color */
-
-  border: 2px solid #005672;
-  transform: rotate(90deg);
+function sleep(ms: number): Promise<unknown> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
-</style>
+</script>

@@ -12,6 +12,19 @@ import "./styles/main.scss";
 import VueNativeNotification from "vue-native-notification";
 import VueCookies from "vue-cookies";
 // import VueNativeSock from "vue-native-websocket";
+// import VueSocketIO from "vue-socket.io";
+
+// Vue.use(
+//   new VueSocketIO({
+//     debug: true,
+//     connection: `${process.env.VUE_APP_WEBSOCKET_URL}`,
+//     vuex: {
+//       store,
+//       actionPrefix: "SOCKET_",
+//       mutationPrefix: "SOCKET_",
+//     },
+//   })
+// );
 
 Vue.use(VueCookies);
 Vue.$cookies.config("1d");

@@ -218,6 +218,11 @@ export class Fetcher {
     return fetch.data;
   }
 
+  static async clearNotifications(user_id: string): Promise<boolean> {
+    const fetch = await Fetcher.get(`/user/notification/clear/${user_id}`);
+    return fetch.data;
+  }
+
   static async getTransactions(
     token: string,
     address: string,
@@ -238,6 +243,16 @@ export class Fetcher {
     const fetch = await Fetcher.get(`/user/transactions/sync/${address}`, {
       headers: { Authorization: `Bearer ${token}` },
       params: { currency },
+    });
+    return fetch.data;
+  }
+
+  static async getSubmittedAddressBook(
+    token: string,
+    id: string
+  ): Promise<AddressBookInterface> {
+    const fetch = await Fetcher.get(`/user/address-book/submitted/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
     return fetch.data;
   }

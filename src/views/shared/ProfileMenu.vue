@@ -124,6 +124,11 @@ import { Fetcher } from "../../store/fetcher";
 import { Vue, Component, Prop, PropSync } from "vue-property-decorator";
 import { UserNotification } from "@/store";
 import { mdiBellAlertOutline } from "@mdi/js";
+import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
+
+const EventSource = NativeEventSource || EventSourcePolyfill;
+// OR: may also need to set as global property
+global.EventSource = NativeEventSource || EventSourcePolyfill;
 @Component({ name: "ProfileMenu", components: {} })
 export default class ProfileMenu extends Vue {
   @Prop(Boolean) readonly isMobile: boolean = false;
@@ -175,6 +180,9 @@ export default class ProfileMenu extends Vue {
     await this.$store.dispatch("getNotifications");
     this.getNotificationsLoading = false;
     this.notificationMenu = true;
+    this.newNotif = false;
+    const profile = this.$store.getters["getProfile"];
+    await this.$store.dispatch("clearNotifications", profile.id);
   }
 
   get notifications(): Promise<UserNotification> {
@@ -193,18 +201,44 @@ export default class ProfileMenu extends Vue {
   }
   async checkNotification(): Promise<void> {
     const profile = this.$store.getters["getProfile"];
-    if (profile && profile.id) {
+    if (this.$store.state.isLogin && profile && profile.id) {
       const newNotif = await Fetcher.checkNewNotification(profile.id);
       console.log("newNotif", newNotif);
       if (newNotif) {
         this.newNotif = newNotif;
       }
       await sleep(10000);
+      this.checkNotification();
     } else {
       await sleep(5000);
+      this.checkNotification();
     }
 
-    await this.checkNotification();
+    // await this.checkNotification();
+
+    // if (this.$store.state.isLogin) {
+    //   const profile = this.$store.getters["getProfile"];
+    //   const header = {
+    //     headers: {
+    //       Authorization: "Bearer " + Vue.$cookies.get("cryptozen_token"),
+    //     },
+    //     params: { id: profile.id },
+    //   } as any;
+    //   const eventSource = new EventSourcePolyfill(
+    //     `${process.env.VUE_APP_BACKEND_URL}/user/sse/${profile.id}`,
+    //     header
+    //   );
+    //   eventSource.onmessage = ({ data }: any) => {
+    //     console.log("data", data);
+    //     if (data) {
+    //       data = JSON.parse(data);
+    //       if (data.notification) this.newNotif = true;
+    //     }
+    //   };
+    // } else {
+    //   await sleep(5000);
+    //   await this.checkNotification();
+    // }
   }
 
   logout(): void {

@@ -230,7 +230,7 @@ export default class TransactionHistory extends Vue {
           currency: "",
         });
       } else {
-        await sleep(5000);
+        await sleep(100);
         await this.getTransactions();
       }
       this.loadingTransactions = false;

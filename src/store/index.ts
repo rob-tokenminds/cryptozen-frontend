@@ -263,6 +263,9 @@ const store: StoreOptions<storeInterface> = {
         Object.assign(notification, { is_read: true })
       );
     },
+    async clearNotifications({ state }, user_id) {
+      await Fetcher.clearNotifications(user_id);
+    },
     async getTransactions({ state }, { address, currency }) {
       const token = Vue.$cookies.get("cryptozen_token");
       const transactions = await Fetcher.getTransactions(

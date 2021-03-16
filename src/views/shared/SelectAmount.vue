@@ -53,17 +53,29 @@
 
       <v-list-item-content>
         <v-list-item-subtitle class="secondary--text text-subtitle-2 text-left"
-          ><a class="primary--text text-subtitle-2">-23</a> Gas
-          fee</v-list-item-subtitle
+          ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
+            >-{{ gasFee }} ETH</a
+          >
+          <v-progress-circular v-else indeterminate color="primary" size="15">
+          </v-progress-circular>
+          Gas fee</v-list-item-subtitle
         >
         <v-list-item-subtitle class="secondary--text text-subtitle-2 text-left"
-          ><a class="primary--text text-subtitle-2">-23</a> Transfer
-          fee</v-list-item-subtitle
+          ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
+            >-{{ transferFee }} ETH</a
+          >
+          <v-progress-circular v-else indeterminate color="primary" size="15">
+          </v-progress-circular>
+          Transfer fee</v-list-item-subtitle
         >
         <v-divider class=""></v-divider>
         <v-list-item-subtitle class="secondary--text text-subtitle-2 text-left"
-          ><a class="primary--text text-subtitle-2">0</a> Platform fee
-          (discounted)</v-list-item-subtitle
+          ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
+            >{{ platformFee }} ETH</a
+          >
+          <v-progress-circular v-else indeterminate color="primary" size="15">
+          </v-progress-circular>
+          Platform fee (discounted)</v-list-item-subtitle
         >
       </v-list-item-content>
     </v-list-item>
@@ -141,6 +153,9 @@
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import { BalanceInterface } from "../../static/balance";
 import balances from "../../static/balance";
+import Web3 from "web3";
+import erc20abi from "../../static/erc20abi";
+import fromExponential from "from-exponential";
 
 @Component({ name: "SelectAmount" })
 export default class SelectAmount extends Vue {
@@ -151,6 +166,70 @@ export default class SelectAmount extends Vue {
   @Prop(String) readonly setLabel!: string;
   @Prop(Boolean) readonly disableBack!: boolean;
   @Prop(String) readonly setContinueLabel!: string;
+
+  transferFee = 0;
+  gasFee = 0;
+  platformFee = 0;
+  loadingFee = false;
+
+  @Watch("selectedRecipientToken")
+  watchSelectedAddress(value: string): void {
+    if (value) {
+      this.checkFee();
+    }
+  }
+
+  @Watch("swapAmount")
+  watchswapAmount(value: number): void {
+    this.checkFee();
+  }
+
+  async checkFee(): Promise<void> {
+    if (
+      this.selectedCurrency &&
+      this.selectedCurrency.decimal &&
+      this.selectedCurrency.contractAddress
+    ) {
+      this.loadingFee = true;
+      this.transferFee = 0;
+      this.gasFee = 0;
+      this.platformFee = 0;
+      const web3 = this.$store.getters["getWeb3"] as Web3;
+      let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
+      if (this.$store.state.chainId === 3) {
+        contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
+      }
+      const contract = new web3.eth.Contract(erc20abi, contractAddress);
+
+      const contractData = contract.methods
+        .transfer(
+          window.ethereum.selectedAddress,
+          fromExponential(
+            Number(
+              this.swapAmount * 10 ** this.selectedCurrency.decimal
+            ).toString()
+          )
+        )
+        .encodeABI();
+      const params = {
+        from: window.ethereum.selectedAddress,
+        to: contractAddress,
+        value: 0,
+        data: contractData,
+      };
+      const gas = await web3.eth.estimateGas(params);
+      const gasPrice = await web3.eth.getGasPrice();
+      const txFee = gas * Number(web3.utils.fromWei(gasPrice, "ether"));
+      this.gasFee = txFee;
+      if (
+        this.selectedRecipientToken.toLowerCase() ===
+        this.selectedCurrency.value.toLowerCase()
+      ) {
+        this.transferFee = 0;
+      }
+      this.loadingFee = false;
+    }
+  }
 
   continueLabel = "Continue";
   selectedRecipientToken = "usdt";

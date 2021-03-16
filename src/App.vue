@@ -246,93 +246,99 @@ export default class App extends Vue {
   }
 
   async init(): Promise<void> {
-    if (typeof window.ethereum === undefined) {
-      alert(
-        "Metamask is not installed, please install metamask to use this Dapps"
-      );
-    } else {
-      this.web3 = new Web3(window.ethereum);
-      await this.$store.dispatch("setWeb3", this.web3);
-      const currentProvider = this.web3.currentProvider;
-      if (currentProvider !== null && currentProvider !== undefined) {
-        let accessToken = this.$cookies.get("cryptozen_token");
-        if (!accessToken) {
-          await this.web3.eth.requestAccounts();
-          const message = await this.$store.dispatch("getLoginWord");
-          const params = [message, window.ethereum.selectedAddress];
-          const signature = await new Promise((resolve, reject) => {
-            (currentProvider as AbstractProvider).sendAsync(
-              {
-                jsonrpc: "1",
-                method: "personal_sign",
-                params,
-              },
-              (error, result) => {
-                if (error) {
-                  resolve(false);
-                } else {
-                  resolve(result?.result);
-                }
+    this.web3 = new Web3(window.ethereum);
+    await this.$store.dispatch("setWeb3", this.web3);
+    const currentProvider = this.web3.currentProvider;
+    if (currentProvider !== null && currentProvider !== undefined) {
+      let accessToken = this.$cookies.get("cryptozen_token");
+      if (!accessToken) {
+        await this.web3.eth.requestAccounts();
+        const message = await this.$store.dispatch("getLoginWord");
+        const params = [message, window.ethereum.selectedAddress];
+        const signature = await new Promise((resolve, reject) => {
+          (currentProvider as AbstractProvider).sendAsync(
+            {
+              jsonrpc: "1",
+              method: "personal_sign",
+              params,
+            },
+            (error, result) => {
+              if (error) {
+                resolve(false);
+              } else {
+                resolve(result?.result);
               }
-            );
+            }
+          );
+        });
+        if (signature) {
+          accessToken = await this.$store.dispatch("login", {
+            address: window.ethereum.selectedAddress,
+            signature,
           });
-          if (signature) {
-            accessToken = await this.$store.dispatch("login", {
-              address: window.ethereum.selectedAddress,
-              signature,
-            });
-            location.reload();
-          }
+          location.reload();
         }
+      }
 
-        if (accessToken) {
-          try {
-            const profile = await this.$store.dispatch("getProfile");
-            if (!profile) {
-              throw new Error(`Token is expired, will relogin`);
-            }
-            this.$store.state.isLogin = true;
-            // this.$socket.send(
-            //   JSON.stringify({
-            //     event: "notification",
-            //     data: { id: profile.id },
-            //   })
-            // );
-
-            await this.$store.dispatch("updateChainId", this.web3);
-            await this.$store.dispatch(
-              "updateSelectedAddress",
-              window.ethereum.selectedAddress
-            );
-            const balances: BalanceInterface[] = this.$store.state.balances;
-            for (const balance of balances) {
-              await this.$store.dispatch("updateCoinBalance", {
-                web3: this.web3,
-                coin: balance,
-              });
-            }
-          } catch (e) {
-            console.log("e", e);
-            alert(`Token is expired, will relogin`);
-
-            this.$cookies.remove("cryptozen_token");
-            this.$router.push("/");
-            location.reload();
-            // await this.init();
+      if (accessToken) {
+        try {
+          const profile = await this.$store.dispatch("getProfile");
+          if (!profile) {
+            throw new Error(`Token is expired, will relogin`);
           }
-        } else {
-          alert(`Please sign the Signature Request`);
+          this.$store.state.isLogin = true;
+          // this.$socket.send(
+          //   JSON.stringify({
+          //     event: "notification",
+          //     data: { id: profile.id },
+          //   })
+          // );
+
+          await this.$store.dispatch("updateChainId", this.web3);
+          await this.$store.dispatch(
+            "updateSelectedAddress",
+            window.ethereum.selectedAddress
+          );
+          const balances: BalanceInterface[] = this.$store.state.balances;
+          for (const balance of balances) {
+            await this.$store.dispatch("updateCoinBalance", {
+              web3: this.web3,
+              coin: balance,
+            });
+          }
+        } catch (e) {
+          console.log("e", e);
+          alert(`Token is expired, will relogin`);
+
+          this.$cookies.remove("cryptozen_token");
           this.$router.push("/");
           location.reload();
           // await this.init();
         }
+      } else {
+        alert(`Please sign the Signature Request`);
+        this.$router.push("/");
+        location.reload();
+        // await this.init();
       }
     }
   }
 
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
-      if (this.$route.path !== `/create-address-book`) await this.init();
+      if (typeof window.ethereum === undefined) {
+        alert(
+          "Metamask is not installed, please install metamask to use this Dapps"
+        );
+      } else {
+        if (this.$route.path !== `/create-address-book`) await this.init();
+
+        window.ethereum.on("accountsChanged", () => {
+          Vue.$cookies.remove("cryptozen_token");
+          this.$router.push("/");
+          location.reload();
+        });
+      }
     });
   }
 
