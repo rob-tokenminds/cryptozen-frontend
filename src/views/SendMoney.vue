@@ -18,9 +18,9 @@
         <v-spacer></v-spacer>
         <v-stepper-step :complete="e1 > 1" step=""> Wallet </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step :complete="e1 > 2" step=""> Amount </v-stepper-step>
+        <v-stepper-step :complete="e1 > 2" step=""> Recipient </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step :complete="e1 > 3" step=""> Recipient </v-stepper-step>
+        <v-stepper-step :complete="e1 > 3" step=""> Amount </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step step=""> Review </v-stepper-step>
         <v-spacer></v-spacer>
@@ -93,22 +93,6 @@
         </v-stepper-content>
 
         <v-stepper-content step="2">
-          <p class="text-center primary--text text-h5">
-            You are sending on behalf of {{ selectedEthereumAddress }}
-          </p>
-          <v-card flat class="d-flex justify-center">
-            <SelectAmount
-              v-if="selectedCurrency"
-              :currentStep="2"
-              :selectedCurrency="selectedCurrency"
-              @swap-amount="setSwapAmount"
-              @next-step="e1 = 3"
-              @prev-step="e1 = 1"
-            ></SelectAmount>
-          </v-card>
-        </v-stepper-content>
-
-        <v-stepper-content step="3">
           <v-card flat class="d-flex justify-center">
             <v-card flat>
               <p class="text-center primary--text text-h5">
@@ -149,7 +133,7 @@
                             class="mb-2"
                             @click="
                               selectedAddress = addressBook;
-                              e1 = 4;
+                              e1 = 3;
                             "
                           >
                             <v-list-item class="">
@@ -323,6 +307,28 @@
           </v-card>
         </v-stepper-content>
 
+        <v-stepper-content step="3">
+          <p class="text-center primary--text text-h5">
+            You are sending on behalf of {{ selectedEthereumAddress }}
+          </p>
+          <v-card flat class="d-flex justify-center">
+            <SelectAmount
+              v-if="selectedCurrency"
+              :setSwapAmount="swapAmount"
+              :currentStep="3"
+              :selectedCurrency="selectedCurrency"
+              :selectedAddress="selectedAddress"
+              :selectedRecipientToken="selectedRecipientToken"
+              :shouldSend="false"
+              :readOnly="false"
+              @swap-amount="setSwapAmount"
+              @next-step="e1 = 4"
+              @prev-step="e1 = 2"
+              @selected-recipient-token="setSelectedRecipientToken"
+            ></SelectAmount>
+          </v-card>
+        </v-stepper-content>
+
         <v-stepper-content step="4">
           <p class="text-center primary--text text-h5">Review</p>
 
@@ -334,9 +340,14 @@
                 :selectedCurrency="selectedCurrency"
                 :setSwapAmount="swapAmount"
                 :disableActionButton="true"
+                :selectedAddress="selectedAddress"
+                :selectedRecipientToken="selectedRecipientToken"
+                :shouldSend="true"
+                :readOnly="true"
                 @swap-amount="setSwapAmount"
-                @next-step="finish()"
-                @prev-step="e1 = 3"
+                @next-step="e1 = 3"
+                @prev-step="finish()"
+                @selected-recipient-token="setSelectedRecipientToken"
               ></SelectAmount>
               <p>To</p>
               <v-card class="mb-2" v-if="selectedAddress">
@@ -399,6 +410,12 @@ export default class SendMoney extends Vue {
   selectedAddress: AddressBookInterface | "" = "";
   newSubmittedAddressBook: AddressBookInterface | "" = "";
   newAddressBookSubmitted = false;
+
+  selectedRecipientToken = "usdt";
+
+  setSelectedRecipientToken(value: string): void {
+    this.selectedRecipientToken = value;
+  }
 
   async createRecipient(): Promise<void> {
     try {
@@ -541,7 +558,7 @@ export default class SendMoney extends Vue {
   closeDialog(): void {
     this.$emit("update-dialog", false);
   }
-  selectedRecipientToken = "usdt";
+
   coins = Balances;
   selectedCurrency: BalanceInterface | "" = "";
   swapAmount = 0;

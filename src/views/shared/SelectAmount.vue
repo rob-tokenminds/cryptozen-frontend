@@ -86,11 +86,12 @@
           color="primary"
           label="Recipient gets"
           outlined
-          value="0"
+          v-model="recipientGets"
           type="number"
           step="0.000001"
           flat
           height="50"
+          readonly
         >
           <!-- <template v-slot:append-outer>
                
@@ -105,7 +106,7 @@
           item-text="name"
           item-value="value"
           outlined
-          v-model="selectedRecipientToken"
+          v-model="selectedRecipientTokenModel"
           class="rounded-0"
           height="50"
         >
@@ -137,7 +138,7 @@
         </v-select>
       </v-col>
     </v-row>
-
+    {{ this.params }}
     <!--  -->
     <v-card-actions v-if="!disableActionButton">
       <v-spacer></v-spacer>
@@ -156,6 +157,9 @@ import balances from "../../static/balance";
 import Web3 from "web3";
 import erc20abi from "../../static/erc20abi";
 import fromExponential from "from-exponential";
+import { AddressBookInterface } from "../../store/fetcher";
+import Bignumber from "bignumber.js";
+import { TransactionConfig } from "web3-core";
 
 @Component({ name: "SelectAmount" })
 export default class SelectAmount extends Vue {
@@ -166,17 +170,35 @@ export default class SelectAmount extends Vue {
   @Prop(String) readonly setLabel!: string;
   @Prop(Boolean) readonly disableBack!: boolean;
   @Prop(String) readonly setContinueLabel!: string;
+  @Prop([Object, String]) readonly selectedAddress!: AddressBookInterface | "";
+  @Prop(String) readonly selectedRecipientToken!: string;
+  @Prop(Boolean) readonly shouldSend!: boolean;
 
-  transferFee = 0;
-  gasFee = 0;
-  platformFee = 0;
+  transferFee = "0";
+  gasFee = "0";
+  platformFee = "0";
   loadingFee = false;
+  recipientGets = 0;
+  params: TransactionConfig | "" = "";
 
-  @Watch("selectedRecipientToken")
+  selectedRecipientTokenModel = this.selectedRecipientToken;
+
+  @Watch("selectedAddress")
   watchSelectedAddress(value: string): void {
     if (value) {
       this.checkFee();
     }
+  }
+
+  @Watch("selectedRecipientToken")
+  watchselectedRecipientToken(value: string): void {
+    this.selectedRecipientTokenModel = value;
+  }
+
+  @Watch("selectedRecipientTokenModel")
+  watchSelectedRecipientToken(value: string): void {
+    this.$emit("selected-recipient-token", value);
+    this.checkFee();
   }
 
   @Watch("swapAmount")
@@ -188,12 +210,13 @@ export default class SelectAmount extends Vue {
     if (
       this.selectedCurrency &&
       this.selectedCurrency.decimal &&
-      this.selectedCurrency.contractAddress
+      this.selectedCurrency.contractAddress &&
+      this.selectedAddress
     ) {
       this.loadingFee = true;
-      this.transferFee = 0;
-      this.gasFee = 0;
-      this.platformFee = 0;
+      this.transferFee = "0";
+      this.gasFee = "0";
+      this.platformFee = "0";
       const web3 = this.$store.getters["getWeb3"] as Web3;
       let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
       if (this.$store.state.chainId === 3) {
@@ -203,7 +226,7 @@ export default class SelectAmount extends Vue {
 
       const contractData = contract.methods
         .transfer(
-          window.ethereum.selectedAddress,
+          this.selectedAddress.address,
           fromExponential(
             Number(
               this.swapAmount * 10 ** this.selectedCurrency.decimal
@@ -211,28 +234,36 @@ export default class SelectAmount extends Vue {
           )
         )
         .encodeABI();
-      const params = {
+      this.params = {
         from: window.ethereum.selectedAddress,
         to: contractAddress,
         value: 0,
         data: contractData,
       };
-      const gas = await web3.eth.estimateGas(params);
+      const gas = await web3.eth.estimateGas(this.params);
       const gasPrice = await web3.eth.getGasPrice();
-      const txFee = gas * Number(web3.utils.fromWei(gasPrice, "ether"));
-      this.gasFee = txFee;
+      // const txFee = web3.utils
+      //   .toBN(gas.toString())
+      //   .mul(web3.utils.toBN(web3.utils.fromWei(gasPrice, "ether")));
+      // this.gasFee = txFee.toString();
+      const txFee = new Bignumber(gas).times(
+        web3.utils.fromWei(gasPrice, "ether")
+      );
+      this.gasFee = txFee.toString();
+
       if (
-        this.selectedRecipientToken.toLowerCase() ===
+        this.selectedRecipientTokenModel.toLowerCase() ===
         this.selectedCurrency.value.toLowerCase()
       ) {
-        this.transferFee = 0;
+        this.transferFee = "0";
+        this.recipientGets = this.swapAmount;
       }
       this.loadingFee = false;
     }
   }
 
   continueLabel = "Continue";
-  selectedRecipientToken = "usdt";
+
   coins = balances;
   swapAmount = 0;
   label = "You send";
@@ -254,8 +285,30 @@ export default class SelectAmount extends Vue {
     this.$emit("swap-amount", value);
   }
 
-  nextStep(): void {
-    this.$emit("next-step", this.currentStep + 1);
+  async nextStep(): Promise<void> {
+    let next = true;
+    let data = null;
+    if (this.shouldSend && this.params) {
+      const web3 = this.$store.getters["getWeb3"] as Web3;
+      const ethBalanceInWei = await web3.eth.getBalance(
+        window.ethereum.selectedAddress
+      );
+      const ethBalanceInEther = web3.utils.fromWei(ethBalanceInWei, "ether");
+      if (new Bignumber(ethBalanceInEther).isLessThan(this.gasFee)) {
+        next = false;
+        alert(
+          `You do not have enough ETH for gas fee. Your current ETH balance is ${ethBalanceInEther}`
+        );
+      } else {
+        data = await web3.eth.sendTransaction(this.params);
+      }
+    }
+    if (next)
+      this.$emit("next-step", {
+        nextStep: this.currentStep + 1,
+        type: this.shouldSend ? "transfer" : "next",
+        data,
+      });
   }
 
   prevStep(): void {
