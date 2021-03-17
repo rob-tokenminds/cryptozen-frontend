@@ -256,6 +256,22 @@ export class Fetcher {
     });
     return fetch.data;
   }
+
+  static async postNewTrx(
+    token: string,
+    hash: string,
+    isToken: boolean
+  ): Promise<TransactionInterface> {
+    const fetch = await Fetcher.post(
+      `/user/transaction/new`,
+      {
+        hash,
+        isToken,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return fetch.data;
+  }
 }
 
 export interface AddressInterface {
@@ -329,6 +345,8 @@ export interface TransactionInterface {
   tokenSymbol?: string;
   tokenDecimal?: number;
   transactionIndex?: number;
+  gas: number;
+  gasPrice: number;
   isError: boolean;
   isToken: boolean;
   isInternal: boolean;

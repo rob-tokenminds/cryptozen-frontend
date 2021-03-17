@@ -94,7 +94,7 @@
                   <v-card flat tile>
                     <v-card-subtitle> Fee </v-card-subtitle>
                     <v-card-title class="primary--text mt-n8">
-                      {{ transaction.fee }}
+                      {{ getFee(transaction) }} ETH
                     </v-card-title>
                   </v-card>
                 </v-col>
@@ -109,7 +109,12 @@
                 </v-col>
 
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4" class="text-right">
-                  <v-btn color="secondary" outlined class="mt-7"
+                  <v-btn
+                    :href="`${detailUrl}${transaction.hash}`"
+                    target="_blank"
+                    color="secondary"
+                    outlined
+                    class="mt-7"
                     >Track URL</v-btn
                   >
                 </v-col>
@@ -127,12 +132,14 @@ import { AddressBookInterface, TransactionInterface } from "@/store/fetcher";
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import { shleemy } from "shleemy";
 import Web3 from "web3";
+import Bignumber from "bignumber.js";
 
 @Component({ name: "TransactionHistory", components: {} })
 export default class TransactionHistory extends Vue {
   @Prop(String) readonly label!: string;
   @Prop(String) readonly currency!: string;
   loadingTransactions = false;
+  detailUrl = process.env.VUE_APP_DETAIL_URL;
   toHumanDate(date: string): string {
     const interval = shleemy(date);
     return interval.forHumans;
@@ -159,6 +166,13 @@ export default class TransactionHistory extends Vue {
     } else {
       return "Send";
     }
+  }
+
+  getFee(transaction: TransactionInterface): string {
+    const web3 = this.$store.getters["getWeb3"] as Web3;
+    return new Bignumber(transaction.gas)
+      .times(web3.utils.fromWei(transaction.gasPrice.toString(), "ether"))
+      .toString();
   }
 
   getWalletName(address: string): string {
@@ -195,6 +209,7 @@ export default class TransactionHistory extends Vue {
 
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
+      this.detailUrl = process.env.VUE_APP_DETAIL_URL;
       await this.getTransactions();
       this.getSyncTransactions();
     });

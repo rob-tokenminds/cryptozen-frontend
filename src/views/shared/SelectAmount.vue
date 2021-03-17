@@ -12,6 +12,7 @@
       persistent-hint
       type="number"
       :step="0.000001"
+      :readonly="readOnly"
     >
       <template v-slot:append>
         <v-list-item class="mt-n4">
@@ -109,6 +110,7 @@
           v-model="selectedRecipientTokenModel"
           class="rounded-0"
           height="50"
+          :readonly="readOnly"
         >
           <template v-slot:item="{ item, on, attrs }">
             <v-list-item v-bind="attrs" v-on="on">
@@ -138,7 +140,7 @@
         </v-select>
       </v-col>
     </v-row>
-    {{ this.params }}
+
     <!--  -->
     <v-card-actions v-if="!disableActionButton">
       <v-spacer></v-spacer>
@@ -173,6 +175,7 @@ export default class SelectAmount extends Vue {
   @Prop([Object, String]) readonly selectedAddress!: AddressBookInterface | "";
   @Prop(String) readonly selectedRecipientToken!: string;
   @Prop(Boolean) readonly shouldSend!: boolean;
+  @Prop(Boolean) readonly readOnly!: boolean;
 
   transferFee = "0";
   gasFee = "0";
@@ -183,10 +186,24 @@ export default class SelectAmount extends Vue {
 
   selectedRecipientTokenModel = this.selectedRecipientToken;
 
+  @Watch("gasFee")
+  watchGasFee(value: string): void {
+    if (value) {
+      this.$emit("gas-fee", value);
+    }
+  }
+
   @Watch("selectedAddress")
   watchSelectedAddress(value: string): void {
     if (value) {
       this.checkFee();
+    }
+  }
+
+  @Watch("params", { deep: true })
+  watchParams(value: TransactionConfig | ""): void {
+    if (value) {
+      this.$emit("params", value);
     }
   }
 
@@ -207,39 +224,46 @@ export default class SelectAmount extends Vue {
   }
 
   async checkFee(): Promise<void> {
-    if (
-      this.selectedCurrency &&
-      this.selectedCurrency.decimal &&
-      this.selectedCurrency.contractAddress &&
-      this.selectedAddress
-    ) {
+    if (this.selectedCurrency && this.selectedAddress) {
       this.loadingFee = true;
       this.transferFee = "0";
       this.gasFee = "0";
       this.platformFee = "0";
       const web3 = this.$store.getters["getWeb3"] as Web3;
-      let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
-      if (this.$store.state.chainId === 3) {
-        contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
-      }
-      const contract = new web3.eth.Contract(erc20abi, contractAddress);
+      if (
+        this.selectedCurrency.decimal &&
+        this.selectedCurrency.contractAddress
+      ) {
+        let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
+        if (this.$store.state.chainId === 3) {
+          contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
+        }
+        const contract = new web3.eth.Contract(erc20abi, contractAddress);
 
-      const contractData = contract.methods
-        .transfer(
-          this.selectedAddress.address,
-          fromExponential(
-            Number(
-              this.swapAmount * 10 ** this.selectedCurrency.decimal
-            ).toString()
+        const contractData = contract.methods
+          .transfer(
+            this.selectedAddress.address,
+            fromExponential(
+              Number(
+                this.swapAmount * 10 ** this.selectedCurrency.decimal
+              ).toString()
+            )
           )
-        )
-        .encodeABI();
-      this.params = {
-        from: window.ethereum.selectedAddress,
-        to: contractAddress,
-        value: 0,
-        data: contractData,
-      };
+          .encodeABI();
+        this.params = {
+          from: window.ethereum.selectedAddress,
+          to: contractAddress,
+          value: 0,
+          data: contractData,
+        };
+      } else {
+        this.params = {
+          from: window.ethereum.selectedAddress,
+          to: this.selectedAddress.address,
+          value: web3.utils.toWei(this.swapAmount.toString()),
+        };
+      }
+
       const gas = await web3.eth.estimateGas(this.params);
       const gasPrice = await web3.eth.getGasPrice();
       // const txFee = web3.utils
@@ -285,30 +309,8 @@ export default class SelectAmount extends Vue {
     this.$emit("swap-amount", value);
   }
 
-  async nextStep(): Promise<void> {
-    let next = true;
-    let data = null;
-    if (this.shouldSend && this.params) {
-      const web3 = this.$store.getters["getWeb3"] as Web3;
-      const ethBalanceInWei = await web3.eth.getBalance(
-        window.ethereum.selectedAddress
-      );
-      const ethBalanceInEther = web3.utils.fromWei(ethBalanceInWei, "ether");
-      if (new Bignumber(ethBalanceInEther).isLessThan(this.gasFee)) {
-        next = false;
-        alert(
-          `You do not have enough ETH for gas fee. Your current ETH balance is ${ethBalanceInEther}`
-        );
-      } else {
-        data = await web3.eth.sendTransaction(this.params);
-      }
-    }
-    if (next)
-      this.$emit("next-step", {
-        nextStep: this.currentStep + 1,
-        type: this.shouldSend ? "transfer" : "next",
-        data,
-      });
+  nextStep(): void {
+    this.$emit("next-step", this.currentStep + 1);
   }
 
   prevStep(): void {

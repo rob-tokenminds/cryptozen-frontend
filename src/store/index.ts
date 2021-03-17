@@ -275,11 +275,13 @@ const store: StoreOptions<storeInterface> = {
       );
       if (transactions.length) {
         for (const transaction of transactions) {
-          const checkTrx = state.transactions.find(
+          const checkTrx = state.transactions.findIndex(
             (t) => t.id === transaction.id
           );
-          if (!checkTrx) {
+          if (checkTrx < 0) {
             state.transactions.push(transaction);
+          } else {
+            state.transactions.splice(checkTrx, 1, transaction);
           }
         }
       }
@@ -293,13 +295,28 @@ const store: StoreOptions<storeInterface> = {
       );
       if (transactions.length) {
         for (const transaction of transactions) {
-          const checkTrx = state.transactions.find(
+          const checkTrx = state.transactions.findIndex(
             (t) => t.id === transaction.id
           );
-          if (!checkTrx) {
+          if (checkTrx < 0) {
             state.transactions.push(transaction);
+          } else {
+            state.transactions.splice(checkTrx, 1, transaction);
           }
         }
+      }
+    },
+    async newTrx(
+      { state },
+      { hash, isToken }: { hash: string; isToken: boolean }
+    ) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      console.log("hash", hash);
+      console.log("isToken", isToken);
+      const trx = await Fetcher.postNewTrx(token, hash, isToken);
+      const checkTrx = state.transactions.find((t) => t.id === trx.id);
+      if (!checkTrx) {
+        state.transactions.push(trx);
       }
     },
   },

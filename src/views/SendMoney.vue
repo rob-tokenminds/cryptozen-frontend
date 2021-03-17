@@ -348,6 +348,8 @@
                 @next-step="e1 = 3"
                 @prev-step="finish()"
                 @selected-recipient-token="setSelectedRecipientToken"
+                @params="setParams"
+                @gas-fee="setGasFee"
               ></SelectAmount>
               <p>To</p>
               <v-card class="mb-2" v-if="selectedAddress">
@@ -370,7 +372,13 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="primary" outlined @click="e1 = 3"> Back </v-btn>
-                <v-btn color="primary"> Send </v-btn>
+                <v-btn
+                  color="primary"
+                  :loading="loadingSendMoney"
+                  @click="sendMoney"
+                >
+                  Send
+                </v-btn>
               </v-card-actions>
             </v-card>
           </v-card>
@@ -390,6 +398,8 @@ import Web3 from "web3";
 import { AbstractProvider } from "web3-core";
 import CryptoJS from "crypto-js";
 import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
+import { TransactionConfig } from "web3-core";
+import Bignumber from "bignumber.js";
 
 const EventSource = NativeEventSource || EventSourcePolyfill;
 // OR: may also need to set as global property
@@ -412,6 +422,59 @@ export default class SendMoney extends Vue {
   newAddressBookSubmitted = false;
 
   selectedRecipientToken = "usdt";
+
+  params: TransactionConfig | "" = "";
+  gasFee = "0";
+  setGasFee(value: string): void {
+    if (value) {
+      this.gasFee = value;
+    }
+  }
+
+  setParams(value: TransactionConfig): void {
+    if (value) {
+      this.params = value;
+    }
+  }
+  loadingSendMoney = false;
+  async sendMoney(): Promise<void> {
+    try {
+      this.loadingSendMoney = true;
+      if (this.params) {
+        const web3 = this.$store.getters["getWeb3"] as Web3;
+        const ethBalanceInWei = await web3.eth.getBalance(
+          window.ethereum.selectedAddress
+        );
+        const ethBalanceInEther = web3.utils.fromWei(ethBalanceInWei, "ether");
+        if (new Bignumber(ethBalanceInEther).isLessThan(this.gasFee)) {
+          alert(
+            `You do not have enough ETH for gas fee. Your current ETH balance is ${ethBalanceInEther}`
+          );
+        } else {
+          await new Promise((resolve) => {
+            if (this.params) {
+              web3.eth
+                .sendTransaction(this.params)
+                .on("transactionHash", async (hash) => {
+                  console.log("hash", hash);
+                  if (this.params)
+                    await this.$store.dispatch("newTrx", {
+                      hash,
+                      isToken: this.params.data ? true : false,
+                    });
+
+                  resolve(resolve);
+                });
+            }
+          });
+          this.loadingSendMoney = false;
+        }
+      }
+      this.loadingSendMoney = false;
+    } catch (e) {
+      this.loadingSendMoney = false;
+    }
+  }
 
   setSelectedRecipientToken(value: string): void {
     this.selectedRecipientToken = value;
