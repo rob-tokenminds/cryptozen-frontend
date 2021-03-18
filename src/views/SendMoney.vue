@@ -391,7 +391,7 @@
           </p>
 
           <v-card v-if="transaction" flat class="d-flex justify-center">
-            <v-card class="mb-2" flat max-width="1100">
+            <v-card class="mb-2" max-width="1100">
               <v-card-subtitle>{{
                 toHumanDate(transaction.created_at)
               }}</v-card-subtitle>
@@ -739,6 +739,7 @@ export default class SendMoney extends Vue {
   coinSelected = "";
   closeDialog(): void {
     this.$emit("update-dialog", false);
+    this.e1 = 1;
   }
   detailUrl = process.env.VUE_APP_DETAIL_URL;
   coins = Balances;
