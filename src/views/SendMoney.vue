@@ -383,6 +383,118 @@
             </v-card>
           </v-card>
         </v-stepper-content>
+
+        <v-stepper-content step="5">
+          <p class="text-center primary--text text-h5">Pending</p>
+          <p class="text-center primary--text">
+            We will notify you once the transaction is confirmed
+          </p>
+
+          <v-card v-if="transaction" flat class="d-flex justify-center">
+            <v-card class="mb-2" flat max-width="1100">
+              <v-card-subtitle>{{
+                toHumanDate(transaction.created_at)
+              }}</v-card-subtitle>
+              <v-divider></v-divider>
+
+              <v-row>
+                <v-col cols="12" md="6" sm="6" lg="6" xl="6">
+                  <v-list-item>
+                    <v-list-item-avatar>
+                      <v-avatar color="main " size="60"></v-avatar>
+                    </v-list-item-avatar>
+                    <v-list-item-content>
+                      <v-list-item-title class="primary--text"
+                        >From :
+                        {{ getWalletName(transaction.from) }}</v-list-item-title
+                      >
+                      <v-list-item-subtitle>
+                        {{ getStatus(transaction) }}
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-col>
+
+                <v-col cols="12" md="6" sm="6" lg="6" xl="6">
+                  <p class="primary--text text-right mt-6">
+                    {{ getAmount(transaction) }}
+                  </p>
+                </v-col>
+              </v-row>
+
+              <v-divider></v-divider>
+              <v-container>
+                <v-row class="mt-n1">
+                  <v-col cols="12" md="6" sm="6" lg="6" xl="6">
+                    <v-card flat tile>
+                      <v-card-subtitle> Set Up By </v-card-subtitle>
+                      <v-card-title class="primary--text mt-n8">
+                        {{ getWalletName(transaction.from) }}
+                      </v-card-title>
+                    </v-card>
+                  </v-col>
+                </v-row>
+                <v-row class="mt-n6">
+                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                    <v-card flat tile>
+                      <v-card-subtitle> To </v-card-subtitle>
+                      <v-card-title class="primary--text mt-n8">
+                        {{ getWalletName(transaction.to) }}
+                      </v-card-title>
+                    </v-card>
+                  </v-col>
+
+                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                    <v-card flat tile>
+                      <v-card-subtitle> TX Hash </v-card-subtitle>
+                      <v-card-title class="primary--text mt-n8">
+                        {{ transaction.hash }}
+                      </v-card-title>
+                    </v-card>
+                  </v-col>
+                </v-row>
+
+                <v-row class="mt-n5">
+                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                    <v-card flat tile>
+                      <v-card-subtitle> Fee </v-card-subtitle>
+                      <v-card-title class="primary--text mt-n8">
+                        {{ getFee(transaction) }} ETH
+                      </v-card-title>
+                    </v-card>
+                  </v-col>
+
+                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                    <v-card flat tile>
+                      <v-card-subtitle> Block Number </v-card-subtitle>
+                      <v-card-title class="primary--text mt-n8">
+                        {{ transaction.blockNumber }}
+                      </v-card-title>
+                    </v-card>
+                  </v-col>
+
+                  <v-col
+                    cols="12"
+                    md="4"
+                    sm="4"
+                    lg="4"
+                    xl="4"
+                    class="text-right"
+                  >
+                    <v-btn
+                      :href="`${detailUrl}${transaction.hash}`"
+                      target="_blank"
+                      color="secondary"
+                      outlined
+                      class="mt-7"
+                      >Track URL</v-btn
+                    >
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card>
+          </v-card>
+        </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
   </v-card>
@@ -393,13 +505,18 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import ProfileMenu from "./shared/ProfileMenu.vue";
 import SelectAmount from "./shared/SelectAmount.vue";
 import Balances, { BalanceInterface } from "../static/balance";
-import { AddressBookInterface, Fetcher } from "@/store/fetcher";
+import {
+  AddressBookInterface,
+  Fetcher,
+  TransactionInterface,
+} from "@/store/fetcher";
 import Web3 from "web3";
 import { AbstractProvider } from "web3-core";
 import CryptoJS from "crypto-js";
 import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
 import { TransactionConfig } from "web3-core";
 import Bignumber from "bignumber.js";
+import { shleemy } from "shleemy";
 
 const EventSource = NativeEventSource || EventSourcePolyfill;
 // OR: may also need to set as global property
@@ -458,15 +575,17 @@ export default class SendMoney extends Vue {
                 .on("transactionHash", async (hash) => {
                   console.log("hash", hash);
                   if (this.params)
-                    await this.$store.dispatch("newTrx", {
+                    this.transaction = await this.$store.dispatch("newTrx", {
                       hash,
                       isToken: this.params.data ? true : false,
                     });
 
+                  console.log("this.transaction", this.transaction);
                   resolve(resolve);
                 });
             }
           });
+          this.e1 = 5;
           this.loadingSendMoney = false;
         }
       }
@@ -621,12 +740,64 @@ export default class SendMoney extends Vue {
   closeDialog(): void {
     this.$emit("update-dialog", false);
   }
-
+  detailUrl = process.env.VUE_APP_DETAIL_URL;
   coins = Balances;
   selectedCurrency: BalanceInterface | "" = "";
   swapAmount = 0;
   setSwapAmount(value: number): void {
     this.swapAmount = Number(value);
+  }
+  transaction: TransactionInterface | "" = "";
+  toHumanDate(date: string): string {
+    const interval = shleemy(date);
+    return interval.forHumans;
+  }
+
+  getAmount(transaction: TransactionInterface): string {
+    if (transaction.isToken) {
+      return `${(
+        Number(transaction.value) /
+        10 ** Number(transaction.tokenDecimal)
+      ).toString()} ${transaction.tokenName}`;
+    } else {
+      const web3 = this.$store.getters["getWeb3"] as Web3;
+      return `${web3.utils.fromWei(transaction.value, "ether")} ETH`;
+    }
+  }
+
+  getStatus(transaction: TransactionInterface): string {
+    if (
+      transaction.to?.toLowerCase() ===
+      window.ethereum.selectedAddress?.toLowerCase()
+    ) {
+      return "Received";
+    } else {
+      return "Send";
+    }
+  }
+
+  getFee(transaction: TransactionInterface): string {
+    return "";
+  }
+
+  getWalletName(address: string): string {
+    const addressBooks: AddressBookInterface[] = this.$store.getters[
+      "getAddressBooks"
+    ];
+
+    const addressBook = addressBooks.find(
+      (a) => a.address?.toLowerCase() === address?.toLowerCase()
+    );
+    if (addressBook) {
+      return addressBook.name;
+    } else {
+      if (
+        address?.toLowerCase() ===
+        window.ethereum.selectedAddress?.toLowerCase()
+      )
+        return "Current address";
+      else return address;
+    }
   }
 }
 

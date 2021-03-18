@@ -169,10 +169,14 @@ export default class TransactionHistory extends Vue {
   }
 
   getFee(transaction: TransactionInterface): string {
-    const web3 = this.$store.getters["getWeb3"] as Web3;
-    return new Bignumber(transaction.gas)
-      .times(web3.utils.fromWei(transaction.gasPrice.toString(), "ether"))
-      .toString();
+    if (transaction.gasPrice) {
+      const web3 = this.$store.getters["getWeb3"] as Web3;
+      return new Bignumber(transaction.gas)
+        .times(web3.utils.fromWei(transaction.gasPrice.toString(), "ether"))
+        .toString();
+    } else {
+      return "";
+    }
   }
 
   getWalletName(address: string): string {

@@ -318,6 +318,7 @@ const store: StoreOptions<storeInterface> = {
       if (!checkTrx) {
         state.transactions.push(trx);
       }
+      return trx;
     },
   },
   getters: {
