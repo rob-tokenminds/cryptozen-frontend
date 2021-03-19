@@ -240,6 +240,7 @@ export default class ProfileMenu extends Vue {
     //   await this.checkNotification();
     // }
   }
+  
 
   logout(): void {
     this.$cookies.remove("cryptozen_token");
