@@ -77,11 +77,11 @@
             <v-list-item>
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Tier 1</v-list-item-title
+                  >Tier {{ tier >= 0 ? tier : "-" }}</v-list-item-title
                 >
-                <v-list-item-subtitle
+                <!-- <v-list-item-subtitle
                   >Referrals until Tier 2</v-list-item-subtitle
-                >
+                > -->
               </v-list-item-content>
             </v-list-item>
             <v-divider></v-divider>
@@ -125,6 +125,10 @@ import { Vue, Component, Prop, PropSync } from "vue-property-decorator";
 import { UserNotification } from "@/store";
 import { mdiBellAlertOutline } from "@mdi/js";
 import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
+import { BalanceInterface } from "@/static/balance";
+import Web3 from "web3";
+import cryptozenabi from "../../static/cryptozenabi";
+import Bignumber from "bignumber.js";
 
 const EventSource = NativeEventSource || EventSourcePolyfill;
 // OR: may also need to set as global property
@@ -166,10 +170,29 @@ export default class ProfileMenu extends Vue {
       this.loadingUpdateEmail = false;
     }
   }
+  tier = -1;
+  async checkTier(): Promise<void> {
+    const tokenBalance = this.$store.state.balances as BalanceInterface[];
+    const balance = tokenBalance.find((t) => t.value === "bf");
+    if (
+      balance &&
+      balance.value &&
+      balance.decimal &&
+      balance?.currency?.balance
+    ) {
+      await this.$store.dispatch("getTier");
+      const tier = this.$store.state.tier;
+      this.tier = tier[2];
+    } else {
+      await sleep(1000);
+      this.checkTier();
+    }
+  }
 
   mounted(): void {
     this.$nextTick(() => {
       this.checkNotification();
+      this.checkTier();
       // this.getNotifications();
     });
   }
@@ -240,7 +263,6 @@ export default class ProfileMenu extends Vue {
     //   await this.checkNotification();
     // }
   }
-  
 
   logout(): void {
     this.$cookies.remove("cryptozen_token");

@@ -260,13 +260,15 @@ export class Fetcher {
   static async postNewTrx(
     token: string,
     hash: string,
-    isToken: boolean
+    isToken: boolean,
+    fee: string
   ): Promise<TransactionInterface> {
     const fetch = await Fetcher.post(
       `/user/transaction/new`,
       {
         hash,
         isToken,
+        fee,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );

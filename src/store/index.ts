@@ -10,6 +10,8 @@ import {
   AddressBookInterface,
   TransactionInterface,
 } from "./fetcher";
+import cryptozenabi from "@/static/cryptozenabi";
+import bignumber from "bignumber.js";
 // import VuexPersistence from "vuex-persist";
 
 export interface updateCoinBalanceParams {
@@ -33,6 +35,7 @@ export interface storeInterface {
   notifications: UserNotification[];
   transactions: TransactionInterface[];
   isLogin: boolean;
+  tier: [];
 }
 // const vuexLocal = new VuexPersistence<storeInterface>({
 //   storage: window.localStorage,
@@ -84,6 +87,7 @@ const store: StoreOptions<storeInterface> = {
     notifications: [],
     transactions: [],
     isLogin: false,
+    tier: [],
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -308,17 +312,35 @@ const store: StoreOptions<storeInterface> = {
     },
     async newTrx(
       { state },
-      { hash, isToken }: { hash: string; isToken: boolean }
+      { hash, isToken, fee }: { hash: string; isToken: boolean; fee: string }
     ) {
       const token = Vue.$cookies.get("cryptozen_token");
       console.log("hash", hash);
       console.log("isToken", isToken);
-      const trx = await Fetcher.postNewTrx(token, hash, isToken);
+      const trx = await Fetcher.postNewTrx(token, hash, isToken, fee);
       const checkTrx = state.transactions.find((t) => t.id === trx.id);
       if (!checkTrx) {
         state.transactions.push(trx);
       }
       return trx;
+    },
+    async getTier({ state }) {
+      const tokenBalance = state.balances;
+      const balance = tokenBalance.find((t) => t.value === "bf");
+      const web3 = state.web3;
+      if (web3 && balance && balance.currency) {
+        const contract = new web3.eth.Contract(
+          cryptozenabi,
+          process.env.VUE_APP_CRYPTOZEN_CONTRACT
+        );
+        console.log("alance.currency.balance", balance.currency.balance);
+        const balanceAmount = new bignumber(balance.currency.balance).toFixed();
+        console.log("balanceAmount", balanceAmount);
+        const tier = await contract.methods
+          .getTierByAmount(balanceAmount)
+          .call();
+        state.tier = tier;
+      }
     },
   },
   getters: {

@@ -1,154 +1,175 @@
 <template>
-  <v-card v-if="selectedCurrency" flat width="600">
-    <v-text-field
-      height=""
-      class="text-h5 rounded-0"
-      color="primary"
-      :label="label"
-      outlined
-      :max="selectedCurrency.currency.balance"
-      v-model="swapAmount"
-      :hint="hint"
-      persistent-hint
-      type="number"
-      :step="0.000001"
-      :readonly="readOnly"
+  <v-card flat>
+    <v-alert v-if="!allowance" color="warning"
+      >Your Address must be approved our contract address to transfer token,
+      please click approve button below</v-alert
     >
-      <template v-slot:append>
-        <v-list-item class="mt-n4">
-          <v-list-item-avatar tile>
-            <v-img
-              :src="require(`../../assets/${selectedCurrency.value}.svg`)"
-            ></v-img>
-          </v-list-item-avatar>
-          <v-list-item-content>
-            <v-list-item-title class="primary--text text-subtitle-1">{{
-              selectedCurrency.value === "eth"
-                ? "Ethereum"
-                : selectedCurrency.value.toUpperCase()
-            }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </template>
+    <v-btn
+      v-if="!allowance"
+      color="primary"
+      class="mb-5"
+      :loading="loadingApprove"
+      @click="approve()"
+      >Approve</v-btn
+    >
+    <v-card v-if="selectedCurrency" flat width="600" :disabled="!allowance">
+      <v-text-field
+        height=""
+        class="text-h5 rounded-0"
+        color="primary"
+        :label="label"
+        outlined
+        :max="selectedCurrency.currency.balance"
+        v-model="swapAmount"
+        :hint="hint"
+        persistent-hint
+        type="number"
+        :step="0.000001"
+        :readonly="readOnly"
+      >
+        <template v-slot:append>
+          <v-list-item class="mt-n4">
+            <v-list-item-avatar tile>
+              <v-img
+                :src="require(`../../assets/${selectedCurrency.value}.svg`)"
+              ></v-img>
+            </v-list-item-avatar>
+            <v-list-item-content>
+              <v-list-item-title class="primary--text text-subtitle-1">{{
+                selectedCurrency.value === "eth"
+                  ? "Ethereum"
+                  : selectedCurrency.value.toUpperCase()
+              }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
 
-      <template v-slot:message="{ message }">
-        <p v-if="selectedCurrency.currency">
-          You have
-          <a
-            class="primary--text font-weight-bold"
-            @click="swapAmount = selectedCurrency.currency.balance"
-            >{{ selectedCurrency.currency.balance }}</a
-          >
-        </p>
-        <p v-else>{{ message }}</p>
-      </template>
-    </v-text-field>
+        <template v-slot:message="{ message }">
+          <p v-if="selectedCurrency.currency">
+            You have
+            <a
+              class="primary--text font-weight-bold"
+              @click="swapAmount = selectedCurrency.currency.balance"
+              >{{ selectedCurrency.currency.balance }}</a
+            >
+          </p>
+          <p v-else>{{ message }}</p>
+        </template>
+      </v-text-field>
 
-    <v-list-item class="mt-n5">
-      <v-divider
-        class="mr-2 mb-4 bala"
-        elevation="10"
-        vertical
-        inset
-      ></v-divider>
+      <v-list-item class="mt-n5">
+        <v-divider
+          class="mr-2 mb-4 bala"
+          elevation="10"
+          vertical
+          inset
+        ></v-divider>
 
-      <v-list-item-content>
-        <v-list-item-subtitle class="secondary--text text-subtitle-2 text-left"
-          ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
-            >-{{ gasFee }} ETH</a
+        <v-list-item-content>
+          <v-list-item-subtitle
+            class="secondary--text text-subtitle-2 text-left"
+            ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
+              >-{{ gasFee }} ETH</a
+            >
+            <v-progress-circular v-else indeterminate color="primary" size="15">
+            </v-progress-circular>
+            Gas fee (estimated)</v-list-item-subtitle
           >
-          <v-progress-circular v-else indeterminate color="primary" size="15">
-          </v-progress-circular>
-          Gas fee</v-list-item-subtitle
-        >
-        <v-list-item-subtitle class="secondary--text text-subtitle-2 text-left"
-          ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
-            >-{{ transferFee }} ETH</a
+          <v-list-item-subtitle
+            class="secondary--text text-subtitle-2 text-left"
+            ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
+              >-{{ transferFee }} {{ selectedCurrency.value.toUpperCase() }}</a
+            >
+            <v-progress-circular v-else indeterminate color="primary" size="15">
+            </v-progress-circular>
+            Transfer fee</v-list-item-subtitle
           >
-          <v-progress-circular v-else indeterminate color="primary" size="15">
-          </v-progress-circular>
-          Transfer fee</v-list-item-subtitle
-        >
-        <v-divider class=""></v-divider>
-        <v-list-item-subtitle class="secondary--text text-subtitle-2 text-left"
-          ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
-            >{{ platformFee }} ETH</a
+          <v-divider class=""></v-divider>
+          <v-list-item-subtitle
+            class="secondary--text text-subtitle-2 text-left"
+            ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
+              >{{ platformFee }} ETH</a
+            >
+            <v-progress-circular v-else indeterminate color="primary" size="15">
+            </v-progress-circular>
+            Platform fee (discounted)</v-list-item-subtitle
           >
-          <v-progress-circular v-else indeterminate color="primary" size="15">
-          </v-progress-circular>
-          Platform fee (discounted)</v-list-item-subtitle
-        >
-      </v-list-item-content>
-    </v-list-item>
-    <v-row no-gutters>
-      <v-col cols="8">
-        <v-text-field
-          class="text-h5 rounded-0"
-          color="primary"
-          label="Recipient gets"
-          outlined
-          v-model="recipientGets"
-          type="number"
-          step="0.000001"
-          flat
-          height="50"
-          readonly
-        >
-          <!-- <template v-slot:append-outer>
+        </v-list-item-content>
+      </v-list-item>
+      <v-row no-gutters>
+        <v-col cols="8">
+          <v-text-field
+            class="text-h5 rounded-0"
+            color="primary"
+            label="Recipient gets"
+            outlined
+            v-model="recipientGets"
+            type="number"
+            step="0.000001"
+            flat
+            height="50"
+            readonly
+          >
+            <!-- <template v-slot:append-outer>
                
                 </template> -->
-        </v-text-field>
-      </v-col>
+          </v-text-field>
+        </v-col>
 
-      <v-col cols="4">
-        <v-select
-          color="primary"
-          :items="coins"
-          item-text="name"
-          item-value="value"
-          outlined
-          v-model="selectedRecipientTokenModel"
-          class="rounded-0"
-          height="50"
-          :readonly="readOnly"
-        >
-          <template v-slot:item="{ item, on, attrs }">
-            <v-list-item v-bind="attrs" v-on="on">
-              <v-list-item-avatar tile>
-                <v-img :src="require(`../../assets/${item.value}.svg`)"></v-img>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title class="primary--text text-subtitle-1">{{
-                  item.name
-                }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
+        <v-col cols="4">
+          <v-select
+            color="primary"
+            :items="coins"
+            item-text="name"
+            item-value="value"
+            outlined
+            v-model="selectedRecipientTokenModel"
+            class="rounded-0"
+            height="50"
+            :readonly="readOnly"
+          >
+            <template v-slot:item="{ item, on, attrs }">
+              <v-list-item v-bind="attrs" v-on="on">
+                <v-list-item-avatar tile>
+                  <v-img
+                    :src="require(`../../assets/${item.value}.svg`)"
+                  ></v-img>
+                </v-list-item-avatar>
+                <v-list-item-content>
+                  <v-list-item-title class="primary--text text-subtitle-1">{{
+                    item.name
+                  }}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
 
-          <template v-slot:selection="{ item }">
-            <v-list-item>
-              <v-list-item-avatar tile>
-                <v-img :src="require(`../../assets/${item.value}.svg`)"></v-img>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title class="primary--text text-subtitle-1">{{
-                  item.name
-                }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-        </v-select>
-      </v-col>
-    </v-row>
+            <template v-slot:selection="{ item }">
+              <v-list-item>
+                <v-list-item-avatar tile>
+                  <v-img
+                    :src="require(`../../assets/${item.value}.svg`)"
+                  ></v-img>
+                </v-list-item-avatar>
+                <v-list-item-content>
+                  <v-list-item-title class="primary--text text-subtitle-1">{{
+                    item.name
+                  }}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-select>
+        </v-col>
+      </v-row>
 
-    <!--  -->
-    <v-card-actions v-if="!disableActionButton">
-      <v-spacer></v-spacer>
-      <v-btn color="primary" v-if="!disableBack" outlined @click="prevStep()">
-        Back
-      </v-btn>
-      <v-btn color="primary" @click="nextStep()"> {{ continueLabel }} </v-btn>
-    </v-card-actions>
+      <!--  -->
+      <v-card-actions v-if="!disableActionButton">
+        <v-spacer></v-spacer>
+        <v-btn color="primary" v-if="!disableBack" outlined @click="prevStep()">
+          Back
+        </v-btn>
+        <v-btn color="primary" @click="nextStep()"> {{ continueLabel }} </v-btn>
+      </v-card-actions>
+    </v-card>
   </v-card>
 </template>
 
@@ -162,6 +183,7 @@ import fromExponential from "from-exponential";
 import { AddressBookInterface } from "../../store/fetcher";
 import Bignumber from "bignumber.js";
 import { TransactionConfig } from "web3-core";
+import cryptozenabi from "../../static/cryptozenabi";
 
 @Component({ name: "SelectAmount" })
 export default class SelectAmount extends Vue {
@@ -176,6 +198,7 @@ export default class SelectAmount extends Vue {
   @Prop(String) readonly selectedRecipientToken!: string;
   @Prop(Boolean) readonly shouldSend!: boolean;
   @Prop(Boolean) readonly readOnly!: boolean;
+  @Prop(Boolean) readonly approved!: boolean;
 
   transferFee = "0";
   gasFee = "0";
@@ -185,6 +208,21 @@ export default class SelectAmount extends Vue {
   params: TransactionConfig | "" = "";
 
   selectedRecipientTokenModel = this.selectedRecipientToken;
+
+  get allowance(): boolean {
+    if (this.approved !== undefined) {
+      return this.approved;
+    } else {
+      return this.allowanceData;
+    }
+  }
+
+  @Watch("transferFee")
+  watchtransferFee(value: string): void {
+    if (value) {
+      this.$emit("transfer-fee", value);
+    }
+  }
 
   @Watch("gasFee")
   watchGasFee(value: string): void {
@@ -223,65 +261,171 @@ export default class SelectAmount extends Vue {
     this.checkFee();
   }
 
-  async checkFee(): Promise<void> {
-    if (this.selectedCurrency && this.selectedAddress) {
-      this.loadingFee = true;
-      this.transferFee = "0";
-      this.gasFee = "0";
-      this.platformFee = "0";
-      const web3 = this.$store.getters["getWeb3"] as Web3;
-      if (
-        this.selectedCurrency.decimal &&
-        this.selectedCurrency.contractAddress
-      ) {
-        let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
-        if (this.$store.state.chainId === 3) {
-          contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
-        }
-        const contract = new web3.eth.Contract(erc20abi, contractAddress);
+  @Watch("allowanceData")
+  watchallowance(value: boolean): void {
+    this.$emit("set-allowance", value);
+  }
 
-        const contractData = contract.methods
-          .transfer(
-            this.selectedAddress.address,
+  allowanceData = false;
+  async checkAllowance(): Promise<void> {
+    const web3 = this.$store.getters["getWeb3"] as Web3;
+    let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
+    if (this.$store.state.chainId === 3) {
+      contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
+    }
+    const contract = new web3.eth.Contract(erc20abi, contractAddress);
+    const allowance = await contract.methods
+      .allowance(
+        window.ethereum.selectedAddress,
+        process.env.VUE_APP_CRYPTOZEN_CONTRACT
+      )
+      .call();
+    console.log("allowance", allowance);
+    if (allowance > 0) {
+      this.allowanceData = true;
+    }
+  }
+  loadingApprove = false;
+  async approve(): Promise<void> {
+    try {
+      this.loadingApprove = true;
+      const web3 = this.$store.getters["getWeb3"] as Web3;
+      let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
+      if (this.$store.state.chainId === 3) {
+        contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
+      }
+      if (this.selectedCurrency.decimal) {
+        const contract = new web3.eth.Contract(erc20abi, contractAddress);
+        const approveData = await contract.methods
+          .approve(
+            process.env.VUE_APP_CRYPTOZEN_CONTRACT,
             fromExponential(
               Number(
-                this.swapAmount * 10 ** this.selectedCurrency.decimal
+                90000000000 * 10 ** this.selectedCurrency.decimal
               ).toString()
             )
           )
           .encodeABI();
-        this.params = {
+        const params = {
           from: window.ethereum.selectedAddress,
           to: contractAddress,
           value: 0,
-          data: contractData,
+          data: approveData,
         };
-      } else {
-        this.params = {
-          from: window.ethereum.selectedAddress,
-          to: this.selectedAddress.address,
-          value: web3.utils.toWei(this.swapAmount.toString()),
-        };
+        await new Promise((resolve, reject) => {
+          web3.eth
+            .sendTransaction(params)
+            .on("transactionHash", (hash) => {
+              console.log("hash", hash);
+            })
+            .on("receipt", (receipt) => {
+              console.log("receipt", receipt);
+              resolve(true);
+            })
+            .on("error", (error) => {
+              reject(error);
+            });
+        });
       }
+      await this.checkAllowance();
+      this.loadingApprove = false;
+    } catch (e) {
+      this.loadingApprove = false;
+      alert(e.message);
+    }
+  }
 
-      const gas = await web3.eth.estimateGas(this.params);
-      const gasPrice = await web3.eth.getGasPrice();
-      // const txFee = web3.utils
-      //   .toBN(gas.toString())
-      //   .mul(web3.utils.toBN(web3.utils.fromWei(gasPrice, "ether")));
-      // this.gasFee = txFee.toString();
-      const txFee = new Bignumber(gas).times(
-        web3.utils.fromWei(gasPrice, "ether")
-      );
-      this.gasFee = txFee.toString();
-
-      if (
-        this.selectedRecipientTokenModel.toLowerCase() ===
-        this.selectedCurrency.value.toLowerCase()
-      ) {
+  async checkFee(): Promise<void> {
+    try {
+      if (this.selectedCurrency && this.selectedAddress && this.allowance) {
+        this.loadingFee = true;
         this.transferFee = "0";
-        this.recipientGets = this.swapAmount;
+        this.gasFee = "0";
+        this.platformFee = "0";
+        const web3 = this.$store.getters["getWeb3"] as Web3;
+        if (
+          this.selectedCurrency.decimal &&
+          this.selectedCurrency.contractAddress
+        ) {
+          let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
+          if (this.$store.state.chainId === 3) {
+            contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
+          }
+          const contract = new web3.eth.Contract(
+            cryptozenabi,
+            process.env.VUE_APP_CRYPTOZEN_CONTRACT
+          );
+          // console.log("abc", [
+          //   contractAddress,
+          //   this.selectedAddress.address,
+          //   fromExponential(
+          //     Number(
+          //       this.swapAmount * 10 ** this.selectedCurrency.decimal
+          //     ).toString()
+          //   ),
+          // ]);
+          const amount = fromExponential(
+            Number(
+              this.swapAmount * 10 ** this.selectedCurrency.decimal
+            ).toString()
+          );
+          const contractData = contract.methods
+            .transferSameToken(
+              contractAddress,
+              this.selectedAddress.address,
+              amount
+            )
+            .encodeABI();
+          this.params = {
+            from: window.ethereum.selectedAddress,
+            to: process.env.VUE_APP_CRYPTOZEN_CONTRACT,
+            value: 0,
+            data: contractData,
+          };
+          await this.$store.dispatch("getTier");
+          const tier = this.$store.state.tier;
+          const transferFee: number = await contract.methods
+            .calculateTransferFee(amount, tier[1])
+            .call();
+          console.log("transferFee", transferFee);
+          console.log("tier[1]", tier[1]);
+          if (transferFee)
+            this.transferFee = Number(
+              transferFee / 10 ** this.selectedCurrency.decimal
+            ).toString();
+          if (
+            this.selectedRecipientTokenModel.toLowerCase() ===
+            this.selectedCurrency.value.toLowerCase()
+          ) {
+            this.recipientGets = this.swapAmount - Number(this.transferFee);
+          }
+        } else {
+          this.params = {
+            from: window.ethereum.selectedAddress,
+            to: this.selectedAddress.address,
+            value: web3.utils.toWei(this.swapAmount.toString()),
+          };
+          if (
+            this.selectedRecipientTokenModel.toLowerCase() ===
+            this.selectedCurrency.value.toLowerCase()
+          ) {
+            this.recipientGets = this.swapAmount;
+          }
+        }
+
+        const gas = await web3.eth.estimateGas(this.params);
+        const gasPrice = await web3.eth.getGasPrice();
+
+        const txFee = new Bignumber(gas).times(
+          web3.utils.fromWei(gasPrice, "ether")
+        );
+
+        this.gasFee = txFee.toString();
+
+        this.loadingFee = false;
       }
+    } catch (e) {
+      console.log("e", e);
       this.loadingFee = false;
     }
   }
@@ -297,6 +441,9 @@ export default class SelectAmount extends Vue {
     if (this.setLabel) this.label = this.setLabel;
     if (this.setSwapAmount) this.swapAmount = this.setSwapAmount;
     if (this.setContinueLabel) this.continueLabel = this.setContinueLabel;
+    this.$nextTick(() => {
+      this.checkAllowance();
+    });
   }
 
   @Watch("setSwapAmount")

@@ -321,10 +321,13 @@
               :selectedRecipientToken="selectedRecipientToken"
               :shouldSend="false"
               :readOnly="false"
+              :approved="allowance"
               @swap-amount="setSwapAmount"
               @next-step="e1 = 4"
               @prev-step="e1 = 2"
               @selected-recipient-token="setSelectedRecipientToken"
+              @transfer-fee="setTransferFee"
+              @set-allowance="setAllowance"
             ></SelectAmount>
           </v-card>
         </v-stepper-content>
@@ -344,12 +347,14 @@
                 :selectedRecipientToken="selectedRecipientToken"
                 :shouldSend="true"
                 :readOnly="true"
+                :approved="allowance"
                 @swap-amount="setSwapAmount"
                 @next-step="e1 = 3"
                 @prev-step="finish()"
                 @selected-recipient-token="setSelectedRecipientToken"
                 @params="setParams"
                 @gas-fee="setGasFee"
+                @transfer-fee="setTransferFee"
               ></SelectAmount>
               <p>To</p>
               <v-card class="mb-2" v-if="selectedAddress">
@@ -455,11 +460,21 @@
                 </v-row>
 
                 <v-row class="mt-n5">
-                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                  <!-- <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                     <v-card flat tile>
-                      <v-card-subtitle> Fee </v-card-subtitle>
+                      <v-card-subtitle> Network Fee </v-card-subtitle>
                       <v-card-title class="primary--text mt-n8">
                         {{ getFee(transaction) }} ETH
+                      </v-card-title>
+                    </v-card>
+                  </v-col> -->
+
+                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                    <v-card flat tile>
+                      <v-card-subtitle> Transfer Fee </v-card-subtitle>
+                      <v-card-title class="primary--text mt-n8">
+                        {{ transaction.fee }}
+                        {{ transaction.tokenSymbol.toUpperCase() }}
                       </v-card-title>
                     </v-card>
                   </v-col>
@@ -548,9 +563,21 @@ export default class SendMoney extends Vue {
     }
   }
 
+  allowance = false;
+  setAllowance(value: boolean): void {
+    this.allowance = value;
+  }
+
   setParams(value: TransactionConfig): void {
     if (value) {
       this.params = value;
+    }
+  }
+
+  transferFee = "";
+  setTransferFee(value: string): void {
+    if (value) {
+      this.transferFee = value;
     }
   }
   loadingSendMoney = false;
@@ -574,13 +601,16 @@ export default class SendMoney extends Vue {
                 .sendTransaction(this.params)
                 .on("transactionHash", async (hash) => {
                   console.log("hash", hash);
-                  if (this.params)
+                  if (this.params) {
+                    console.log("this.params.value", this.params.value);
                     this.transaction = await this.$store.dispatch("newTrx", {
                       hash,
-                      isToken: this.params.data ? true : false,
+                      isToken: this.params.value === "0x0",
+                      fee: this.transferFee,
                     });
+                    console.log("this.transaction", this.transaction);
+                  }
 
-                  console.log("this.transaction", this.transaction);
                   resolve(resolve);
                 });
             }
