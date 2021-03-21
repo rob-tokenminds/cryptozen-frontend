@@ -1,18 +1,6 @@
 <template>
   <v-card flat>
-    <v-alert v-if="!allowance" color="warning"
-      >Your Address must be approved our contract address to transfer token,
-      please click approve button below</v-alert
-    >
-    <v-btn
-      v-if="!allowance"
-      color="primary"
-      class="mb-5"
-      :loading="loadingApprove"
-      @click="approve()"
-      >Approve</v-btn
-    >
-    <v-card v-if="selectedCurrency" flat width="600" :disabled="!allowance">
+    <v-card v-if="selectedCurrency" flat width="600">
       <v-text-field
         height=""
         class="text-h5 rounded-0"
@@ -82,9 +70,9 @@
             >
             <v-progress-circular v-else indeterminate color="primary" size="15">
             </v-progress-circular>
-            Transfer fee</v-list-item-subtitle
+            Platform fee</v-list-item-subtitle
           >
-          <v-divider class=""></v-divider>
+          <!-- <v-divider class=""></v-divider>
           <v-list-item-subtitle
             class="secondary--text text-subtitle-2 text-left"
             ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
@@ -93,7 +81,7 @@
             <v-progress-circular v-else indeterminate color="primary" size="15">
             </v-progress-circular>
             Platform fee (discounted)</v-list-item-subtitle
-          >
+          > -->
         </v-list-item-content>
       </v-list-item>
       <v-row no-gutters>
@@ -178,7 +166,7 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import { BalanceInterface } from "../../static/balance";
 import balances from "../../static/balance";
 import Web3 from "web3";
-import erc20abi from "../../static/erc20abi";
+// import erc20abi from "../../static/erc20abi";
 import fromExponential from "from-exponential";
 import { AddressBookInterface } from "../../store/fetcher";
 import Bignumber from "bignumber.js";
@@ -208,14 +196,6 @@ export default class SelectAmount extends Vue {
   params: TransactionConfig | "" = "";
 
   selectedRecipientTokenModel = this.selectedRecipientToken;
-
-  get allowance(): boolean {
-    if (this.approved !== undefined) {
-      return this.approved;
-    } else {
-      return this.allowanceData;
-    }
-  }
 
   @Watch("transferFee")
   watchtransferFee(value: string): void {
@@ -261,83 +241,9 @@ export default class SelectAmount extends Vue {
     this.checkFee();
   }
 
-  @Watch("allowanceData")
-  watchallowance(value: boolean): void {
-    this.$emit("set-allowance", value);
-  }
-
-  allowanceData = false;
-  async checkAllowance(): Promise<void> {
-    const web3 = this.$store.getters["getWeb3"] as Web3;
-    let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
-    if (this.$store.state.chainId === 3) {
-      contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
-    }
-    const contract = new web3.eth.Contract(erc20abi, contractAddress);
-    const allowance = await contract.methods
-      .allowance(
-        window.ethereum.selectedAddress,
-        process.env.VUE_APP_CRYPTOZEN_CONTRACT
-      )
-      .call();
-    console.log("allowance", allowance);
-    if (allowance > 0) {
-      this.allowanceData = true;
-    }
-  }
-  loadingApprove = false;
-  async approve(): Promise<void> {
-    try {
-      this.loadingApprove = true;
-      const web3 = this.$store.getters["getWeb3"] as Web3;
-      let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
-      if (this.$store.state.chainId === 3) {
-        contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
-      }
-      if (this.selectedCurrency.decimal) {
-        const contract = new web3.eth.Contract(erc20abi, contractAddress);
-        const approveData = await contract.methods
-          .approve(
-            process.env.VUE_APP_CRYPTOZEN_CONTRACT,
-            fromExponential(
-              Number(
-                90000000000 * 10 ** this.selectedCurrency.decimal
-              ).toString()
-            )
-          )
-          .encodeABI();
-        const params = {
-          from: window.ethereum.selectedAddress,
-          to: contractAddress,
-          value: 0,
-          data: approveData,
-        };
-        await new Promise((resolve, reject) => {
-          web3.eth
-            .sendTransaction(params)
-            .on("transactionHash", (hash) => {
-              console.log("hash", hash);
-            })
-            .on("receipt", (receipt) => {
-              console.log("receipt", receipt);
-              resolve(true);
-            })
-            .on("error", (error) => {
-              reject(error);
-            });
-        });
-      }
-      await this.checkAllowance();
-      this.loadingApprove = false;
-    } catch (e) {
-      this.loadingApprove = false;
-      alert(e.message);
-    }
-  }
-
   async checkFee(): Promise<void> {
     try {
-      if (this.selectedCurrency && this.selectedAddress && this.allowance) {
+      if (this.selectedCurrency && this.selectedAddress) {
         this.loadingFee = true;
         this.transferFee = "0";
         this.gasFee = "0";
@@ -441,9 +347,7 @@ export default class SelectAmount extends Vue {
     if (this.setLabel) this.label = this.setLabel;
     if (this.setSwapAmount) this.swapAmount = this.setSwapAmount;
     if (this.setContinueLabel) this.continueLabel = this.setContinueLabel;
-    this.$nextTick(() => {
-      this.checkAllowance();
-    });
+    // this.$nextTick(() => {});
   }
 
   @Watch("setSwapAmount")

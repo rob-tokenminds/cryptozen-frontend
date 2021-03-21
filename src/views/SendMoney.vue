@@ -55,10 +55,7 @@
                 class="mx-auto mt-2"
                 height="100"
                 width="600"
-                @click="
-                  selectedCurrency = coin;
-                  e1 = 2;
-                "
+                @click="nextSendFrom(coin)"
               >
                 <v-card-text>
                   <v-list-item>
@@ -81,7 +78,17 @@
 
                     <v-spacer></v-spacer>
                     <v-list-item-content>
-                      <v-icon>mdi-chevron-right</v-icon>
+                      <v-icon v-if="coin.currency.allowance"
+                        >mdi-chevron-right</v-icon
+                      >
+                      <v-btn
+                        :loading="approveLoading"
+                        v-else
+                        color="primary"
+                        small
+                        @click="approve(coin)"
+                        >Approve Contract</v-btn
+                      >
                     </v-list-item-content>
                   </v-list-item>
                 </v-card-text>
@@ -271,7 +278,7 @@
                           v-if="newSubmittedAddressBook"
                           @click="
                             selectedAddress = newSubmittedAddressBook;
-                            e1 = 4;
+                            e1 = 3;
                           "
                         >
                           <v-list-item class="">
@@ -311,6 +318,7 @@
           <p class="text-center primary--text text-h5">
             You are sending on behalf of {{ selectedEthereumAddress }}
           </p>
+
           <v-card flat class="d-flex justify-center">
             <SelectAmount
               v-if="selectedCurrency"
@@ -321,7 +329,6 @@
               :selectedRecipientToken="selectedRecipientToken"
               :shouldSend="false"
               :readOnly="false"
-              :approved="allowance"
               @swap-amount="setSwapAmount"
               @next-step="e1 = 4"
               @prev-step="e1 = 2"
@@ -347,7 +354,6 @@
                 :selectedRecipientToken="selectedRecipientToken"
                 :shouldSend="true"
                 :readOnly="true"
-                :approved="allowance"
                 @swap-amount="setSwapAmount"
                 @next-step="e1 = 3"
                 @prev-step="finish()"
@@ -545,6 +551,26 @@ export default class SendMoney extends Vue {
     return window.ethereum.selectedAddress;
   }
 
+  async nextSendFrom(coin: BalanceInterface): Promise<void> {
+    if (coin.currency?.allowance) {
+      this.selectedCurrency = coin;
+      this.e1 = 2;
+    } else {
+      // await this.$store.dispatch("approve", coin);
+    }
+  }
+
+  approveLoading = false;
+  async approve(coin: BalanceInterface): Promise<void> {
+    try {
+      this.approveLoading = true;
+      await this.$store.dispatch("approve", coin);
+      this.approveLoading = false;
+    } catch (e) {
+      this.approveLoading = false;
+    }
+  }
+
   addARecipientEmail = "";
   addARecipientWalletAddress = "";
   addARecipientName = "";
@@ -702,7 +728,7 @@ export default class SendMoney extends Vue {
           }
           this.addARecipientName = "";
           this.addARecipientWalletAddress = "";
-          this.selectedCurrency = "";
+          // this.selectedCurrency = "";
           this.addARecipientEmail = "";
         }
       } else {
@@ -761,6 +787,7 @@ export default class SendMoney extends Vue {
   }
 
   mounted(): void {
+    console.log("this.currentSelected", this.currentSelected);
     if (this.step) this.e1 = this.step;
     if (this.currentSelected) this.selectedCurrency = this.currentSelected;
   }

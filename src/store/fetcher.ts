@@ -274,6 +274,22 @@ export class Fetcher {
     );
     return fetch.data;
   }
+
+  static async getRewards(token: string): Promise<RewardInterface[]> {
+    const fetch = await Fetcher.get(`/user/rewards`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return fetch.data;
+  }
+}
+
+export interface RewardInterface {
+  id: string;
+  user: UserInterface;
+  amount: number;
+  type: "check-in" | "transaction";
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AddressInterface {

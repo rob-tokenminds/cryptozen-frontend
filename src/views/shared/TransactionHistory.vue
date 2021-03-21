@@ -1,17 +1,17 @@
 <template>
   <v-container>
-    <v-card flat max-width="1100" class="mb-2">
+    <v-card flat max-width="65%" class="mb-2">
       <v-card-subtitle class="primary--text">All Activity</v-card-subtitle>
     </v-card>
 
     <v-skeleton-loader
-      max-width="1100"
+      max-width="65%"
       class="mb-2"
       v-if="loadingSyncTransactions"
       type="expansion-panels, expansion-panel-header, list-item, ist-item-avatar, list-item-two-line"
     ></v-skeleton-loader>
     <v-skeleton-loader
-      max-width="1100"
+      max-width="65%"
       class="mb-2"
       v-if="loadingTransactions"
       type="expansion-panels, expansion-panel-header, list-item, ist-item-avatar, list-item-two-line"
@@ -22,11 +22,18 @@
       :key="transaction.id"
       class="mb-2"
       flat
-      max-width="1100"
+      max-width="65%"
     >
-      <v-card-subtitle>{{
-        toHumanDate(transaction.created_at)
-      }}</v-card-subtitle>
+      <v-card-actions>
+        <v-card-subtitle
+          >{{ toHumanDate(transaction.created_at) }}
+        </v-card-subtitle>
+        <v-spacer></v-spacer>
+        <v-chip v-if="!transaction.fee" color="primary">
+          External Transaction</v-chip
+        >
+      </v-card-actions>
+
       <v-divider></v-divider>
       <v-expansion-panels multiple flat>
         <v-expansion-panel>
@@ -87,12 +94,22 @@
                     </v-card-title>
                   </v-card>
                 </v-col>
+
+                <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                  <v-card flat tile>
+                    <v-card-subtitle> Platform Fee </v-card-subtitle>
+                    <v-card-title class="primary--text mt-n8">
+                      {{ transaction.fee }}
+                      {{ transaction.tokenSymbol.toUpperCase() }}
+                    </v-card-title>
+                  </v-card>
+                </v-col>
               </v-row>
 
               <v-row class="mt-n5">
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
-                    <v-card-subtitle> Fee </v-card-subtitle>
+                    <v-card-subtitle> Gas Fee </v-card-subtitle>
                     <v-card-title class="primary--text mt-n8">
                       {{ getFee(transaction) }} ETH
                     </v-card-title>
@@ -199,6 +216,14 @@ export default class TransactionHistory extends Vue {
     }
   }
 
+  @Watch("$route.params.coin")
+  watchRouteParamsCoin(value: string): void {
+    if (value) {
+      this.getTransactions();
+      this.getSyncTransactions();
+    }
+  }
+
   get transactions(): TransactionInterface[] {
     const transactions: TransactionInterface[] = this.$store.getters[
       "getTransactions"
@@ -208,7 +233,11 @@ export default class TransactionHistory extends Vue {
         (t) => t.tokenSymbol === this.$route.params.coin
       );
     }
-    return transactions;
+    return transactions.sort((t, t2) => {
+      if (t.blockNumber > t2.blockNumber) return 1;
+      if (t.blockNumber < t2.blockNumber) return 1;
+      return 0;
+    });
   }
 
   async mounted(): Promise<void> {

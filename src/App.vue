@@ -114,7 +114,7 @@
       </v-card>
     </v-dialog>
     <v-app-bar app color="white" flat :prominent="isMobile">
-      <v-app-bar color="white" flat max-width="1120">
+      <v-app-bar color="white" flat max-width="65%">
         <v-app-bar-nav-icon
           v-if="navIcon"
           @click.stop="drawer = !drawer"
@@ -301,10 +301,7 @@ export default class App extends Vue {
           );
           const balances: BalanceInterface[] = this.$store.state.balances;
           for (const balance of balances) {
-            await this.$store.dispatch("updateCoinBalance", {
-              web3: this.web3,
-              coin: balance,
-            });
+            await this.$store.dispatch("updateCoinBalance", balance);
           }
         } catch (e) {
           console.log("e", e);

@@ -1,6 +1,11 @@
 <template>
   <v-container>
-    <v-card class="d-flex" max-width="1100">
+    <v-card
+      v-for="reward of rewards"
+      :key="reward.id"
+      class="d-flex"
+      max-width="1100"
+    >
       <v-row>
         <v-col cols="12" md="8" sm="8" lg="8" xl="8">
           <v-card flat class="d-flex justify-start ma-5">
@@ -33,8 +38,28 @@
 </template>
 
 <script lang="ts">
+import { RewardInterface } from "@/store/fetcher";
 import { Vue, Component, Watch, Ref } from "vue-property-decorator";
 
 @Component({ name: "ReferralRewards", components: {} })
-export default class ReferralRewards extends Vue {}
+export default class ReferralRewards extends Vue {
+  mounted(): void {
+    this.$nextTick(() => {
+      this.getRewards();
+    });
+  }
+
+  loadingReward = false;
+  async getRewards(): Promise<void> {
+    this.loadingReward = true;
+    if (window.ethereum.selectedAddress && this.$store.state.isLogin) {
+      await this.$store.dispatch("getRewards");
+    }
+    this.loadingReward = false;
+  }
+
+  get rewards(): RewardInterface[] {
+    return this.$store.getters["getRewards"];
+  }
+}
 </script>

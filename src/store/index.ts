@@ -9,9 +9,11 @@ import {
   ProfileInterface,
   AddressBookInterface,
   TransactionInterface,
+  RewardInterface,
 } from "./fetcher";
 import cryptozenabi from "@/static/cryptozenabi";
 import bignumber from "bignumber.js";
+import fromExponential from "from-exponential";
 // import VuexPersistence from "vuex-persist";
 
 export interface updateCoinBalanceParams {
@@ -36,6 +38,7 @@ export interface storeInterface {
   transactions: TransactionInterface[];
   isLogin: boolean;
   tier: [];
+  rewards: RewardInterface[];
 }
 // const vuexLocal = new VuexPersistence<storeInterface>({
 //   storage: window.localStorage,
@@ -88,6 +91,7 @@ const store: StoreOptions<storeInterface> = {
     transactions: [],
     isLogin: false,
     tier: [],
+    rewards: [],
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -114,54 +118,124 @@ const store: StoreOptions<storeInterface> = {
     // },
   },
   actions: {
-    async updateCoinBalance(
-      { commit, state },
-      { web3, coin }: updateCoinBalanceParams
-    ) {
-      if (coin.value === "eth") {
-        await web3.eth
-          .getBalance(state.selectedAddress)
-          .then((balanceInWei) => {
-            const ethBalance = new CurrencyModel(
-              state.selectedAddress,
-              web3.utils.fromWei(balanceInWei, "ether"),
-              coin.value
-            );
-            commit("pushCurrencyBalances", ethBalance);
-            commit(
-              "pushBalance",
-              Object.assign(coin, { currency: ethBalance })
-            );
-          });
-      } else {
-        if (coin.decimal && coin.contractAddress) {
+    async updateCoinBalance({ commit, state }, coin: BalanceInterface) {
+      const web3 = state.web3;
+      if (web3) {
+        if (coin.value === "eth") {
+          await web3.eth
+            .getBalance(state.selectedAddress)
+            .then(async (balanceInWei) => {
+              const ethBalance = new CurrencyModel(
+                state.selectedAddress,
+                web3.utils.fromWei(balanceInWei, "ether"),
+                coin.value,
+                true
+              );
+              commit("pushCurrencyBalances", ethBalance);
+              commit(
+                "pushBalance",
+                Object.assign(coin, { currency: ethBalance })
+              );
+            });
+        } else {
+          if (coin.decimal && coin.contractAddress) {
+            let contractAddress = coin.contractAddress?.MAINNET;
+            if (state.chainId === 3) {
+              contractAddress = coin.contractAddress?.ROPSTEN;
+            }
+            const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
+            await contract.methods
+              .balanceOf(state.selectedAddress)
+              .call({ from: state.selectedAddress })
+              .then(async (unscaledBalance: number) => {
+                if (
+                  coin.decimal &&
+                  unscaledBalance > 0 &&
+                  coin.contractAddress
+                ) {
+                  let contractAddress = coin.contractAddress.MAINNET;
+                  if (state.chainId === 3) {
+                    contractAddress = coin.contractAddress?.ROPSTEN;
+                  }
+                  const contract = new web3.eth.Contract(
+                    ERC20Abi,
+                    contractAddress
+                  );
+                  const allowance = await contract.methods
+                    .allowance(
+                      window.ethereum.selectedAddress,
+                      process.env.VUE_APP_CRYPTOZEN_CONTRACT
+                    )
+                    .call();
+
+                  const BN = web3.utils
+                    .toBN(unscaledBalance)
+                    .div(web3.utils.toBN(10 ** coin.decimal));
+                  const ethBalance = new CurrencyModel(
+                    state.selectedAddress,
+                    BN.toString(),
+                    coin.value,
+                    allowance > 0
+                  );
+                  commit("pushCurrencyBalances", ethBalance);
+                  commit(
+                    "pushBalance",
+                    Object.assign(coin, { currency: ethBalance })
+                  );
+                }
+              });
+          }
+        }
+      }
+    },
+    async approve({ state }, coin: BalanceInterface) {
+      const web3 = state.web3;
+      if (web3) {
+        try {
           let contractAddress = coin.contractAddress?.MAINNET;
           if (state.chainId === 3) {
             contractAddress = coin.contractAddress?.ROPSTEN;
           }
-          const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
-          await contract.methods
-            .balanceOf(state.selectedAddress)
-            .call({ from: state.selectedAddress })
-            .then((unscaledBalance: number) => {
-              if (coin.decimal && unscaledBalance > 0) {
-                const BN = web3.utils
-                  .toBN(unscaledBalance)
-                  .div(web3.utils.toBN(10 ** coin.decimal));
-                const ethBalance = new CurrencyModel(
-                  state.selectedAddress,
-                  BN.toString(),
-                  coin.value
-                );
-                commit("pushCurrencyBalances", ethBalance);
-                commit(
-                  "pushBalance",
-                  Object.assign(coin, { currency: ethBalance })
-                );
-              }
+          if (coin.decimal) {
+            const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
+            const approveData = await contract.methods
+              .approve(
+                process.env.VUE_APP_CRYPTOZEN_CONTRACT,
+                fromExponential(
+                  Number(90000000000 * 10 ** coin.decimal).toString()
+                )
+              )
+              .encodeABI();
+            const params = {
+              from: window.ethereum.selectedAddress,
+              to: contractAddress,
+              value: 0,
+              data: approveData,
+            };
+            await new Promise((resolve, reject) => {
+              web3.eth
+                .sendTransaction(params)
+                .on("transactionHash", (hash) => {
+                  console.log("hash", hash);
+                  alert(
+                    "Processing approval function, please wait until it confirmed on the blockchain. You can see the progress directly on metamask "
+                  );
+                })
+                .on("receipt", (receipt) => {
+                  console.log("receipt", receipt);
+                  resolve(true);
+                })
+                .on("error", (error) => {
+                  reject(error);
+                });
             });
+          }
+          return true;
+        } catch (e) {
+          return false;
         }
       }
+      return false;
     },
     updateSelectedAddress({ state }, address: string) {
       state.selectedAddress = address;
@@ -315,8 +389,6 @@ const store: StoreOptions<storeInterface> = {
       { hash, isToken, fee }: { hash: string; isToken: boolean; fee: string }
     ) {
       const token = Vue.$cookies.get("cryptozen_token");
-      console.log("hash", hash);
-      console.log("isToken", isToken);
       const trx = await Fetcher.postNewTrx(token, hash, isToken, fee);
       const checkTrx = state.transactions.find((t) => t.id === trx.id);
       if (!checkTrx) {
@@ -340,6 +412,16 @@ const store: StoreOptions<storeInterface> = {
           .getTierByAmount(balanceAmount)
           .call();
         state.tier = tier;
+      }
+    },
+    async getRewards({ state }) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const rewards = await Fetcher.getRewards(token);
+      for (const reward of rewards) {
+        const findReward = state.rewards.find((r) => r.id === reward.id);
+        if (!findReward) {
+          state.rewards.push(reward);
+        }
       }
     },
   },
@@ -380,6 +462,9 @@ const store: StoreOptions<storeInterface> = {
     },
     getTransactions(state) {
       return state.transactions;
+    },
+    getRewards(state) {
+      return state.rewards;
     },
   },
   // plugins: [vuexLocal.plugin],

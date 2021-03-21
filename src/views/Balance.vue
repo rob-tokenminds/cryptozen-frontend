@@ -1,13 +1,30 @@
 <template>
   <div>
     <v-container>
-      <v-btn color="secondary" @click="sendMoneyDialog = true"
+      <v-btn
+        :disabled="!allowance"
+        color="secondary"
+        @click="sendMoneyDialog = true"
         >Send {{ getBalance.name }}</v-btn
       >
-      <v-btn color="secondary" @click="swapMoneyDialog = true" class="ml-1"
+      <v-btn
+        :disabled="!allowance"
+        color="secondary"
+        @click="swapMoneyDialog = true"
+        class="ml-1"
         >Swap {{ getBalance.name }}</v-btn
       >
-      <v-btn color="secondary" class="ml-1">Lock Compound</v-btn>
+      <v-btn :disabled="!allowance" color="secondary" class="ml-1"
+        >Lock Compound</v-btn
+      >
+      <v-btn
+        class="ml-1"
+        v-if="!allowance"
+        :loading="loadingApprove"
+        @click="approve"
+        color="secondary"
+        >Approve contract address</v-btn
+      >
     </v-container>
 
     <v-dialog
@@ -57,16 +74,37 @@ export default class Balance extends Vue {
   balances = Balances;
   sendMoneyDialog = false;
   swapMoneyDialog = false;
+  loadingApprove = false;
+  async approve(): Promise<void> {
+    try {
+      this.loadingApprove = true;
+
+      await this.$store.dispatch("approve", this.getBalance);
+      await this.$store.dispatch("updateCoinBalance", this.getBalance);
+
+      this.loadingApprove = false;
+    } catch (e) {
+      this.loadingApprove = false;
+    }
+  }
 
   updateSendMoneyDialog(value: boolean): void {
     this.sendMoneyDialog = value;
   }
 
-  get getBalance(): any {
+  get getBalance(): BalanceInterface {
     const balance = this.$store.state.balances.find(
       (b: BalanceInterface) => b.value === this.$route.params.coin
     );
     return balance;
+  }
+
+  get allowance(): boolean {
+    const balance = this.getBalance;
+    if (balance.currency) {
+      return balance.currency.allowance;
+    }
+    return true;
   }
 
   get balanceTitle(): string {
