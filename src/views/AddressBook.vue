@@ -108,7 +108,7 @@
     <v-card
       class="mt-2"
       flat
-      max-width="1100"
+      max-width="65%"
       v-for="addressBook in addressBookList"
       :key="addressBook.id"
     >

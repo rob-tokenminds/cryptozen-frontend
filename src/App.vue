@@ -61,13 +61,8 @@
         </v-list-item>
 
         <v-list-item>
-          <v-btn
-            class="mt-2"
-            to="/referral/rewards"
-            large
-            color="secondary"
-            block
-            >Referral Reward</v-btn
+          <v-btn class="mt-2" to="/rewards" large color="secondary" block>
+            Reward</v-btn
           >
         </v-list-item>
       </v-list>

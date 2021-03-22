@@ -170,7 +170,10 @@ export default class TransactionHistory extends Vue {
       ).toString()} ${transaction.tokenName}`;
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;
-      return `${web3.utils.fromWei(transaction.value, "ether")} ETH`;
+      return `${web3.utils.fromWei(
+        Number(transaction.value).toString(),
+        "ether"
+      )} ETH`;
     }
   }
 

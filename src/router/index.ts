@@ -32,8 +32,8 @@ const routes: Array<RouteConfig> = [
     component: Balance,
   },
   {
-    path: "/referral/rewards",
-    name: "Referral Rewards",
+    path: "/rewards",
+    name: "Rewards",
     component: ReferralRewards,
   },
   {

@@ -309,6 +309,7 @@ export interface ProfileInterface {
   email_verified: boolean;
   created_at: string;
   updated_at: string;
+  reward_balance: number;
 }
 
 export interface UserInterface {
