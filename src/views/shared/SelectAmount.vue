@@ -249,74 +249,79 @@ export default class SelectAmount extends Vue {
         this.gasFee = "0";
         this.platformFee = "0";
         const web3 = this.$store.getters["getWeb3"] as Web3;
-        if (
-          this.selectedCurrency.decimal &&
-          this.selectedCurrency.contractAddress
-        ) {
-          let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
-          if (this.$store.state.chainId === 3) {
-            contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
+
+        const contract = new web3.eth.Contract(
+          cryptozenabi,
+          process.env.VUE_APP_CRYPTOZEN_CONTRACT
+        );
+        let contractData = "";
+        let amount = "";
+        let value = "0";
+        if (this.selectedCurrency.value !== "eth") {
+          if (
+            this.selectedCurrency.decimal &&
+            this.selectedCurrency.contractAddress
+          ) {
+            let contractAddress = this.selectedCurrency.contractAddress
+              ?.MAINNET;
+            if (this.$store.state.chainId === 3) {
+              contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
+            }
+            amount = fromExponential(
+              Number(
+                this.swapAmount * 10 ** this.selectedCurrency.decimal
+              ).toString()
+            );
+            contractData = contract.methods
+              .transferSameToken(
+                contractAddress,
+                this.selectedAddress.address,
+                amount
+              )
+              .encodeABI();
           }
-          const contract = new web3.eth.Contract(
-            cryptozenabi,
-            process.env.VUE_APP_CRYPTOZEN_CONTRACT
-          );
-          // console.log("abc", [
-          //   contractAddress,
-          //   this.selectedAddress.address,
-          //   fromExponential(
-          //     Number(
-          //       this.swapAmount * 10 ** this.selectedCurrency.decimal
-          //     ).toString()
-          //   ),
-          // ]);
-          const amount = fromExponential(
-            Number(
-              this.swapAmount * 10 ** this.selectedCurrency.decimal
-            ).toString()
-          );
-          const contractData = contract.methods
-            .transferSameToken(
-              contractAddress,
-              this.selectedAddress.address,
-              amount
-            )
+        } else {
+          amount = web3.utils.toWei(this.swapAmount.toString(), "ether");
+          contractData = contract.methods
+            .transferSameEther(this.selectedAddress.address, amount)
             .encodeABI();
-          this.params = {
-            from: window.ethereum.selectedAddress,
-            to: process.env.VUE_APP_CRYPTOZEN_CONTRACT,
-            value: 0,
-            data: contractData,
-          };
-          await this.$store.dispatch("getTier");
-          const tier = this.$store.state.tier;
-          const transferFee: number = await contract.methods
-            .calculateTransferFee(amount, tier[1])
-            .call();
-          console.log("transferFee", transferFee);
-          console.log("tier[1]", tier[1]);
-          if (transferFee)
+          value = amount;
+        }
+
+        if (!contractData) {
+          throw new Error("Contract data not found !");
+        }
+        this.params = {
+          from: window.ethereum.selectedAddress,
+          to: process.env.VUE_APP_CRYPTOZEN_CONTRACT,
+          value,
+          data: contractData,
+        };
+        await this.$store.dispatch("getTier");
+        const tier = this.$store.state.tier;
+        const transferFee: number = await contract.methods
+          .calculateTransferFee(amount, tier[1])
+          .call();
+        console.log("transferFee", transferFee);
+        console.log("tier[1]", tier[1]);
+        if (transferFee) {
+          if (this.selectedCurrency?.decimal) {
             this.transferFee = Number(
               transferFee / 10 ** this.selectedCurrency.decimal
             ).toString();
-          if (
-            this.selectedRecipientTokenModel.toLowerCase() ===
-            this.selectedCurrency.value.toLowerCase()
-          ) {
-            this.recipientGets = this.swapAmount - Number(this.transferFee);
+          } else {
+            this.transferFee = web3.utils.fromWei(
+              transferFee.toString(),
+              "ether"
+            );
           }
-        } else {
-          this.params = {
-            from: window.ethereum.selectedAddress,
-            to: this.selectedAddress.address,
-            value: web3.utils.toWei(this.swapAmount.toString()),
-          };
-          if (
-            this.selectedRecipientTokenModel.toLowerCase() ===
-            this.selectedCurrency.value.toLowerCase()
-          ) {
-            this.recipientGets = this.swapAmount;
-          }
+        }
+
+        if (
+          this.selectedRecipientTokenModel.toLowerCase() ===
+          this.selectedCurrency.value.toLowerCase()
+        ) {
+          this.recipientGets = this.swapAmount - Number(this.transferFee);
         }
 
         const gas = await web3.eth.estimateGas(this.params);
