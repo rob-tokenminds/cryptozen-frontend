@@ -260,6 +260,7 @@ export default class SelectAmount extends Vue {
         this.transferFee = "0";
         this.gasFee = "0";
         this.platformFee = "0";
+        this.transactionReward = "0";
         const web3 = this.$store.getters["getWeb3"] as Web3;
 
         const contract = new web3.eth.Contract(
@@ -314,11 +315,7 @@ export default class SelectAmount extends Vue {
         const transferFee: number = await contract.methods
           .calculateTransferFee(amount, tier[1])
           .call();
-        await this.checkRewardFee(
-          transferFee.toString(),
-          this.selectedCurrency.value !== "eth",
-          this.selectedCurrency
-        );
+
         console.log("transferFee", transferFee);
         console.log("tier[1]", tier[1]);
         if (transferFee) {
@@ -333,6 +330,11 @@ export default class SelectAmount extends Vue {
             );
           }
         }
+        await this.checkRewardFee(
+          this.transferFee.toString(),
+          this.selectedCurrency.value !== "eth",
+          this.selectedCurrency
+        );
 
         if (
           this.selectedRecipientTokenModel.toLowerCase() ===
