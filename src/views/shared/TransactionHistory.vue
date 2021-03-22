@@ -238,7 +238,7 @@ export default class TransactionHistory extends Vue {
     }
     return transactions.sort((t, t2) => {
       if (t.blockNumber > t2.blockNumber) return 1;
-      if (t.blockNumber < t2.blockNumber) return 1;
+      if (t.blockNumber < t2.blockNumber) return -1;
       return 0;
     });
   }
