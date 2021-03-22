@@ -1,10 +1,10 @@
 dependencies:
-  '@ethersproject/contracts': 5.0.11
-  '@ethersproject/providers': 5.0.23
-  '@ethersproject/solidity': 5.0.9
+  '@ethersproject/contracts': 5.0.12
+  '@ethersproject/providers': 5.0.24
+  '@ethersproject/solidity': 5.0.10
   '@mdi/font': 5.9.55
   '@mdi/js': 5.9.55
-  '@uniswap/sdk': 3.0.3_8d1c3584b9eaf8cf0f29e3a4c43d871e
+  '@uniswap/sdk': 3.0.3_1739c0d572bc9012969cd51c51fafa60
   abi-decoder: 2.4.0
   axios: 0.21.1
   bignumber.js: 9.0.1
@@ -183,7 +183,7 @@ packages:
     dependencies:
       '@ethersproject/bytes': 5.0.10
       '@ethersproject/logger': 5.0.9
-      bn.js: 4.11.9
+      bn.js: 4.12.0
     dev: false
     resolution:
       integrity: sha512-Q4TjMq9Gg3Xzj0aeJWqJgI3tdEiPiET7Y5OtNtjTAODZ2kp4y9jMNg97zVcvPedFvGROdpGDyCI77JDFodUzOw==
@@ -213,6 +213,20 @@ packages:
     dev: false
     resolution:
       integrity: sha512-FTUUd/6x00dYL2VufE2VowZ7h3mAyBfCQMGwI3tKDIWka+C0CunllFiKrlYCdiHFuVeMotR65dIcnzbLn72MCw==
+  /@ethersproject/contracts/5.0.12:
+    dependencies:
+      '@ethersproject/abi': 5.0.12
+      '@ethersproject/abstract-provider': 5.0.9
+      '@ethersproject/abstract-signer': 5.0.13
+      '@ethersproject/address': 5.0.10
+      '@ethersproject/bignumber': 5.0.14
+      '@ethersproject/bytes': 5.0.10
+      '@ethersproject/constants': 5.0.9
+      '@ethersproject/logger': 5.0.9
+      '@ethersproject/properties': 5.0.8
+    dev: false
+    resolution:
+      integrity: sha512-srijy31idjz8bE+gL1I6IRj2H4I9dUwfQ+QroLrIgNdGArqY8y2iFUKa3QTy+JBX26fJsdYiCQi1kKkaNpnMpQ==
   /@ethersproject/hash/5.0.11:
     dependencies:
       '@ethersproject/abstract-signer': 5.0.13
@@ -315,6 +329,30 @@ packages:
     dev: false
     resolution:
       integrity: sha512-eJ94z2tgPaUgUmxwd3BVkIzkgkbNIkY6wRPVas04LVaBTycObQbgj794aaUu2bfk7+Bn2B/gjUZtJW1ybxh9/A==
+  /@ethersproject/providers/5.0.24:
+    dependencies:
+      '@ethersproject/abstract-provider': 5.0.9
+      '@ethersproject/abstract-signer': 5.0.13
+      '@ethersproject/address': 5.0.10
+      '@ethersproject/basex': 5.0.8
+      '@ethersproject/bignumber': 5.0.14
+      '@ethersproject/bytes': 5.0.10
+      '@ethersproject/constants': 5.0.9
+      '@ethersproject/hash': 5.0.11
+      '@ethersproject/logger': 5.0.9
+      '@ethersproject/networks': 5.0.8
+      '@ethersproject/properties': 5.0.8
+      '@ethersproject/random': 5.0.8
+      '@ethersproject/rlp': 5.0.8
+      '@ethersproject/sha2': 5.0.8
+      '@ethersproject/strings': 5.0.9
+      '@ethersproject/transactions': 5.0.10
+      '@ethersproject/web': 5.0.13
+      bech32: 1.1.4
+      ws: 7.2.3
+    dev: false
+    resolution:
+      integrity: sha512-M4Iw1r4gGJkt7ZUa++iREuviKL/DIpmIMsaUlVlXtV+ZrUXeN8xQ3zOTrbz7R4h9W9oljBZM7i4D3Kn1krJ30A==
   /@ethersproject/random/5.0.8:
     dependencies:
       '@ethersproject/bytes': 5.0.10
@@ -346,6 +384,16 @@ packages:
     dev: false
     resolution:
       integrity: sha512-w5it3GbFOvN6e0mTd5gDNj+bwSe6L9jqqYjU+uaYS8/hAEp4qYLk5p8ZjbJJkNn7u1p0iwocp8X9oH/OdK8apA==
+  /@ethersproject/solidity/5.0.10:
+    dependencies:
+      '@ethersproject/bignumber': 5.0.14
+      '@ethersproject/bytes': 5.0.10
+      '@ethersproject/keccak256': 5.0.8
+      '@ethersproject/sha2': 5.0.8
+      '@ethersproject/strings': 5.0.9
+    dev: false
+    resolution:
+      integrity: sha512-8OG3HLqynWXDA6mVIHuHfF/ojTTwBahON7hc9GAKCqglzXCkVA3OpyxOJXPzjHClRIAUUiU7r9oy9Z/nsjtT/g==
   /@ethersproject/solidity/5.0.9:
     dependencies:
       '@ethersproject/bignumber': 5.0.14
@@ -848,11 +896,11 @@ packages:
       node: ^8.10.0 || ^10.13.0 || >=11.10.1
     resolution:
       integrity: sha512-s/aIP1XcMkEqCNcPQtl60ogUYjSM8FU2mq1O7y5cFf3Xcob1z1iXWNB6cC43Op+NGRTFgGolri6s8z/efA9i1w==
-  /@uniswap/sdk/3.0.3_8d1c3584b9eaf8cf0f29e3a4c43d871e:
+  /@uniswap/sdk/3.0.3_1739c0d572bc9012969cd51c51fafa60:
     dependencies:
-      '@ethersproject/contracts': 5.0.11
-      '@ethersproject/providers': 5.0.23
-      '@ethersproject/solidity': 5.0.9
+      '@ethersproject/contracts': 5.0.12
+      '@ethersproject/providers': 5.0.24
+      '@ethersproject/solidity': 5.0.10
       '@uniswap/v2-core': 1.0.1
       big.js: 5.2.2
       decimal.js-light: 2.5.1
@@ -1732,10 +1780,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-UzRK2xRhehP26N0s4okF0cC6MhU=
-  /bn.js/4.11.9:
-    dev: false
-    resolution:
-      integrity: sha512-E6QoYqCKZfgatHTdHzs1RRKP7ip4vvm+EyRUeE2RF0NblwVvb0p6jSVeNTOFxPn26QXN2o6SMfNxKp6kU8zQaw==
   /bn.js/4.12.0:
     resolution:
       integrity: sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==
@@ -10429,9 +10473,9 @@ packages:
     resolution:
       integrity: sha512-jcKpkthap6x63MB4TxwCyuIGkV0oYP/YRyuQU5UO0Yz/E/ZAu+653/uov+phdmO54n6BcvFRyyt0RRrWdN2mpw==
 specifiers:
-  '@ethersproject/contracts': ^5.0.11
-  '@ethersproject/providers': ^5.0.23
-  '@ethersproject/solidity': ^5.0.9
+  '@ethersproject/contracts': ^5.0.12
+  '@ethersproject/providers': ^5.0.24
+  '@ethersproject/solidity': ^5.0.10
   '@mdi/font': ^5.9.55
   '@mdi/js': ^5.9.55
   '@types/crypto-js': ^4.0.1

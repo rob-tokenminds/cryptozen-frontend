@@ -38,7 +38,11 @@
 
       <v-stepper-items>
         <v-stepper-content step="1">
-          <v-card flat class="d-flex justify-center">
+          <v-card
+            :disabled="approveLoadingStatus"
+            flat
+            class="d-flex justify-center"
+          >
             <v-card flat>
               <p class="text-center primary--text text-h5">
                 Where do you want to send from ?
@@ -82,12 +86,14 @@
                         >mdi-chevron-right</v-icon
                       >
                       <v-btn
-                        :loading="approveLoading"
+                        :disabled="approveLoadingStatus"
                         v-else
                         color="primary"
                         small
                         @click="approve(coin)"
-                        >Approve Contract</v-btn
+                        >{{
+                          approveLoading(coin) ? "Pending" : "Approve Contract"
+                        }}</v-btn
                       >
                     </v-list-item-content>
                   </v-list-item>
@@ -560,14 +566,25 @@ export default class SendMoney extends Vue {
     }
   }
 
-  approveLoading = false;
+  approveLoading(coin: BalanceInterface): boolean {
+    if (this.currentlyApproved && coin.value === this.currentlyApproved.value) {
+      return true;
+    }
+    return false;
+  }
+
+  currentlyApproved: BalanceInterface | "" = "";
+
+  approveLoadingStatus = false;
   async approve(coin: BalanceInterface): Promise<void> {
     try {
-      this.approveLoading = true;
+      this.approveLoadingStatus = true;
+      this.currentlyApproved = coin;
       await this.$store.dispatch("approve", coin);
-      this.approveLoading = false;
+      await this.$store.dispatch("updateCoinBalance", coin);
+      this.approveLoadingStatus = false;
     } catch (e) {
-      this.approveLoading = false;
+      this.approveLoadingStatus = false;
     }
   }
 
@@ -578,8 +595,17 @@ export default class SendMoney extends Vue {
   selectedAddress: AddressBookInterface | "" = "";
   newSubmittedAddressBook: AddressBookInterface | "" = "";
   newAddressBookSubmitted = false;
+  selectedCurrency: BalanceInterface | "" = "";
+  selectedRecipientToken = this.selectedCurrency
+    ? this.selectedCurrency.value
+    : "usdt";
 
-  selectedRecipientToken = "usdt";
+  @Watch("selectedCurrency")
+  watchselectedCurrency(value: BalanceInterface): void {
+    if (value) {
+      this.selectedRecipientToken = value.value;
+    }
+  }
 
   params: TransactionConfig | "" = "";
   gasFee = "0";
@@ -800,7 +826,7 @@ export default class SendMoney extends Vue {
   }
   detailUrl = process.env.VUE_APP_DETAIL_URL;
   coins = Balances;
-  selectedCurrency: BalanceInterface | "" = "";
+
   swapAmount = 0;
   setSwapAmount(value: number): void {
     this.swapAmount = Number(value);

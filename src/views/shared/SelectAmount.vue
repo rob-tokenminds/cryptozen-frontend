@@ -72,16 +72,16 @@
             </v-progress-circular>
             Platform fee</v-list-item-subtitle
           >
-          <!-- <v-divider class=""></v-divider>
+          <v-divider class=""></v-divider>
           <v-list-item-subtitle
             class="secondary--text text-subtitle-2 text-left"
             ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
-              >{{ platformFee }} ETH</a
+              >+{{ transactionReward }} BF Token</a
             >
             <v-progress-circular v-else indeterminate color="primary" size="15">
             </v-progress-circular>
-            Platform fee (discounted)</v-list-item-subtitle
-          > -->
+            Transaction Reward</v-list-item-subtitle
+          >
         </v-list-item-content>
       </v-list-item>
       <v-row no-gutters>
@@ -169,9 +169,21 @@ import Web3 from "web3";
 // import erc20abi from "../../static/erc20abi";
 import fromExponential from "from-exponential";
 import { AddressBookInterface } from "../../store/fetcher";
-import Bignumber from "bignumber.js";
+import BigNumber from "bignumber.js";
 import { TransactionConfig } from "web3-core";
 import cryptozenabi from "../../static/cryptozenabi";
+import {
+  ChainId,
+  Token,
+  WETH,
+  Fetcher as UniswapFetcher,
+  Route,
+  Trade,
+  TokenAmount,
+  TradeType,
+  Percent,
+} from "@uniswap/sdk";
+import { providers } from "ethers";
 
 @Component({ name: "SelectAmount" })
 export default class SelectAmount extends Vue {
@@ -302,6 +314,11 @@ export default class SelectAmount extends Vue {
         const transferFee: number = await contract.methods
           .calculateTransferFee(amount, tier[1])
           .call();
+        await this.checkRewardFee(
+          transferFee.toString(),
+          this.selectedCurrency.value !== "eth",
+          this.selectedCurrency
+        );
         console.log("transferFee", transferFee);
         console.log("tier[1]", tier[1]);
         if (transferFee) {
@@ -327,7 +344,7 @@ export default class SelectAmount extends Vue {
         const gas = await web3.eth.estimateGas(this.params);
         const gasPrice = await web3.eth.getGasPrice();
 
-        const txFee = new Bignumber(gas).times(
+        const txFee = new BigNumber(gas).times(
           web3.utils.fromWei(gasPrice, "ether")
         );
 
@@ -337,6 +354,10 @@ export default class SelectAmount extends Vue {
       }
     } catch (e) {
       console.log("e", e);
+      this.transactionReward = "0";
+      this.transferFee = "0";
+      this.gasFee = "0";
+      this.platformFee = "0";
       this.loadingFee = false;
     }
   }
@@ -371,6 +392,84 @@ export default class SelectAmount extends Vue {
 
   prevStep(): void {
     this.$emit("prev-step", this.currentStep - 1);
+  }
+
+  transactionReward = "0";
+  async checkRewardFee(
+    amountFee: string,
+    isToken: boolean,
+    TRADETOKENContract?: BalanceInterface
+  ): Promise<void> {
+    const ethProvider = new providers.Web3Provider(window.ethereum);
+    const Ninja = new Token(
+      ChainId.ROPSTEN,
+      process.env.VUE_APP_NINJA_TOKEN_CONTRACT as string,
+      18
+    );
+    const NinjaWETHPair = await UniswapFetcher.fetchPairData(
+      WETH[ChainId.ROPSTEN],
+      Ninja,
+      ethProvider
+    );
+    if (isToken) {
+      if (
+        TRADETOKENContract &&
+        TRADETOKENContract.contractAddress &&
+        TRADETOKENContract.decimal
+      ) {
+        let contractAddress = TRADETOKENContract.contractAddress.MAINNET;
+        if (this.$store.state.chainId === 3) {
+          contractAddress = TRADETOKENContract.contractAddress.ROPSTEN;
+        }
+        const TRADETOKEN = new Token(
+          ChainId.ROPSTEN,
+          contractAddress,
+          TRADETOKENContract.decimal
+        );
+        const TRADETOKENWETHPAIR = await UniswapFetcher.fetchPairData(
+          WETH[ChainId.ROPSTEN],
+          TRADETOKEN,
+          ethProvider
+        );
+
+        const route = new Route(
+          [TRADETOKENWETHPAIR, NinjaWETHPair],
+          TRADETOKEN,
+          Ninja
+        );
+
+        const amount = new BigNumber(amountFee)
+          .times(10 ** TRADETOKENContract.decimal)
+          .toFixed();
+        const realAmount = fromExponential(amount);
+        const trade = new Trade(
+          route,
+          new TokenAmount(TRADETOKEN, realAmount),
+          TradeType.EXACT_INPUT
+        );
+        const slippageTolerance = new Percent("50", realAmount);
+        const amountOutMin = trade.minimumAmountOut(slippageTolerance);
+        this.transactionReward = amountOutMin.toSignificant(6);
+      }
+    } else {
+      const route = new Route(
+        [NinjaWETHPair],
+        WETH[NinjaWETHPair.chainId],
+        Ninja
+      );
+      const web3 = this.$store.getters["getWeb3"] as Web3;
+      const realAmount = web3.utils.toWei(amountFee, "ether");
+      const trade = new Trade(
+        route,
+        new TokenAmount(WETH[NinjaWETHPair.chainId], realAmount),
+        TradeType.EXACT_INPUT
+      );
+      const slippageTolerance = new Percent("50", realAmount);
+      const amountOutMin = trade.minimumAmountOut(slippageTolerance);
+      console.log("aa", trade.executionPrice.toSignificant());
+      console.log("bb", trade.executionPrice.invert().toSignificant());
+      this.transactionReward = amountOutMin.toSignificant(6);
+    }
   }
 }
 </script>
