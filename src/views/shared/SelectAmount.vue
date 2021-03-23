@@ -8,13 +8,12 @@
         color="primary"
         outlined
         :max="selectedCurrency.currency.balance"
-        v-model="swapAmount"
+        v-model.lazy="swapAmount"
         :hint="hint"
         persistent-hint
         type="number"
         :step="0.000001"
         :readonly="readOnly"
-        @input="UpdateRecipientGetsAmount"
       >
         <template v-slot:append>
           <v-list-item class="mt-n4">
@@ -99,12 +98,11 @@
             color="primary"
             label="Recipient gets"
             outlined
-            v-model="recipientGets"
+            v-model.lazy="recipientGets"
             type="number"
             step="0.000001"
             flat
             height="50"
-            @input="UpdateSwapAmount"
             :readonly="readOnly"
           >
             <!-- <template v-slot:append-outer>
@@ -234,6 +232,16 @@ export default class SelectAmount extends Vue {
   params: TransactionConfig | "" = "";
 
   selectedRecipientTokenModel = this.selectedRecipientToken;
+
+  @Watch("swapAmount")
+  watchswapAmount(value: number): void {
+    this.UpdateRecipientGetsAmount(value);
+  }
+
+  @Watch("recipientGets")
+  watchrecipientGets(value: number): void {
+    this.UpdateSwapAmount(value);
+  }
 
   @Watch("transferFee")
   watchtransferFee(value: string): void {
