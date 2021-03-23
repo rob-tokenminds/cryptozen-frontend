@@ -76,7 +76,8 @@
           <v-list-item-subtitle
             class="secondary--text text-subtitle-2 text-left"
             ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
-              >+{{ transactionReward }} BF Token</a
+              >+{{ transactionReward }} BF Token (
+              {{ transactionRewardInUsd }} USD)</a
             >
             <v-progress-circular v-else indeterminate color="primary" size="15">
             </v-progress-circular>
@@ -184,6 +185,7 @@ import {
   Percent,
 } from "@uniswap/sdk";
 import { providers } from "ethers";
+import axios from "axios";
 
 @Component({ name: "SelectAmount" })
 export default class SelectAmount extends Vue {
@@ -397,6 +399,7 @@ export default class SelectAmount extends Vue {
   }
 
   transactionReward = "0";
+  transactionRewardInEth = "0";
   async checkRewardFee(
     amountFee: string,
     isToken: boolean,
@@ -439,6 +442,11 @@ export default class SelectAmount extends Vue {
           TRADETOKEN,
           Ninja
         );
+        const routeEth = new Route(
+          [NinjaWETHPair],
+          Ninja,
+          WETH[ChainId.ROPSTEN]
+        );
 
         const amount = new BigNumber(amountFee)
           .times(10 ** TRADETOKENContract.decimal)
@@ -449,9 +457,22 @@ export default class SelectAmount extends Vue {
           new TokenAmount(TRADETOKEN, realAmount),
           TradeType.EXACT_INPUT
         );
+
         const slippageTolerance = new Percent("50", realAmount);
         const amountOutMin = trade.minimumAmountOut(slippageTolerance);
         this.transactionReward = amountOutMin.toSignificant(6);
+        const tradeEth = new Trade(
+          routeEth,
+          new TokenAmount(
+            Ninja,
+            fromExponential(
+              Number(Number(this.transactionReward) * 10 ** 18).toString()
+            )
+          ),
+          TradeType.EXACT_INPUT
+        );
+        const amountOutMinEth = tradeEth.minimumAmountOut(slippageTolerance);
+        this.transactionRewardInEth = amountOutMinEth.toSignificant();
       }
     } else {
       const route = new Route(
@@ -471,8 +492,89 @@ export default class SelectAmount extends Vue {
       console.log("aa", trade.executionPrice.toSignificant());
       console.log("bb", trade.executionPrice.invert().toSignificant());
       this.transactionReward = amountOutMin.toSignificant(6);
+      this.transactionRewardInEth = this.transactionReward;
     }
   }
+
+  transactionRewardInUsd = "0";
+  @Watch("transactionRewardInEth")
+  async watchtransactionRewardInEth(value: string): Promise<void> {
+    if (value !== "0") {
+      try {
+        console.log("transactionRewardInEth", value);
+        try {
+          const axiosGet = await axios.get(
+            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=ethereum`
+          );
+          const data = axiosGet.data as CoingeckoInterface[];
+          const realData = data[0];
+          const currentPrice = realData.current_price;
+          this.transactionRewardInUsd = fromExponential(
+            new BigNumber(value).times(currentPrice).toFixed(2)
+          );
+        } catch (error) {
+          let message: any = "";
+          if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            message = error.response.data;
+          } else if (error.request) {
+            // The request was made but no response was received
+            // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+            // http.ClientRequest in node.js
+            message = error.request;
+          } else {
+            // Something happened in setting up the request that triggered an Error
+            message = error.message;
+          }
+          if (message.message) {
+            message = message.message;
+          }
+          console.log("message", message);
+          console.log(error.config);
+          alert(message);
+          throw new Error(message);
+        }
+      } catch (e) {
+        console.log("e", e);
+      }
+    }
+  }
+}
+
+export interface Roi {
+  times: number;
+  currency: string;
+  percentage: number;
+}
+
+export interface CoingeckoInterface {
+  id: string;
+  symbol: string;
+  name: string;
+  image: string;
+  current_price: number;
+  market_cap: number;
+  market_cap_rank: number;
+  fully_diluted_valuation?: any;
+  total_volume: number;
+  high_24h: number;
+  low_24h: number;
+  price_change_24h: number;
+  price_change_percentage_24h: number;
+  market_cap_change_24h: number;
+  market_cap_change_percentage_24h: number;
+  circulating_supply: number;
+  total_supply?: any;
+  max_supply?: any;
+  ath: number;
+  ath_change_percentage: number;
+  ath_date: Date;
+  atl: number;
+  atl_change_percentage: number;
+  atl_date: Date;
+  roi: Roi;
+  last_updated: Date;
 }
 </script>
 
