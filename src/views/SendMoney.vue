@@ -25,14 +25,14 @@
         <v-stepper-step step=""> Review </v-stepper-step>
         <v-spacer></v-spacer>
 
-        <ProfileMenu class="mt-1" :showBell="false"></ProfileMenu>
+        <ProfileMenu class="mb-3" :showBell="false"></ProfileMenu>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
-
-        <v-icon color="primary" large class="mb-3" @click="closeDialog"
-          >mdi-close</v-icon
+        <v-btn color="primary" icon large class="mt-3" @click="closeDialog">
+          <v-icon class="">mdi-close</v-icon></v-btn
         >
+
         <v-spacer></v-spacer>
       </v-stepper-header>
 
@@ -352,6 +352,7 @@
             <v-card flat width="600">
               <SelectAmount
                 v-if="selectedCurrency"
+                :key="componentKey"
                 :currentStep="4"
                 :selectedCurrency="selectedCurrency"
                 :setSwapAmount="swapAmount"
@@ -409,9 +410,7 @@
 
           <v-card v-if="transaction" flat class="d-flex justify-center">
             <v-card class="mb-2" max-width="1100">
-              <v-card-subtitle>{{
-                toHumanDate(transaction.created_at)
-              }}</v-card-subtitle>
+              <v-card-subtitle>Pending</v-card-subtitle>
               <v-divider></v-divider>
 
               <v-row>
@@ -433,8 +432,11 @@
                 </v-col>
 
                 <v-col cols="12" md="6" sm="6" lg="6" xl="6">
-                  <p class="primary--text text-right mt-6">
-                    {{ getAmount(transaction) }}
+                  <p class="primary--text text-right mt-6 mr-2">
+                    Amount sent/receipt :
+                    {{ getAmount(transaction).toUpperCase() }} /
+                    {{ getAmountReceipt(transaction).toUpperCase() }}
+                    <br />
                   </p>
                 </v-col>
               </v-row>
@@ -458,6 +460,7 @@
                       <v-card-title class="primary--text mt-n8">
                         {{ getWalletName(transaction.to) }}
                       </v-card-title>
+                      <v-card-subtitle> {{ transaction.to }} </v-card-subtitle>
                     </v-card>
                   </v-col>
 
@@ -495,7 +498,7 @@
                     <v-card flat tile>
                       <v-card-subtitle> Block Number </v-card-subtitle>
                       <v-card-title class="primary--text mt-n8">
-                        {{ transaction.blockNumber }}
+                        Pending
                       </v-card-title>
                     </v-card>
                   </v-col>
@@ -552,11 +555,17 @@ global.EventSource = NativeEventSource || EventSourcePolyfill;
 export default class SendMoney extends Vue {
   @Prop({ type: Number }) readonly step!: number;
   @Prop({ type: Object }) readonly currentSelected!: BalanceInterface;
-
+  componentKey = 0;
   get selectedEthereumAddress(): string {
     return window.ethereum.selectedAddress;
   }
-
+  @Watch("e1")
+  watche1(value: number): void {
+    console.log("valuee1", value);
+    if (value === 4) {
+      this.componentKey += 1;
+    }
+  }
   async nextSendFrom(coin: BalanceInterface): Promise<void> {
     if (coin.currency?.allowance) {
       this.selectedCurrency = coin;
@@ -647,7 +656,7 @@ export default class SendMoney extends Vue {
             `You do not have enough ETH for gas fee. Your current ETH balance is ${ethBalanceInEther}`
           );
         } else {
-          await new Promise((resolve) => {
+          await new Promise((resolve, reject) => {
             if (this.params) {
               web3.eth
                 .sendTransaction(this.params)
@@ -662,9 +671,13 @@ export default class SendMoney extends Vue {
                     });
                     console.log("this.transaction", this.transaction);
                   }
-
-                  resolve(resolve);
+                  resolve(true);
+                })
+                .on("error", (e) => {
+                  reject(false);
                 });
+            } else {
+              resolve(true);
             }
           });
           this.e1 = 5;
@@ -821,8 +834,9 @@ export default class SendMoney extends Vue {
   e1 = 1;
   coinSelected = "";
   closeDialog(): void {
-    this.$emit("update-dialog", false);
-    this.e1 = 1;
+    // this.$emit("update-dialog", false);
+    // this.e1 = 1;
+    location.reload();
   }
   detailUrl = process.env.VUE_APP_DETAIL_URL;
   coins = Balances;
@@ -846,6 +860,21 @@ export default class SendMoney extends Vue {
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;
       return `${web3.utils.fromWei(transaction.value, "ether")} ETH`;
+    }
+  }
+
+  getAmountReceipt(transaction: TransactionInterface): string {
+    if (transaction.isToken) {
+      return `${(
+        (Number(transaction.value) - Number(transaction.fee)) /
+        10 ** Number(transaction.tokenDecimal)
+      ).toString()} ${transaction.tokenName}`;
+    } else {
+      const web3 = this.$store.getters["getWeb3"] as Web3;
+      return `${
+        Number(web3.utils.fromWei(transaction.value, "ether")) -
+        Number(transaction.fee)
+      } ETH`;
     }
   }
 

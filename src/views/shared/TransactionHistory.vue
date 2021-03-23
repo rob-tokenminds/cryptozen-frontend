@@ -29,9 +29,10 @@
           >{{ toHumanDate(transaction.created_at) }}
         </v-card-subtitle>
         <v-spacer></v-spacer>
-        <v-chip v-if="!transaction.fee" color="primary">
+        <v-chip v-if="!transaction.fee" color="secondary">
           External Transaction</v-chip
         >
+        <v-chip v-else color="primary"> Cryptozen Transaction</v-chip>
       </v-card-actions>
 
       <v-divider></v-divider>
@@ -237,9 +238,7 @@ export default class TransactionHistory extends Vue {
       );
     }
     return transactions.sort((t, t2) => {
-      if (t.blockNumber > t2.blockNumber) return 1;
-      if (t.blockNumber < t2.blockNumber) return -1;
-      return 0;
+      return t2.timestamp - t.timestamp;
     });
   }
 

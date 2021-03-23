@@ -36,7 +36,7 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item to="/history">
+        <!-- <v-list-item to="/history">
           <v-list-item-icon>
             <v-icon color="white">{{ icons.mdiClockOutline }}</v-icon>
           </v-list-item-icon>
@@ -46,7 +46,7 @@
               >History</v-list-item-title
             >
           </v-list-item-content>
-        </v-list-item>
+        </v-list-item> -->
 
         <v-list-item to="/address-book">
           <v-list-item-icon>

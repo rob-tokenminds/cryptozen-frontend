@@ -77,7 +77,8 @@
             <v-list-item>
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Tier {{ tier >= 0 ? tier : "-" }}</v-list-item-title
+                  >Tier {{ tier >= 0 ? tier : "-" }} |
+                  {{ ninjaBalance }} BF</v-list-item-title
                 >
                 <!-- <v-list-item-subtitle
                   >Referrals until Tier 2</v-list-item-subtitle
@@ -221,6 +222,15 @@ export default class ProfileMenu extends Vue {
     } else {
       return "mdi-bell-outline";
     }
+  }
+
+  get ninjaBalance(): string {
+    const balances = this.$store.state.balances as BalanceInterface[];
+    const balance = balances.find((b) => b.value === "bf");
+    if (balance && balance.currency) {
+      return balance?.currency?.balance;
+    }
+    return "0";
   }
   async checkNotification(): Promise<void> {
     const profile = this.$store.getters["getProfile"];

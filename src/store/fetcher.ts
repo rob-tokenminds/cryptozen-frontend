@@ -371,4 +371,5 @@ export interface TransactionInterface {
   isInternal: boolean;
   created_at: Date;
   updated_at: Date;
+  fee: string;
 }
