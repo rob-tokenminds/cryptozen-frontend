@@ -12,10 +12,13 @@
         :hint="hint"
         persistent-hint
         type="number"
-        :step="0.000001"
+        :step="0.01"
         :readonly="readOnly"
         @input="UpdateRecipientGetsAmount"
         @change="UpdateRecipientGetsAmount"
+        @keydown="UpdateRecipientGetsAmount"
+        @keyup="UpdateRecipientGetsAmount"
+        @keypress="UpdateRecipientGetsAmount"
       >
         <template v-slot:append>
           <v-list-item class="mt-n4">
@@ -102,7 +105,7 @@
             outlined
             v-model="recipientGets"
             type="number"
-            step="0.000001"
+            :step="0.01"
             flat
             height="50"
             @input="UpdateSwapAmount"
@@ -236,14 +239,17 @@ export default class SelectAmount extends Vue {
   params: TransactionConfig | "" = "";
 
   selectedRecipientTokenModel = this.selectedRecipientToken;
-
+  updatingAmount = false;
   // @Watch("swapAmount")
-  // watchswapAmount(value: number): void {
-  //   this.UpdateRecipientGetsAmount(value);
+  // async watchswapAmount(value: number): Promise<void> {
+  //   if (!this.updatingAmount) {
+  //     this.updatingAmount = true;
+  //     await this.UpdateRecipientGetsAmount(value);
+  //   }
   // }
 
   // @Watch("recipientGets")
-  // watchrecipientGets(value: number): void {
+  // async watchrecipientGets(value: number): Promise<void> {
   //   this.UpdateSwapAmount(value);
   // }
 
