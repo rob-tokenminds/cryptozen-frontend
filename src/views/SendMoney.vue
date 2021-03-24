@@ -13,6 +13,7 @@
           max-height="60"
           max-width="130"
           src="../assets/logo2.svg"
+          @click="goToHome()"
         ></v-img>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
@@ -596,6 +597,11 @@ export default class SendMoney extends Vue {
   componentKey = 0;
   get selectedEthereumAddress(): string {
     return window.ethereum.selectedAddress;
+  }
+
+  goToHome(): void {
+    this.$router.push(`/`);
+    location.reload();
   }
   @Watch("e1")
   watche1(value: number): void {

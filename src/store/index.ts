@@ -168,23 +168,28 @@ const store: StoreOptions<storeInterface> = {
                   let isApproved = false;
                   let hash = "";
                   console.log("allowance", allowance);
-                  if (allowance === 0 || allowance === "0") {
-                    const token = Vue.$cookies.get("cryptozen_token");
-                    hash = await Fetcher.getApproval(
-                      token,
-                      window.ethereum.selectedAddress,
-                      contractAddress
-                    );
-                    console.log("hash", hash);
-                    if (hash) {
-                      const tx = await web3.eth.getTransactionReceipt(hash);
-                      if (tx && tx.status) {
-                        isApproved = true;
+                  if (unscaledBalance > 0) {
+                    if (allowance === 0 || allowance === "0") {
+                      const token = Vue.$cookies.get("cryptozen_token");
+                      hash = await Fetcher.getApproval(
+                        token,
+                        window.ethereum.selectedAddress,
+                        contractAddress
+                      );
+                      console.log("hash", hash);
+                      if (hash) {
+                        const tx = await web3.eth.getTransactionReceipt(hash);
+                        if (tx && tx.status) {
+                          isApproved = true;
+                        }
                       }
+                    } else {
+                      isApproved = true;
                     }
                   } else {
                     isApproved = true;
                   }
+
                   console.log("isApproved", isApproved);
                   const BN = web3.utils
                     .toBN(unscaledBalance)

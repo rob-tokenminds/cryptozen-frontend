@@ -8,17 +8,13 @@
         color="primary"
         outlined
         :max="selectedCurrency.currency.balance"
-        v-model="swapAmount"
+        v-model.lazy="swapAmount"
         :hint="hint"
         persistent-hint
         type="number"
         :step="0.01"
         :readonly="readOnly"
-        @input="UpdateRecipientGetsAmount"
         @change="UpdateRecipientGetsAmount"
-        @keydown="UpdateRecipientGetsAmount"
-        @keyup="UpdateRecipientGetsAmount"
-        @keypress="UpdateRecipientGetsAmount"
       >
         <template v-slot:append>
           <v-list-item class="mt-n4">
@@ -164,12 +160,11 @@
             color="primary"
             label="Recipient gets"
             outlined
-            v-model="recipientGets"
+            v-model.lazy="recipientGets"
             type="number"
             :step="0.01"
             flat
             height="50"
-            @input="UpdateSwapAmount"
             @change="UpdateSwapAmount"
             :readonly="readOnly"
           >
@@ -196,16 +191,25 @@
             :readonly="readOnly"
           >
             <template v-slot:item="{ item, on, attrs }">
-              <v-list-item v-bind="attrs" v-on="on">
+              <v-list-item
+                :disabled="selectedCurrency.value !== item.value"
+                v-bind="attrs"
+                v-on="on"
+              >
                 <v-list-item-avatar tile>
                   <v-img
                     :src="require(`../../assets/${item.value}.svg`)"
                   ></v-img>
                 </v-list-item-avatar>
                 <v-list-item-content>
-                  <v-list-item-title class="primary--text text-subtitle-1">{{
-                    item.name
-                  }}</v-list-item-title>
+                  <v-list-item-title class="primary--text text-subtitle-1"
+                    >{{ item.name
+                    }}{{
+                      selectedCurrency.value !== item.value
+                        ? `(Swap Coming Soon)`
+                        : ``
+                    }}</v-list-item-title
+                  >
                 </v-list-item-content>
               </v-list-item>
             </template>
@@ -234,7 +238,9 @@
         <v-btn color="primary" v-if="!disableBack" outlined @click="prevStep()">
           Back
         </v-btn>
-        <v-btn color="primary" @click="nextStep()"> {{ continueLabel }} </v-btn>
+        <v-btn color="primary" :disabled="loadingFee" @click="nextStep()">
+          {{ continueLabel }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-card>
@@ -301,18 +307,40 @@ export default class SelectAmount extends Vue {
 
   selectedRecipientTokenModel = this.selectedRecipientToken;
   updatingAmount = false;
-  // @Watch("swapAmount")
-  // async watchswapAmount(value: number): Promise<void> {
-  //   if (!this.updatingAmount) {
-  //     this.updatingAmount = true;
-  //     await this.UpdateRecipientGetsAmount(value);
-  //   }
-  // }
+  @Watch("swapAmount")
+  async watchswapAmount(value: number): Promise<void> {
+    if (!this.updatingAmount) {
+      this.updatingAmount = true;
+      if (value <= Number(this.selectedCurrency?.currency?.balance)) {
+        await this.UpdateRecipientGetsAmount(value);
+      } else {
+        alert(`Value input is higher than your balance`);
+        this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+      }
 
-  // @Watch("recipientGets")
-  // async watchrecipientGets(value: number): Promise<void> {
-  //   this.UpdateSwapAmount(value);
-  // }
+      this.updatingAmount = false;
+    }
+  }
+
+  @Watch("recipientGets")
+  async watchrecipientGets(value: number): Promise<void> {
+    if (!this.updatingAmount) {
+      this.updatingAmount = true;
+      if (value <= Number(this.selectedCurrency?.currency?.balance)) {
+        await this.UpdateSwapAmount(value);
+        if (
+          this.swapAmount >= Number(this.selectedCurrency?.currency?.balance)
+        ) {
+          alert(`Value input is higher than your balance`);
+          this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+        }
+      } else {
+        alert(`Value input is higher than your balance`);
+        this.recipientGets = Number(0);
+      }
+      this.updatingAmount = false;
+    }
+  }
 
   @Watch("transferFee")
   watchtransferFee(value: string): void {
@@ -350,27 +378,34 @@ export default class SelectAmount extends Vue {
   }
 
   @Watch("selectedRecipientTokenModel")
-  watchSelectedRecipientToken(value: string): void {
-    this.$emit("selected-recipient-token", value);
-    this.checkFee(this.swapAmount);
+  watchSelectedRecipientToken(value: string, prev: string): void {
+    if (value.toLowerCase() === this.selectedCurrency.value.toLowerCase()) {
+      this.$emit("selected-recipient-token", value);
+      this.checkFee(this.swapAmount);
+    } else {
+      console.log("prev", prev);
+
+      alert(`Swap currently are not available `);
+      this.selectedRecipientTokenModel = prev;
+    }
   }
   componentKey = 1;
   async UpdateRecipientGetsAmount(value: number): Promise<void> {
     this.recipientGets = 0;
-    if (value) {
-      await this.checkFee(value);
+    if (this.swapAmount) {
+      await this.checkFee(this.swapAmount);
 
-      this.recipientGets = Number(value) - Number(this.transferFee);
+      this.recipientGets = Number(this.swapAmount) - Number(this.transferFee);
       await this.updateUsdAmount();
     }
   }
 
   async UpdateSwapAmount(value: number): Promise<void> {
     this.swapAmount = 0;
-    if (value) {
-      await this.checkFee(value);
+    if (this.recipientGets) {
+      await this.checkFee(this.recipientGets);
 
-      this.swapAmount = Number(value) + Number(this.transferFee);
+      this.swapAmount = Number(this.recipientGets) + Number(this.transferFee);
       await this.updateUsdAmount();
     }
   }
@@ -409,7 +444,7 @@ export default class SelectAmount extends Vue {
 
   // @Watch("swapAmount")
   // async watchswapAmount(value: number): Promise<void> {
-  //   await this.checkFee();
+  //   await this.checkFee(value);
   //   if (
   //     this.selectedRecipientTokenModel.toLowerCase() ===
   //     this.selectedCurrency.value.toLowerCase()
@@ -420,7 +455,7 @@ export default class SelectAmount extends Vue {
 
   // @Watch("recipientGets")
   // async watchrecipientGets(value: number): Promise<void> {
-  //   await this.checkFee();
+  //   await this.checkFee(value);
 
   //   if (
   //     this.selectedRecipientTokenModel.toLowerCase() ===
@@ -431,7 +466,8 @@ export default class SelectAmount extends Vue {
   // }
 
   convertToUsd(eth: string): string {
-    if (this.ethereumPrice) {
+    if (this.ethereumPrice && eth !== "NaN") {
+      console.log("eth", eth);
       const currentPrice = this.ethereumPrice.current_price;
       return fromExponential(new BigNumber(eth).times(currentPrice).toFixed(2));
     }
@@ -439,112 +475,119 @@ export default class SelectAmount extends Vue {
   }
 
   async checkFee(inputAmount: number): Promise<void> {
-    try {
-      if (this.selectedCurrency && this.selectedAddress) {
-        this.loadingFee = true;
-        this.transferFee = "0";
-        this.gasFee = "0";
-        this.platformFee = "0";
-        this.transactionReward = "0";
-        const web3 = this.$store.getters["getWeb3"] as Web3;
+    if (!this.loadingFee) {
+      try {
+        if (this.selectedCurrency && this.selectedAddress) {
+          this.loadingFee = true;
+          this.transferFee = "0";
+          this.gasFee = "0";
+          this.platformFee = "0";
+          this.transactionReward = "0";
+          const web3 = this.$store.getters["getWeb3"] as Web3;
 
-        const contract = new web3.eth.Contract(
-          cryptozenabi,
-          process.env.VUE_APP_CRYPTOZEN_CONTRACT
-        );
-        let contractData = "";
-        let amount = "";
-        let value = "0";
-        if (this.selectedCurrency.value !== "eth") {
-          if (
-            this.selectedCurrency.decimal &&
-            this.selectedCurrency.contractAddress
-          ) {
-            let contractAddress = this.selectedCurrency.contractAddress
-              ?.MAINNET;
-            if (this.$store.state.chainId === 3) {
-              contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
+          const contract = new web3.eth.Contract(
+            cryptozenabi,
+            process.env.VUE_APP_CRYPTOZEN_CONTRACT
+          );
+          let contractData = "";
+          let amount = "";
+          let value = "0";
+          if (this.selectedCurrency.value !== "eth") {
+            if (
+              this.selectedCurrency.decimal &&
+              this.selectedCurrency.contractAddress
+            ) {
+              let contractAddress = this.selectedCurrency.contractAddress
+                ?.MAINNET;
+              if (this.$store.state.chainId === 3) {
+                contractAddress = this.selectedCurrency.contractAddress
+                  ?.ROPSTEN;
+              }
+              amount = fromExponential(
+                Number(
+                  inputAmount * 10 ** this.selectedCurrency.decimal
+                ).toString()
+              );
+              contractData = contract.methods
+                .transferSameToken(
+                  contractAddress,
+                  this.selectedAddress.address,
+                  amount
+                )
+                .encodeABI();
             }
-            amount = fromExponential(
-              Number(
-                inputAmount * 10 ** this.selectedCurrency.decimal
-              ).toString()
-            );
-            contractData = contract.methods
-              .transferSameToken(
-                contractAddress,
-                this.selectedAddress.address,
-                amount
-              )
-              .encodeABI();
-          }
-        } else {
-          amount = web3.utils.toWei(inputAmount.toString(), "ether");
-          contractData = contract.methods
-            .transferSameEther(this.selectedAddress.address, amount)
-            .encodeABI();
-          value = amount;
-        }
-
-        if (!contractData) {
-          throw new Error("Contract data not found !");
-        }
-        const params = {
-          from: window.ethereum.selectedAddress,
-          to: process.env.VUE_APP_CRYPTOZEN_CONTRACT,
-          value,
-          data: contractData,
-        };
-        await this.$store.dispatch("getTier");
-        const tier = this.$store.state.tier;
-        const transferFee: number = await contract.methods
-          .calculateTransferFee(amount, tier[1])
-          .call();
-
-        console.log("transferFee", transferFee);
-        console.log("tier[1]", tier[1]);
-        if (transferFee) {
-          if (this.selectedCurrency?.decimal) {
-            this.transferFee = Number(
-              transferFee / 10 ** this.selectedCurrency.decimal
-            ).toString();
-            this.transferFeeOnUsd = await this.checktransferFeeOnUsd(
-              this.transferFee
-            );
           } else {
-            this.transferFee = web3.utils.fromWei(
-              transferFee.toString(),
-              "ether"
-            );
-            this.transferFeeOnUsd = this.convertToUsd(this.transferFee);
+            console.log("inputAmount.toString()", inputAmount.toString());
+            amount = web3.utils.toWei(inputAmount.toString(), "ether");
+            contractData = contract.methods
+              .transferSameEther(this.selectedAddress.address, amount)
+              .encodeABI();
+            value = amount;
           }
+
+          if (!contractData) {
+            throw new Error("Contract data not found !");
+          }
+          const params = {
+            from: window.ethereum.selectedAddress,
+            to: process.env.VUE_APP_CRYPTOZEN_CONTRACT,
+            value,
+            data: contractData,
+          };
+          await this.$store.dispatch("getTier");
+          const tier = this.$store.state.tier;
+          const transferFee: number = await contract.methods
+            .calculateTransferFee(amount, tier[1])
+            .call();
+
+          console.log("transferFee", transferFee);
+          console.log("tier[1]", tier[1]);
+          if (transferFee) {
+            if (this.selectedCurrency?.decimal) {
+              this.transferFee = Number(
+                transferFee / 10 ** this.selectedCurrency.decimal
+              ).toString();
+              this.transferFeeOnUsd = await this.checktransferFeeOnUsd(
+                this.transferFee
+              );
+            } else {
+              this.transferFee = web3.utils.fromWei(
+                transferFee.toString(),
+                "ether"
+              );
+              this.transferFeeOnUsd = this.convertToUsd(this.transferFee);
+            }
+          }
+
+          this.gas = await web3.eth.estimateGas(params);
+          this.gasPrice = await web3.eth.getGasPrice();
+          await this.checkRewardFee(
+            this.transferFee.toString(),
+            this.selectedCurrency.value !== "eth",
+            this.selectedCurrency
+          );
+          console.log("gasPrice", this.gasPrice);
+          console.log("gas", this.gas);
+          this.params = params;
+          const txFee = new BigNumber(this.gas).times(
+            web3.utils.fromWei(this.gasPrice, "ether")
+          );
+
+          this.gasFee = txFee.toString();
+
+          this.loadingFee = false;
         }
-
-        this.gas = await web3.eth.estimateGas(params);
-        this.gasPrice = await web3.eth.getGasPrice();
-        await this.checkRewardFee(
-          this.transferFee.toString(),
-          this.selectedCurrency.value !== "eth",
-          this.selectedCurrency
-        );
-        console.log("gasPrice", this.gasPrice);
-        console.log("gas", this.gas);
-        this.params = params;
-        const txFee = new BigNumber(this.gas).times(
-          web3.utils.fromWei(this.gasPrice, "ether")
-        );
-
-        this.gasFee = txFee.toString();
-
+      } catch (e) {
+        console.log("e", e);
+        // this.transactionReward = "0";
+        // this.transferFee = "0";
+        // this.gasFee = "0";
+        // this.platformFee = "0";
         this.loadingFee = false;
       }
-    } catch (e) {
-      console.log("e", e);
-      this.transactionReward = "0";
-      this.transferFee = "0";
-      this.gasFee = "0";
-      this.platformFee = "0";
-      this.loadingFee = false;
+    } else {
+      await sleep(100);
+      this.checkFee(inputAmount);
     }
   }
   gas = 0;
@@ -628,7 +671,7 @@ export default class SelectAmount extends Vue {
       Ninja,
       WETH[NinjaWETHPair.chainId]
     );
-
+    console.log("amountamountamount", amount);
     const realAmount = new BigNumber(amount).times(10 ** 18).toFixed();
     const trade = new Trade(
       route,
@@ -690,7 +733,7 @@ export default class SelectAmount extends Vue {
           Ninja,
           WETH[ChainId.ROPSTEN]
         );
-
+        // console.log("amountFee", amountFee);
         const amount = new BigNumber(amountFee)
           .times(10 ** TRADETOKENContract.decimal)
           .toFixed();
@@ -722,7 +765,7 @@ export default class SelectAmount extends Vue {
         this.transactionReward = (
           Number(amountOutMin.toSignificant(6)) +
           Number(amountOutMin3.toSignificant(6))
-        ).toString();
+        ).toFixed(6);
         const tradeEth = new Trade(
           routeEth,
           new TokenAmount(
