@@ -49,7 +49,9 @@
       </v-list-item-icon>
 
       <v-list-item-avatar class="mr-2 ml-n2" v-if="!isMobile">
-        <v-avatar color="main" size="50"></v-avatar>
+        <v-avatar size="50">
+          <v-img :src="require(`../../assets/eth.svg`)"></v-img
+        ></v-avatar>
       </v-list-item-avatar>
 
       <v-list-item-content class="">
