@@ -379,7 +379,7 @@
           <p class="text-center primary--text text-h5">Review</p>
 
           <v-card flat class="d-flex justify-center">
-            <v-card flat width="600">
+            <v-card flat width="800">
               <SelectAmount
                 v-if="selectedCurrency"
                 :key="componentKey"
