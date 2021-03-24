@@ -2,7 +2,7 @@
   <v-container>
     <div class="mb-10">
       <v-row class="ml-1">
-        <v-btn color="secondary" @click="addAWallet = true">Add a Wallet</v-btn>
+        <!-- <v-btn color="secondary" @click="addAWallet = true">Add a Wallet</v-btn> -->
         <v-btn color="secondary" @click="addARecipient = true" class="ml-1"
           >Add a Recipient</v-btn
         >
@@ -114,7 +114,11 @@
     >
       <v-list-item class="">
         <v-list-item-avatar size="60">
-          <v-avatar color="main"></v-avatar>
+          <v-avatar color="">
+            <v-img
+              :src="require(`../assets/${addressBook.currency}.svg`)"
+            ></v-img>
+          </v-avatar>
         </v-list-item-avatar>
         <v-list-item-content>
           <v-list-item-title class="primary--text ma-2"

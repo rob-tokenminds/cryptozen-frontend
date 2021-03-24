@@ -53,7 +53,7 @@ const balances: BalanceInterface[] = [
   },
   {
     value: CoinList.bf,
-    name: "BF Token",
+    name: "Ninja Token",
     contractAddress: {
       ROPSTEN: "0xacef59a53941ebff53cea6c9296c6a3af96a1a41",
       MAINNET: "0xacef59a53941ebff53cea6c9296c6a3af96a1a41",

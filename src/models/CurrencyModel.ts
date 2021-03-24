@@ -3,15 +3,21 @@ export default class CurrencyModel {
   balance!: string;
   coin!: string;
   allowance!: boolean;
+  allowancePending!: boolean;
+  hash!: string;
   constructor(
     address: string,
     balance: string,
     coin: string,
-    allowance: boolean
+    allowance: boolean,
+    allowancePending: boolean,
+    hash: string
   ) {
     this.address = address;
     this.balance = balance;
     this.coin = coin;
     this.allowance = allowance;
+    this.allowancePending = allowancePending;
+    this.hash = hash;
   }
 }

@@ -129,7 +129,9 @@ const store: StoreOptions<storeInterface> = {
                 state.selectedAddress,
                 web3.utils.fromWei(balanceInWei, "ether"),
                 coin.value,
-                true
+                true,
+                false,
+                ""
               );
               commit("pushCurrencyBalances", ethBalance);
               commit(
@@ -148,11 +150,7 @@ const store: StoreOptions<storeInterface> = {
               .balanceOf(state.selectedAddress)
               .call({ from: state.selectedAddress })
               .then(async (unscaledBalance: number) => {
-                if (
-                  coin.decimal &&
-                  unscaledBalance > 0 &&
-                  coin.contractAddress
-                ) {
+                if (coin.decimal && coin.contractAddress) {
                   let contractAddress = coin.contractAddress.MAINNET;
                   if (state.chainId === 3) {
                     contractAddress = coin.contractAddress?.ROPSTEN;
@@ -167,7 +165,27 @@ const store: StoreOptions<storeInterface> = {
                       process.env.VUE_APP_CRYPTOZEN_CONTRACT
                     )
                     .call();
-
+                  let isApproved = false;
+                  let hash = "";
+                  console.log("allowance", allowance);
+                  if (allowance === 0 || allowance === "0") {
+                    const token = Vue.$cookies.get("cryptozen_token");
+                    hash = await Fetcher.getApproval(
+                      token,
+                      window.ethereum.selectedAddress,
+                      contractAddress
+                    );
+                    console.log("hash", hash);
+                    if (hash) {
+                      const tx = await web3.eth.getTransactionReceipt(hash);
+                      if (tx && tx.status) {
+                        isApproved = true;
+                      }
+                    }
+                  } else {
+                    isApproved = true;
+                  }
+                  console.log("isApproved", isApproved);
                   const BN = web3.utils
                     .toBN(unscaledBalance)
                     .div(web3.utils.toBN(10 ** coin.decimal));
@@ -175,7 +193,9 @@ const store: StoreOptions<storeInterface> = {
                     state.selectedAddress,
                     BN.toString(),
                     coin.value,
-                    allowance > 0
+                    Number(allowance) > 0,
+                    !isApproved,
+                    hash
                   );
                   commit("pushCurrencyBalances", ethBalance);
                   commit(
@@ -196,7 +216,7 @@ const store: StoreOptions<storeInterface> = {
           if (state.chainId === 3) {
             contractAddress = coin.contractAddress?.ROPSTEN;
           }
-          if (coin.decimal) {
+          if (coin.decimal && contractAddress) {
             const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
             const approveData = await contract.methods
               .approve(
@@ -215,8 +235,15 @@ const store: StoreOptions<storeInterface> = {
             await new Promise((resolve, reject) => {
               web3.eth
                 .sendTransaction(params)
-                .on("transactionHash", (hash) => {
+                .on("transactionHash", async (hash) => {
                   console.log("hash", hash);
+                  const token = Vue.$cookies.get("cryptozen_token");
+                  await Fetcher.postApproval(
+                    token,
+                    hash,
+                    window.ethereum.selectedAddress,
+                    contractAddress as string
+                  );
                   alert(
                     "Processing approval function, please wait until it confirmed on the blockchain. You can see the progress directly on metamask "
                   );
@@ -237,6 +264,11 @@ const store: StoreOptions<storeInterface> = {
       }
       return false;
     },
+    async getHashApproval({ state }, { address, contractAddress }) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      return await Fetcher.getApproval(token, address, contractAddress);
+    },
+
     updateSelectedAddress({ state }, address: string) {
       state.selectedAddress = address;
     },
@@ -386,10 +418,21 @@ const store: StoreOptions<storeInterface> = {
     },
     async newTrx(
       { state },
-      { hash, isToken, fee }: { hash: string; isToken: boolean; fee: string }
+      {
+        hash,
+        isToken,
+        fee,
+        reference,
+      }: { hash: string; isToken: boolean; fee: string; reference: string }
     ) {
       const token = Vue.$cookies.get("cryptozen_token");
-      const trx = await Fetcher.postNewTrx(token, hash, isToken, fee);
+      const trx = await Fetcher.postNewTrx(
+        token,
+        hash,
+        isToken,
+        fee,
+        reference
+      );
       const checkTrx = state.transactions.find((t) => t.id === trx.id);
       if (!checkTrx) {
         state.transactions.push(trx);

@@ -261,7 +261,8 @@ export class Fetcher {
     token: string,
     hash: string,
     isToken: boolean,
-    fee: string
+    fee: string,
+    reference: string
   ): Promise<TransactionInterface> {
     const fetch = await Fetcher.post(
       `/user/transaction/new`,
@@ -269,8 +270,41 @@ export class Fetcher {
         hash,
         isToken,
         fee,
+        reference,
       },
       { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return fetch.data;
+  }
+
+  static async postApproval(
+    token: string,
+    hash: string,
+    address: string,
+    contractAddress: string
+  ): Promise<boolean> {
+    const fetch = await Fetcher.post(
+      `/user/approval/new`,
+      {
+        hash,
+        address,
+        contractAddress,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return fetch.data;
+  }
+
+  static async getApproval(
+    token: string,
+    address: string,
+    tokenContractAddress: string
+  ): Promise<string> {
+    const fetch = await Fetcher.get(
+      `/user/approval/get/${address}/${tokenContractAddress}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
     return fetch.data;
   }

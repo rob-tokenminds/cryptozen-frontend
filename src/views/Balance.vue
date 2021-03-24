@@ -8,22 +8,22 @@
         >Send {{ getBalance.name }}</v-btn
       >
       <v-btn
-        :disabled="!allowance"
+        disabled
         color="secondary"
         @click="swapMoneyDialog = true"
         class="ml-1"
-        >Swap {{ getBalance.name }}</v-btn
+        >Swap {{ getBalance.name }} Comming soon</v-btn
       >
-      <v-btn :disabled="!allowance" color="secondary" class="ml-1"
-        >Lock Compound</v-btn
+      <v-btn disabled color="secondary" class="ml-1"
+        >Lock Compound Comming soon</v-btn
       >
       <v-btn
         class="ml-1"
         v-if="!allowance"
-        :loading="loadingApprove"
+        :disabled="allowancePending"
         @click="approve"
         color="secondary"
-        >Approve contract address</v-btn
+        >{{ label }}</v-btn
       >
     </v-container>
 
@@ -61,11 +61,12 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
 import TransactionHistory from "./shared/TransactionHistory.vue";
 import Balances, { BalanceInterface } from "../static/balance";
 import SendMoney from "./SendMoney.vue";
 import SwapMoney from "./SwapMoney.vue";
+import Web3 from "web3";
 @Component({
   name: "Balance",
   components: { TransactionHistory, SendMoney, SwapMoney },
@@ -75,6 +76,7 @@ export default class Balance extends Vue {
   sendMoneyDialog = false;
   swapMoneyDialog = false;
   loadingApprove = false;
+  label = "Approve contract address";
   async approve(): Promise<void> {
     try {
       this.loadingApprove = true;
@@ -90,6 +92,50 @@ export default class Balance extends Vue {
 
   updateSendMoneyDialog(value: boolean): void {
     this.sendMoneyDialog = value;
+  }
+
+  @Watch("loadingApprove")
+  watchLoading(value: boolean): void {
+    if (value === true) {
+      this.label = "Approval Pending...";
+      this.checkApproval(this.getBalance.currency?.hash as string);
+    }
+  }
+
+  @Watch("getBalance", { deep: true })
+  watchgetBalance(value: BalanceInterface): void {
+    if (value) {
+      this.loadingApprove = this.allowancePending;
+      console.log("this.loadingApprove", this.loadingApprove);
+    }
+  }
+
+  async checkApproval(hash: string): Promise<void> {
+    const web3 = this.$store.getters["getWeb3"] as Web3;
+    if (web3) {
+      const tx = await web3.eth.getTransactionReceipt(hash);
+      if (tx && tx.status) {
+        const balanceIndex = this.$store.state.balances.findIndex(
+          (b: BalanceInterface) => b.value === this.$route.params.coin
+        );
+        const balance = this.$store.state.balances[
+          balanceIndex
+        ] as BalanceInterface;
+        (this.$store.state.balances as BalanceInterface[]).splice(
+          balanceIndex,
+          1,
+          Object.assign(balance, {
+            currency: Object.assign(balance.currency, {
+              allowancePending: false,
+              hash: "",
+            }),
+          })
+        );
+      } else {
+        await sleep(10000);
+        await this.checkApproval(hash);
+      }
+    }
   }
 
   get getBalance(): BalanceInterface {
@@ -112,5 +158,17 @@ export default class Balance extends Vue {
     if (balance) return `${balance.name} Balance`;
     else return "";
   }
+
+  get allowancePending(): boolean {
+    const balance = this.getBalance;
+    if (balance.currency) {
+      return balance.currency.allowancePending;
+    }
+    return false;
+  }
+}
+
+function sleep(ms: number): Promise<unknown> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 </script>

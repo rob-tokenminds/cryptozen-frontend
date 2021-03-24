@@ -1,6 +1,6 @@
 <template>
   <v-card flat>
-    <v-card v-if="selectedCurrency" flat width="600">
+    <v-card v-if="selectedCurrency" flat width="800">
       <v-text-field
         :key="componentKey"
         height=""
@@ -61,38 +61,99 @@
         ></v-divider>
 
         <v-list-item-content>
-          <v-list-item-subtitle
-            class="secondary--text text-subtitle-2 text-left"
-            ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
-              >-{{ gasFee }} ETH ({{ convertToUsd(gasFee) }} USD)</a
-            >
-            <v-progress-circular v-else indeterminate color="primary" size="15">
-            </v-progress-circular>
-            Gas fee (estimated)</v-list-item-subtitle
-          >
-          <v-list-item-subtitle
-            class="secondary--text text-subtitle-2 text-left"
-            ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
-              >-{{ transferFee }} {{ selectedCurrency.value.toUpperCase() }} ({{
-                transferFeeOnUsd
-              }}
-              USD)</a
-            >
-            <v-progress-circular v-else indeterminate color="primary" size="15">
-            </v-progress-circular>
-            Platform fee (Tier {{ tier }})</v-list-item-subtitle
-          >
-          <v-divider class=""></v-divider>
-          <v-list-item-subtitle
-            class="secondary--text text-subtitle-2 text-left"
-            ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
-              >+{{ transactionReward }} BF Token (
-              {{ transactionRewardInUsd }} USD)</a
-            >
-            <v-progress-circular v-else indeterminate color="primary" size="15">
-            </v-progress-circular>
-            Transaction Reward</v-list-item-subtitle
-          >
+          <v-row no-gutters dense>
+            <v-col cols="6">
+              <v-list-item-subtitle
+                class="secondary--text text-subtitle-2 text-left"
+                ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
+                  >-{{ gasFee }} ETH ({{ convertToUsd(gasFee) }} USD)</a
+                >
+                <v-progress-circular
+                  v-else
+                  indeterminate
+                  color="primary"
+                  size="15"
+                >
+                </v-progress-circular>
+                Gas fee (estimated)</v-list-item-subtitle
+              >
+              <v-list-item-subtitle
+                class="secondary--text text-subtitle-2 text-left"
+                ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
+                  >-{{ transferFee }}
+                  {{ selectedCurrency.value.toUpperCase() }} ({{
+                    transferFeeOnUsd
+                  }}
+                  USD)</a
+                >
+                <v-progress-circular
+                  v-else
+                  indeterminate
+                  color="primary"
+                  size="15"
+                >
+                </v-progress-circular>
+                Platform fee (Tier {{ tier }})</v-list-item-subtitle
+              >
+              <v-divider class=""></v-divider>
+              <v-list-item-subtitle
+                class="secondary--text text-subtitle-2 text-left"
+                ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
+                  >{{
+                    Number(convertToUsd(gasFee)) + Number(transferFeeOnUsd)
+                  }}
+                  USD</a
+                >
+                <v-progress-circular
+                  v-else
+                  indeterminate
+                  color="primary"
+                  size="15"
+                >
+                </v-progress-circular>
+                Total Fee</v-list-item-subtitle
+              >
+            </v-col>
+
+            <v-col sm class="" cols="1">
+              <v-divider class="" elevation="10" vertical></v-divider>
+            </v-col>
+
+            <v-col sm class="mr-10" cols="5">
+              <v-list-item-subtitle
+                class="secondary--text text-subtitle-2 text-left"
+                ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
+                  >+{{ transactionReward }} BF Token (
+                  {{ transactionRewardInUsd }} USD)</a
+                >
+                <v-progress-circular
+                  v-else
+                  indeterminate
+                  color="primary"
+                  size="15"
+                >
+                </v-progress-circular>
+                Platform Reward</v-list-item-subtitle
+              >
+
+              <v-spacer></v-spacer>
+              <v-divider class="mt-5"></v-divider>
+              <v-list-item-subtitle
+                class="secondary--text text-subtitle-2 text-left"
+                ><a v-if="!loadingFee" class="primary--text text-subtitle-2">
+                  {{ transactionRewardInUsd }} USD</a
+                >
+                <v-progress-circular
+                  v-else
+                  indeterminate
+                  color="primary"
+                  size="15"
+                >
+                </v-progress-circular>
+                Total Reward</v-list-item-subtitle
+              >
+            </v-col>
+          </v-row>
         </v-list-item-content>
       </v-list-item>
       <v-row no-gutters>
@@ -315,30 +376,30 @@ export default class SelectAmount extends Vue {
   }
 
   async updateUsdAmount(): Promise<void> {
-    console.log("transferFee", this.transferFee);
-    console.log("recipientGets", this.recipientGets);
-    console.log("swapAmount", this.swapAmount);
     if (
       this.transferFee !== "0" &&
       this.recipientGets !== 0 &&
       this.swapAmount !== 0
     ) {
-      console.log(
-        "(Number(this.swapAmount) + Number(this.transferFee)).toString()",
-        (Number(this.swapAmount) + Number(this.transferFee)).toString()
-      );
-      this.amountReceiptUsd = this.convertToUsd(
-        await this.ninjaToWeth(
-          (Number(this.recipientGets) - Number(this.transferFee)).toString()
-        )
-      );
-      this.amountSendUsd = this.convertToUsd(
-        await this.ninjaToWeth(
-          (Number(this.swapAmount) + Number(this.transferFee)).toString()
-        )
-      );
-      console.log("this.amountReceiptUsd", this.amountReceiptUsd);
-      console.log("this.amountSendUsd", this.amountSendUsd);
+      if (
+        this.selectedCurrency.value === "bf" &&
+        this.selectedRecipientTokenModel === "bf"
+      ) {
+        this.amountReceiptUsd = this.convertToUsd(
+          await this.ninjaToWeth(
+            (Number(this.recipientGets) - Number(this.transferFee)).toString()
+          )
+        );
+        this.amountSendUsd = this.convertToUsd(
+          await this.ninjaToWeth(
+            (Number(this.swapAmount) + Number(this.transferFee)).toString()
+          )
+        );
+      } else {
+        this.amountReceiptUsd = this.recipientGets.toString();
+        this.amountSendUsd = this.swapAmount.toString();
+      }
+
       this.componentKey += 1;
     } else {
       await sleep(1000);
@@ -458,19 +519,19 @@ export default class SelectAmount extends Vue {
             this.transferFeeOnUsd = this.convertToUsd(this.transferFee);
           }
         }
+
+        this.gas = await web3.eth.estimateGas(params);
+        this.gasPrice = await web3.eth.getGasPrice();
         await this.checkRewardFee(
           this.transferFee.toString(),
           this.selectedCurrency.value !== "eth",
           this.selectedCurrency
         );
-
-        const gas = await web3.eth.estimateGas(params);
-        const gasPrice = await web3.eth.getGasPrice();
-        console.log("gasPrice", gasPrice);
-        console.log("gas", gas);
+        console.log("gasPrice", this.gasPrice);
+        console.log("gas", this.gas);
         this.params = params;
-        const txFee = new BigNumber(gas).times(
-          web3.utils.fromWei(gasPrice, "ether")
+        const txFee = new BigNumber(this.gas).times(
+          web3.utils.fromWei(this.gasPrice, "ether")
         );
 
         this.gasFee = txFee.toString();
@@ -486,7 +547,8 @@ export default class SelectAmount extends Vue {
       this.loadingFee = false;
     }
   }
-
+  gas = 0;
+  gasPrice = "0";
   // @Watch("transferFee")
   // async watchPlatformFee(value : string) : void{
   //   if(value !== "0"){
@@ -641,7 +703,26 @@ export default class SelectAmount extends Vue {
 
         const slippageTolerance = new Percent("50", realAmount);
         const amountOutMin = trade.minimumAmountOut(slippageTolerance);
-        this.transactionReward = amountOutMin.toSignificant(6);
+
+        const txFee = Number(this.gasPrice) * Number(this.gas);
+        const route3 = new Route(
+          [NinjaWETHPair],
+          WETH[NinjaWETHPair.chainId],
+          Ninja
+        );
+
+        const trade3 = new Trade(
+          route3,
+          new TokenAmount(WETH[NinjaWETHPair.chainId], txFee.toFixed()),
+          TradeType.EXACT_INPUT
+        );
+        const slippageTolerance3 = new Percent("50", txFee.toFixed());
+        const amountOutMin3 = trade3.minimumAmountOut(slippageTolerance3);
+
+        this.transactionReward = (
+          Number(amountOutMin.toSignificant(6)) +
+          Number(amountOutMin3.toSignificant(6))
+        ).toString();
         const tradeEth = new Trade(
           routeEth,
           new TokenAmount(
@@ -670,9 +751,26 @@ export default class SelectAmount extends Vue {
       );
       const slippageTolerance = new Percent("50", realAmount);
       const amountOutMin = trade.minimumAmountOut(slippageTolerance);
-      console.log("aa", trade.executionPrice.toSignificant());
-      console.log("bb", trade.executionPrice.invert().toSignificant());
-      this.transactionReward = amountOutMin.toSignificant(6);
+
+      const txFee = Number(this.gasPrice) * Number(this.gas);
+      const route3 = new Route(
+        [NinjaWETHPair],
+        WETH[NinjaWETHPair.chainId],
+        Ninja
+      );
+
+      const trade3 = new Trade(
+        route3,
+        new TokenAmount(WETH[NinjaWETHPair.chainId], txFee.toFixed()),
+        TradeType.EXACT_INPUT
+      );
+      const slippageTolerance3 = new Percent("50", txFee.toFixed());
+      const amountOutMin3 = trade3.minimumAmountOut(slippageTolerance3);
+
+      this.transactionReward = (
+        Number(amountOutMin.toSignificant(6)) +
+        Number(amountOutMin3.toSignificant(6))
+      ).toString();
       this.transactionRewardInEth = this.transactionReward;
     }
   }

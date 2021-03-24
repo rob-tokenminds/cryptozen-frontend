@@ -16,13 +16,41 @@
         ></v-img>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
-        <v-stepper-step :complete="e1 > 1" step=""> Wallet </v-stepper-step>
+        <v-stepper-step :complete="e1 > 1" :step="e1 === 1 ? `O` : ``">
+          <v-chip
+            @click="isReview ? (e1 = 1) : ''"
+            :color="e1 === 1 ? `primary` : ``"
+          >
+            Wallet</v-chip
+          >
+        </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step :complete="e1 > 2" step=""> Recipient </v-stepper-step>
+        <v-stepper-step :complete="e1 > 2" :step="e1 === 2 ? `O` : ``">
+          <v-chip
+            @click="isReview ? (e1 = 2) : ''"
+            :color="e1 === 2 ? `primary` : ``"
+          >
+            Recipient</v-chip
+          >
+        </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step :complete="e1 > 3" step=""> Amount </v-stepper-step>
+        <v-stepper-step :complete="e1 > 3" :step="e1 === 3 ? `O` : ``">
+          <v-chip
+            @click="isReview ? (e1 = 3) : ''"
+            :color="e1 === 3 ? `primary` : ``"
+          >
+            Amount</v-chip
+          >
+        </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step step=""> Review </v-stepper-step>
+        <v-stepper-step :step="e1 === 4 ? `O` : ``">
+          <v-chip
+            @click="isReview ? (e1 = 4) : ''"
+            :color="e1 === 4 ? `primary` : ``"
+          >
+            Review</v-chip
+          >
+        </v-stepper-step>
         <v-spacer></v-spacer>
 
         <ProfileMenu class="mb-3" :showBell="false"></ProfileMenu>
@@ -92,7 +120,9 @@
                         small
                         @click="approve(coin)"
                         >{{
-                          approveLoading(coin) ? "Pending" : "Approve Contract"
+                          coin.currency.allowancePending
+                            ? "Pending"
+                            : "Approve Contract"
                         }}</v-btn
                       >
                     </v-list-item-content>
@@ -170,7 +200,7 @@
                   </v-expansion-panel>
                 </v-expansion-panels>
 
-                <v-expansion-panels class="mb-2">
+                <!-- <v-expansion-panels class="mb-2">
                   <v-expansion-panel @click="getAddressBooks()">
                     <v-expansion-panel-header>
                       <v-list-item>
@@ -209,7 +239,7 @@
                       </v-card>
                     </v-expansion-panel-content>
                   </v-expansion-panel>
-                </v-expansion-panels>
+                </v-expansion-panels> -->
 
                 <!-- <v-card elevation="2" class="mx-auto" height="100" width="800">
                 <v-card-text @click="e1 = 4">
@@ -314,7 +344,7 @@
               </v-card>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" outlined @click="e1 = 2"> Back </v-btn>
+                <v-btn color="primary" outlined @click="e1 = 1"> Back </v-btn>
               </v-card-actions>
             </v-card>
           </v-card>
@@ -385,6 +415,14 @@
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
+              </v-card>
+
+              <v-card flat>
+                <v-text-field
+                  outlined
+                  label="Personal Reference"
+                  v-model="reference"
+                ></v-text-field>
               </v-card>
 
               <v-card-actions>
@@ -475,14 +513,14 @@
                 </v-row>
 
                 <v-row class="mt-n5">
-                  <!-- <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                     <v-card flat tile>
-                      <v-card-subtitle> Network Fee </v-card-subtitle>
+                      <v-card-subtitle> Reference </v-card-subtitle>
                       <v-card-title class="primary--text mt-n8">
-                        {{ getFee(transaction) }} ETH
+                        {{ transaction.reference }}
                       </v-card-title>
                     </v-card>
-                  </v-col> -->
+                  </v-col>
 
                   <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                     <v-card flat tile>
@@ -564,6 +602,7 @@ export default class SendMoney extends Vue {
     console.log("valuee1", value);
     if (value === 4) {
       this.componentKey += 1;
+      this.isReview = true;
     }
   }
   async nextSendFrom(coin: BalanceInterface): Promise<void> {
@@ -587,16 +626,18 @@ export default class SendMoney extends Vue {
   approveLoadingStatus = false;
   async approve(coin: BalanceInterface): Promise<void> {
     try {
-      this.approveLoadingStatus = true;
-      this.currentlyApproved = coin;
-      await this.$store.dispatch("approve", coin);
-      await this.$store.dispatch("updateCoinBalance", coin);
-      this.approveLoadingStatus = false;
+      if (!coin.currency?.allowancePending) {
+        this.approveLoadingStatus = true;
+        this.currentlyApproved = coin;
+        await this.$store.dispatch("approve", coin);
+        await this.$store.dispatch("updateCoinBalance", coin);
+        this.approveLoadingStatus = false;
+      }
     } catch (e) {
       this.approveLoadingStatus = false;
     }
   }
-
+  isReview = false;
   addARecipientEmail = "";
   addARecipientWalletAddress = "";
   addARecipientName = "";
@@ -608,6 +649,8 @@ export default class SendMoney extends Vue {
   selectedRecipientToken = this.selectedCurrency
     ? this.selectedCurrency.value
     : "usdt";
+
+  reference = "";
 
   @Watch("selectedCurrency")
   watchselectedCurrency(value: BalanceInterface): void {
@@ -668,6 +711,7 @@ export default class SendMoney extends Vue {
                       hash,
                       isToken: this.params.value === "0x0",
                       fee: this.transferFee,
+                      reference: this.reference,
                     });
                     console.log("this.transaction", this.transaction);
                   }

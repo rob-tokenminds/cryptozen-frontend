@@ -78,7 +78,7 @@
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
                   >Tier {{ tier >= 0 ? tier : "-" }} |
-                  {{ ninjaBalance }} BF</v-list-item-title
+                  {{ ninjaBalance }} Ninja</v-list-item-title
                 >
                 <!-- <v-list-item-subtitle
                   >Referrals until Tier 2</v-list-item-subtitle
@@ -122,7 +122,7 @@
 
 <script lang="ts">
 import { Fetcher } from "../../store/fetcher";
-import { Vue, Component, Prop, PropSync } from "vue-property-decorator";
+import { Vue, Component, Prop, PropSync, Watch } from "vue-property-decorator";
 import { UserNotification } from "@/store";
 import { mdiBellAlertOutline } from "@mdi/js";
 import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
@@ -144,6 +144,11 @@ export default class ProfileMenu extends Vue {
 
   get selectedAddress(): string {
     return this.$store.getters["getSelectedAddress"];
+  }
+
+  @Watch("myEmail")
+  watchmyEmail(value: string): void {
+    this.yourEmail = value;
   }
 
   get myEmail(): string {
