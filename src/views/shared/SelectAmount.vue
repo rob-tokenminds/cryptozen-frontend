@@ -443,29 +443,6 @@ export default class SelectAmount extends Vue {
     }
   }
 
-  // @Watch("swapAmount")
-  // async watchswapAmount(value: number): Promise<void> {
-  //   await this.checkFee(value);
-  //   if (
-  //     this.selectedRecipientTokenModel.toLowerCase() ===
-  //     this.selectedCurrency.value.toLowerCase()
-  //   ) {
-  //     this.recipientGets = this.swapAmount - Number(this.transferFee);
-  //   }
-  // }
-
-  // @Watch("recipientGets")
-  // async watchrecipientGets(value: number): Promise<void> {
-  //   await this.checkFee(value);
-
-  //   if (
-  //     this.selectedRecipientTokenModel.toLowerCase() ===
-  //     this.selectedCurrency.value.toLowerCase()
-  //   ) {
-  //     this.swapAmount = this.recipientGets + Number(this.transferFee);
-  //   }
-  // }
-
   convertToUsd(eth: string): string {
     if (this.ethereumPrice && eth !== "NaN") {
       console.log("eth", eth);

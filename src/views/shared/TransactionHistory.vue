@@ -141,7 +141,7 @@
                     color="secondary"
                     outlined
                     class="mt-7"
-                    >Track URL</v-btn
+                    >Tracking URL</v-btn
                   >
                 </v-col>
               </v-row>
