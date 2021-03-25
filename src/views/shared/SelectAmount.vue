@@ -119,7 +119,7 @@
               <v-list-item-subtitle
                 class="secondary--text text-subtitle-2 text-left"
                 ><a v-if="!loadingFee" class="primary--text text-subtitle-2"
-                  >+{{ transactionReward }} BF Token (
+                  >+{{ transactionReward }} Ninja Token (
                   {{ transactionRewardInUsd }} USD)</a
                 >
                 <v-progress-circular
@@ -310,6 +310,7 @@ export default class SelectAmount extends Vue {
   @Watch("swapAmount")
   async watchswapAmount(value: number): Promise<void> {
     if (!this.updatingAmount) {
+      console.log("value", value);
       this.updatingAmount = true;
       if (value <= Number(this.selectedCurrency?.currency?.balance)) {
         await this.UpdateRecipientGetsAmount(value);
@@ -392,7 +393,7 @@ export default class SelectAmount extends Vue {
   componentKey = 1;
   async UpdateRecipientGetsAmount(value: number): Promise<void> {
     this.recipientGets = 0;
-    if (this.swapAmount) {
+    if (this.swapAmount > 0) {
       await this.checkFee(this.swapAmount);
 
       this.recipientGets = Number(this.swapAmount) - Number(this.transferFee);
@@ -402,7 +403,7 @@ export default class SelectAmount extends Vue {
 
   async UpdateSwapAmount(value: number): Promise<void> {
     this.swapAmount = 0;
-    if (this.recipientGets) {
+    if (this.recipientGets > 0) {
       await this.checkFee(this.recipientGets);
 
       this.swapAmount = Number(this.recipientGets) + Number(this.transferFee);

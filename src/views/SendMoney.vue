@@ -464,6 +464,9 @@
                         {{ getWalletName(transaction.from) }}</v-list-item-title
                       >
                       <v-list-item-subtitle>
+                        {{ ransaction.from }}
+                      </v-list-item-subtitle>
+                      <v-list-item-subtitle>
                         {{ getStatus(transaction) }}
                       </v-list-item-subtitle>
                     </v-list-item-content>
@@ -556,7 +559,7 @@
                       color="secondary"
                       outlined
                       class="mt-7"
-                      >Track URL</v-btn
+                      >Tracking URL</v-btn
                     >
                   </v-col>
                 </v-row>

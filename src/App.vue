@@ -237,7 +237,11 @@ export default class App extends Vue {
   }
 
   getHrNumber(number: number): string {
-    return HRNumber.toHumanString(number);
+    if (number > 999) {
+      return HRNumber.toHumanString(number);
+    } else {
+      return number.toFixed(2);
+    }
   }
 
   async init(): Promise<void> {

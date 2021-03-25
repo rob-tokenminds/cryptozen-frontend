@@ -73,7 +73,7 @@
 
         <v-col cols="12" md="6" sm="6" lg="6" xl="6">
           <p class="primary--text text-right mr-3">
-            {{ Number(reward.amount).toString() }} BF Token
+            {{ Number(reward.amount).toString() }} Ninja Token
           </p>
         </v-col>
       </v-row>
@@ -104,7 +104,7 @@ export default class ReferralRewards extends Vue {
     if (profile) {
       return (
         Number(profile.reward_balance).toString() +
-        ` / ${process.env.VUE_APP_MIN_REWARD_CLAIM} BF Token`
+        ` / ${process.env.VUE_APP_MIN_REWARD_CLAIM} Ninja Token`
       );
     }
     return "0";

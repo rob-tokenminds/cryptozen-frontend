@@ -401,7 +401,7 @@ const store: StoreOptions<storeInterface> = {
         }
       }
     },
-    async getSyncTransactions({ state }, { address, currency }) {
+    async getSyncTransactions({ state, dispatch }, { address, currency }) {
       const token = Vue.$cookies.get("cryptozen_token");
       const transactions = await Fetcher.getSyncTransactions(
         token,
@@ -418,6 +418,9 @@ const store: StoreOptions<storeInterface> = {
           } else {
             state.transactions.splice(checkTrx, 1, transaction);
           }
+        }
+        for (const balance of state.balances) {
+          await dispatch("updateCoinBalance", balance);
         }
       }
     },
@@ -459,6 +462,7 @@ const store: StoreOptions<storeInterface> = {
         const tier = await contract.methods
           .getTierByAmount(balanceAmount)
           .call();
+        console.log("tier", tier);
         state.tier = tier;
       }
     },
