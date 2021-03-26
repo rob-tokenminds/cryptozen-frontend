@@ -182,6 +182,8 @@ const store: StoreOptions<storeInterface> = {
                         if (tx && tx.status) {
                           isApproved = true;
                         }
+                      } else {
+                        isApproved = true;
                       }
                     } else {
                       isApproved = true;
