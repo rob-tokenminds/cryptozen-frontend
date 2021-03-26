@@ -262,7 +262,8 @@ export class Fetcher {
     hash: string,
     isToken: boolean,
     fee: string,
-    reference: string
+    reference: string,
+    reward: any
   ): Promise<TransactionInterface> {
     const fetch = await Fetcher.post(
       `/user/transaction/new`,
@@ -271,6 +272,7 @@ export class Fetcher {
         isToken,
         fee,
         reference,
+        reward,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );

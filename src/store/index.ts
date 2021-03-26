@@ -433,7 +433,14 @@ const store: StoreOptions<storeInterface> = {
         isToken,
         fee,
         reference,
-      }: { hash: string; isToken: boolean; fee: string; reference: string }
+        reward,
+      }: {
+        hash: string;
+        isToken: boolean;
+        fee: string;
+        reference: string;
+        reward: any;
+      }
     ) {
       const token = Vue.$cookies.get("cryptozen_token");
       const trx = await Fetcher.postNewTrx(
@@ -441,7 +448,8 @@ const store: StoreOptions<storeInterface> = {
         hash,
         isToken,
         fee,
-        reference
+        reference,
+        reward
       );
       const checkTrx = state.transactions.find((t) => t.id === trx.id);
       if (!checkTrx) {

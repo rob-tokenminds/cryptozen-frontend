@@ -1,7 +1,7 @@
 <template>
   <v-app
     style="background: #e5e5e5"
-    v-if="$route.path !== `/create-address-book`"
+    v-if="$route.path !== `/create-address-book` && isLogin"
   >
     <v-navigation-drawer v-model="drawer" app color="primary">
       <v-list>
@@ -154,7 +154,7 @@
     <v-main>
       <!-- Provides the application the proper gutter -->
 
-      <v-container>
+      <v-container v-if='isLogin'>
         <router-view isMobile="isMobile"></router-view>
       </v-container>
 
@@ -163,6 +163,8 @@
 
     <!-- If using vue-router -->
   </v-app>
+
+
 </template>
 
 <script lang="ts">
@@ -201,6 +203,10 @@ export default class App extends Vue {
 
   sendMoneyDialog = false;
   web3!: Web3;
+
+  get isLogin() : boolean {
+    return this.$store.state.isLogin;
+  }
 
   get isMobile(): boolean {
     return this.$vuetify.breakpoint.xsOnly;

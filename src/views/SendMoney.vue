@@ -121,7 +121,7 @@
                         small
                         @click="approve(coin)"
                         >{{
-                          coin.currency.allowancePending
+                          !coin.currency.isApproved
                             ? "Pending"
                             : "Approve Contract"
                         }}</v-btn
@@ -358,7 +358,7 @@
 
           <v-card flat class="d-flex justify-center">
             <v-card flat>
-              <v-card v-if="selectedCurrency" flat width="800">
+              <v-card v-if="selectedCurrency" flat width="1000">
                 <v-text-field
                   :key="componentKey"
                   height=""
@@ -424,7 +424,7 @@
                     <v-row no-gutters dense>
                       <v-col cols="6">
                         <v-list-item-subtitle
-                          class="secondary--text text-subtitle-2 text-left"
+                          class="secondary--text text-subtitle-2 text-left mb-1"
                           ><a
                             v-if="!loadingFee"
                             class="primary--text text-subtitle-2"
@@ -443,7 +443,7 @@
                           Gas fee (estimated)</v-list-item-subtitle
                         >
                         <v-list-item-subtitle
-                          class="secondary--text text-subtitle-2 text-left"
+                          class="secondary--text text-subtitle-2 text-left mb-1"
                           ><a
                             v-if="!loadingFee"
                             class="primary--text text-subtitle-2"
@@ -462,9 +462,9 @@
                           </v-progress-circular>
                           Platform fee (Tier {{ tier }})</v-list-item-subtitle
                         >
-                        <v-divider class=""></v-divider>
+                        <v-divider class="mb-1"></v-divider>
                         <v-list-item-subtitle
-                          class="secondary--text text-subtitle-2 text-left"
+                          class="secondary--text text-subtitle-2 text-left mb-1"
                           ><a
                             v-if="!loadingFee"
                             class="primary--text text-subtitle-2"
@@ -485,13 +485,13 @@
                         >
                       </v-col>
 
-                      <v-col sm class="" cols="1">
+                      <v-col sm class="ml-1" cols="1">
                         <v-divider class="" elevation="10" vertical></v-divider>
                       </v-col>
 
-                      <v-col sm class="mr-10" cols="5">
+                      <v-col sm class="mr-15" cols="5">
                         <v-list-item-subtitle
-                          class="secondary--text text-subtitle-2 text-left"
+                          class="secondary--text text-subtitle-2 text-left mb-1"
                           ><a
                             v-if="!loadingFee"
                             class="primary--text text-subtitle-2"
@@ -505,13 +505,22 @@
                             size="15"
                           >
                           </v-progress-circular>
-                          Platform Reward</v-list-item-subtitle
+                          Platform Reward (estimated)</v-list-item-subtitle
+                        >
+                        <v-list-item-subtitle
+                          class="secondary--text text-subtitle-2 text-left mb-1"
+                        ><a
+
+                          class="primary--text text-subtitle-2"
+                        ></a
                         >
 
-                        <v-spacer></v-spacer>
-                        <v-divider class="mt-5"></v-divider>
+                         </v-list-item-subtitle
+                        >
+<!--                        <v-spacer></v-spacer>-->
+                        <v-divider class="mt-7"></v-divider>
                         <v-list-item-subtitle
-                          class="secondary--text text-subtitle-2 text-left"
+                          class="secondary--text text-subtitle-2 text-left mb-1"
                           ><a
                             v-if="!loadingFee"
                             class="primary--text text-subtitle-2"
@@ -525,7 +534,7 @@
                             size="15"
                           >
                           </v-progress-circular>
-                          Total Reward</v-list-item-subtitle
+                          Total Reward (estimated)</v-list-item-subtitle
                         >
                       </v-col>
                     </v-row>
@@ -630,9 +639,9 @@
           <p class="text-center primary--text text-h5">Review</p>
 
           <v-card flat class="d-flex justify-center">
-            <v-card flat width="800">
+            <v-card flat width="1000">
               <v-card flat>
-                <v-card v-if="selectedCurrency" flat width="800">
+                <v-card v-if="selectedCurrency" flat width="1000">
                   <v-text-field
                     :key="componentKey"
                     height=""
@@ -652,14 +661,14 @@
                         <v-list-item-avatar tile>
                           <v-img
                             :src="
-                              require(`../assets/${selectedCurrency.value}.svg`)
-                            "
+                            require(`../assets/${selectedCurrency.value}.svg`)
+                          "
                           ></v-img>
                         </v-list-item-avatar>
                         <v-list-item-content>
                           <v-list-item-title
                             class="primary--text text-subtitle-1"
-                            >{{
+                          >{{
                               selectedCurrency.value === "eth"
                                 ? "Ethereum"
                                 : selectedCurrency.value.toUpperCase()
@@ -678,10 +687,8 @@
                         You have
                         <a
                           class="primary--text font-weight-bold"
-                          @click="
-                            swapAmount = selectedCurrency.currency.balance
-                          "
-                          >{{ selectedCurrency.currency.balance }}</a
+                          @click="swapAmount = selectedCurrency.currency.balance"
+                        >{{ selectedCurrency.currency.balance }}</a
                         >
                       </p>
                       <p v-else>{{ message }}</p>
@@ -700,15 +707,15 @@
                       <v-row no-gutters dense>
                         <v-col cols="6">
                           <v-list-item-subtitle
-                            class="secondary--text text-subtitle-2 text-left"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                              >-{{ gasFee }} ETH ({{
-                                convertToUsd(gasFee)
-                              }}
-                              USD)</a
-                            >
+                            class="secondary--text text-subtitle-2 text-left mb-1"
+                          ><a
+                            v-if="!loadingFee"
+                            class="primary--text text-subtitle-2"
+                          >-{{ gasFee }} ETH ({{
+                              convertToUsd(gasFee)
+                            }}
+                            USD)</a
+                          >
                             <v-progress-circular
                               v-else
                               indeterminate
@@ -719,16 +726,16 @@
                             Gas fee (estimated)</v-list-item-subtitle
                           >
                           <v-list-item-subtitle
-                            class="secondary--text text-subtitle-2 text-left"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                              >-{{ transferFee }}
-                              {{ selectedCurrency.value.toUpperCase() }} ({{
-                                transferFeeOnUsd
-                              }}
-                              USD)</a
-                            >
+                            class="secondary--text text-subtitle-2 text-left mb-1"
+                          ><a
+                            v-if="!loadingFee"
+                            class="primary--text text-subtitle-2"
+                          >-{{ transferFee }}
+                            {{ selectedCurrency.value.toUpperCase() }} ({{
+                              transferFeeOnUsd
+                            }}
+                            USD)</a
+                          >
                             <v-progress-circular
                               v-else
                               indeterminate
@@ -738,18 +745,18 @@
                             </v-progress-circular>
                             Platform fee (Tier {{ tier }})</v-list-item-subtitle
                           >
-                          <v-divider class=""></v-divider>
+                          <v-divider class="mb-1"></v-divider>
                           <v-list-item-subtitle
-                            class="secondary--text text-subtitle-2 text-left"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                              >{{
-                                Number(convertToUsd(gasFee)) +
-                                Number(transferFeeOnUsd)
-                              }}
-                              USD</a
-                            >
+                            class="secondary--text text-subtitle-2 text-left mb-1"
+                          ><a
+                            v-if="!loadingFee"
+                            class="primary--text text-subtitle-2"
+                          >{{
+                              Number(convertToUsd(gasFee)) +
+                              Number(transferFeeOnUsd)
+                            }}
+                            USD</a
+                          >
                             <v-progress-circular
                               v-else
                               indeterminate
@@ -761,23 +768,19 @@
                           >
                         </v-col>
 
-                        <v-col sm class="" cols="1">
-                          <v-divider
-                            class=""
-                            elevation="10"
-                            vertical
-                          ></v-divider>
+                        <v-col sm class="ml-1" cols="1">
+                          <v-divider class="" elevation="10" vertical></v-divider>
                         </v-col>
 
-                        <v-col sm class="mr-10" cols="5">
+                        <v-col sm class="mr-15" cols="5">
                           <v-list-item-subtitle
-                            class="secondary--text text-subtitle-2 text-left"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                              >+{{ transactionReward }} Ninja Token (
-                              {{ transactionRewardInUsd }} USD)</a
-                            >
+                            class="secondary--text text-subtitle-2 text-left mb-1"
+                          ><a
+                            v-if="!loadingFee"
+                            class="primary--text text-subtitle-2"
+                          >+{{ transactionReward }} Ninja Token (
+                            {{ transactionRewardInUsd }} USD)</a
+                          >
                             <v-progress-circular
                               v-else
                               indeterminate
@@ -785,19 +788,28 @@
                               size="15"
                             >
                             </v-progress-circular>
-                            Platform Reward</v-list-item-subtitle
+                            Platform Reward (estimated)</v-list-item-subtitle
+                          >
+                          <v-list-item-subtitle
+                            class="secondary--text text-subtitle-2 text-left mb-1"
+                          ><a
+
+                            class="primary--text text-subtitle-2"
+                          ></a
                           >
 
-                          <v-spacer></v-spacer>
-                          <v-divider class="mt-5"></v-divider>
+                          </v-list-item-subtitle
+                          >
+                          <!--                        <v-spacer></v-spacer>-->
+                          <v-divider class="mt-7"></v-divider>
                           <v-list-item-subtitle
-                            class="secondary--text text-subtitle-2 text-left"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                            >
-                              {{ transactionRewardInUsd }} USD</a
-                            >
+                            class="secondary--text text-subtitle-2 text-left mb-1"
+                          ><a
+                            v-if="!loadingFee"
+                            class="primary--text text-subtitle-2"
+                          >
+                            {{ transactionRewardInUsd }} USD</a
+                          >
                             <v-progress-circular
                               v-else
                               indeterminate
@@ -805,7 +817,7 @@
                               size="15"
                             >
                             </v-progress-circular>
-                            Total Reward</v-list-item-subtitle
+                            Total Reward (estimated)</v-list-item-subtitle
                           >
                         </v-col>
                       </v-row>
@@ -825,11 +837,10 @@
                         flat
                         height="50"
                         @change="UpdateSwapAmount"
-                        readonly
                       >
                         <!-- <template v-slot:append-outer>
-               
-                </template> -->
+
+                  </template> -->
 
                         <template v-slot:label>
                           <p class="mb-5">
@@ -849,7 +860,6 @@
                         v-model="selectedRecipientTokenModel"
                         class="rounded-0"
                         height="50"
-                        readonly
                       >
                         <template v-slot:item="{ item, on, attrs }">
                           <v-list-item
@@ -865,7 +875,7 @@
                             <v-list-item-content>
                               <v-list-item-title
                                 class="primary--text text-subtitle-1"
-                                >{{ item.name
+                              >{{ item.name
                                 }}{{
                                   selectedCurrency.value !== item.value
                                     ? `(Swap Coming Soon)`
@@ -886,7 +896,7 @@
                             <v-list-item-content>
                               <v-list-item-title
                                 class="primary--text text-subtitle-1"
-                                >{{ item.name }}</v-list-item-title
+                              >{{ item.name }}</v-list-item-title
                               >
                             </v-list-item-content>
                           </v-list-item>
@@ -896,6 +906,13 @@
                   </v-row>
 
                   <!--  -->
+<!--                  <v-card-actions>-->
+<!--                    <v-spacer></v-spacer>-->
+<!--                    <v-btn color="primary" outlined @click="e1 = 2"> Back </v-btn>-->
+<!--                    <v-btn color="primary" :disabled="loadingFee" @click="e1 = 4">-->
+<!--                      {{ continueLabel }}-->
+<!--                    </v-btn>-->
+<!--                  </v-card-actions>-->
                 </v-card>
               </v-card>
               <p>To</p>
@@ -916,7 +933,7 @@
                 </v-list-item>
               </v-card>
 
-              <v-card flat>
+              <v-card flat class='mt-8'>
                 <v-text-field
                   outlined
                   label="Personal Reference"
@@ -984,11 +1001,19 @@
               <v-divider></v-divider>
               <v-container>
                 <v-row class="mt-n1">
-                  <v-col cols="12" md="6" sm="6" lg="6" xl="6">
+                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                     <v-card flat tile>
                       <v-card-subtitle> Set Up By </v-card-subtitle>
                       <v-card-title class="primary--text mt-n8">
                         {{ getWalletName(transaction.from) }}
+                      </v-card-title>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="12" md="6" sm="6" lg="6" xl="6">
+                    <v-card flat tile>
+                      <v-card-subtitle> Rewards </v-card-subtitle>
+                      <v-card-title class="primary--text mt-n8">
+                        {{ transactionReward }} Ninja Token ({{transactionRewardInUsd}} USD)
                       </v-card-title>
                     </v-card>
                   </v-col>
@@ -1007,9 +1032,9 @@
                   <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                     <v-card flat tile>
                       <v-card-subtitle> TX Hash </v-card-subtitle>
-                      <v-card-title class="primary--text mt-n8">
+                      <v-card-subtitle class="primary--text mt-n8">
                         {{ transaction.hash }}
-                      </v-card-title>
+                      </v-card-subtitle>
                     </v-card>
                   </v-col>
                 </v-row>
@@ -1043,24 +1068,21 @@
                     </v-card>
                   </v-col>
 
-                  <v-col
-                    cols="12"
-                    md="4"
-                    sm="4"
-                    lg="4"
-                    xl="4"
-                    class="text-right"
-                  >
+
+                </v-row>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+
                     <v-btn
                       :href="`${detailUrl}${transaction.hash}`"
                       target="_blank"
                       color="secondary"
                       outlined
                       class="mt-7"
-                      >Tracking URL</v-btn
+                    >Tracking URL</v-btn
                     >
-                  </v-col>
-                </v-row>
+
+                </v-card-actions>
               </v-container>
             </v-card>
           </v-card>
@@ -1113,22 +1135,243 @@ export default class SendMoney extends Vue {
   @Prop({ type: Number }) readonly step!: number;
   @Prop({ type: Object }) readonly currentSelected!: BalanceInterface;
   componentKey = 0;
-  get selectedEthereumAddress(): string {
-    return window.ethereum.selectedAddress;
+  e1 = 1;
+  coinSelected = "";
+  currentlyApproved: BalanceInterface | "" = "";
+  approveLoadingStatus = false;
+  isReview = false;
+  addARecipientEmail = "";
+  addARecipientWalletAddress = "";
+  addARecipientName = "";
+  createWalletLoading = false;
+  selectedAddress: AddressBookInterface | "" = "";
+  newSubmittedAddressBook: AddressBookInterface | "" = "";
+  newAddressBookSubmitted = false;
+  selectedCurrency: BalanceInterface | "" = "";
+  selectedRecipientToken = this.selectedCurrency
+    ? this.selectedCurrency.value
+    : "usdt";
+  reference = "";
+  params: TransactionConfig | "" = "";
+  gasFee = "0";
+  loadingSendMoney = false;
+  allowance = false;
+  transferFee = "";
+  loadingAddressBooks = false;
+  detailUrl = process.env.VUE_APP_DETAIL_URL;
+  coins = Balances;
+  swapAmount = 0;
+  amountSendUsd = "0";
+  amountReceiptUsd = "0";
+  // transferFee = "0";
+  transferFeeOnUsd = "0";
+  // gasFee = "0";
+  platformFee = "0";
+  platformFeeOnUsd = "";
+  loadingFee = false;
+  recipientGets = 0;
+  // params: TransactionConfig | "" = "";
+
+  selectedRecipientTokenModel = this.selectedRecipientToken;
+  updatingAmount = false;
+  transaction: TransactionInterface | "" = "";
+  gas = 0;
+  gasPrice = "0";
+  // @Watch("transferFee")
+  // async watchPlatformFee(value : string) : void{
+  //   if(value !== "0"){
+
+  //   }
+  // }
+
+  continueLabel = "Continue";
+
+  // coins = balances;
+  // swapAmount = 0;
+  label = "You send";
+  hint = `you have ${
+    this.selectedCurrency && this.selectedCurrency.currency
+      ? this.selectedCurrency?.currency?.balance
+      : "0"
+  }`;
+
+  ethereumPrice: CoingeckoInterface | "" = "";
+  transactionRewardInUsd = "0";
+  transactionReward = "0";
+  transactionRewardInEth = "0";
+  @Watch("transactionRewardInEth")
+  async watchtransactionRewardInEth(value: string): Promise<void> {
+    if (value !== "0") {
+      this.transactionRewardInUsd = this.convertToUsd(value);
+    }
   }
 
-  goToHome(): void {
-    this.$router.push(`/`);
-    location.reload();
+  @Watch("setSwapAmount")
+  watchSetSwapAmount(value: number): void {
+    this.swapAmount = value;
   }
+
+  @Watch("swapAmount")
+  watchSwapAmount(value: number): void {
+    this.$emit("swap-amount", value);
+  }
+
+
   @Watch("e1")
-  watche1(value: number): void {
+  watchE1(value: number): void {
     console.log("valuee1", value);
     if (value === 4) {
       this.componentKey += 1;
       this.isReview = true;
     }
   }
+
+  @Watch("selectedCurrency")
+  watchSelectedCurrency(value: BalanceInterface): void {
+    if (value) {
+      this.selectedRecipientToken = value.value;
+    }
+  }
+
+  @Watch("selectedCurrencySync")
+  watchSelectedCurrencySync(value: BalanceInterface): void {
+    this.selectedCurrency = value;
+  }
+
+  @Watch("step")
+  watchStep(value: number): void {
+    this.e1 = value;
+  }
+
+  @Watch("swapAmount")
+  async watchswapAmount(value: number): Promise<void> {
+    if (!this.updatingAmount && this.selectedCurrency) {
+      console.log("value", value);
+      this.updatingAmount = true;
+      if (value <= Number(this.selectedCurrency?.currency?.balance)) {
+        await this.UpdateRecipientGetsAmount(value);
+      } else {
+        alert(`Value input is higher than your balance`);
+        this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+      }
+
+      this.updatingAmount = false;
+    }
+  }
+
+  @Watch("recipientGets")
+  async watchrecipientGets(value: number): Promise<void> {
+    if (!this.updatingAmount && this.selectedCurrency) {
+      this.updatingAmount = true;
+      if (value <= Number(this.selectedCurrency?.currency?.balance)) {
+        await this.UpdateSwapAmount(value);
+        if (
+          this.swapAmount >= Number(this.selectedCurrency?.currency?.balance)
+        ) {
+          alert(`Value input is higher than your balance`);
+          this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+        }
+      } else {
+        alert(`Value input is higher than your balance`);
+        this.recipientGets = Number(0);
+      }
+      this.updatingAmount = false;
+    }
+  }
+
+  @Watch("transferFee")
+  watchtransferFee(value: string): void {
+    if (value) {
+      this.$emit("transfer-fee", value);
+    }
+  }
+
+  @Watch("gasFee")
+  watchGasFee(value: string): void {
+    if (value) {
+      this.$emit("gas-fee", value);
+    }
+  }
+
+  @Watch("selectedAddress")
+  watchSelectedAddress(value: string): void {
+    if (value) {
+      if (this.swapAmount) {
+        this.UpdateRecipientGetsAmount(this.swapAmount);
+      }
+    }
+  }
+
+  @Watch("params", { deep: true })
+  watchParams(value: TransactionConfig | ""): void {
+    if (value) {
+      this.$emit("params", value);
+    }
+  }
+
+  @Watch("selectedRecipientToken")
+  watchselectedRecipientToken(value: string): void {
+    this.selectedRecipientTokenModel = value;
+  }
+
+  @Watch("selectedRecipientTokenModel")
+  watchSelectedRecipientToken(value: string, prev: string): void {
+    if (
+      this.selectedCurrency &&
+      value.toLowerCase() === this.selectedCurrency.value.toLowerCase()
+    ) {
+      this.$emit("selected-recipient-token", value);
+      this.checkFee(this.swapAmount);
+    } else {
+      console.log("prev", prev);
+
+      alert(`Swap currently are not available `);
+      this.selectedRecipientTokenModel = prev;
+    }
+  }
+
+  get addressBooksWallet(): AddressBookInterface[] {
+    return this.$store.getters["getAddressBooks"].filter(
+      (a: AddressBookInterface) => a.type === "wallet"
+    );
+  }
+
+  get addressBooks(): AddressBookInterface[] {
+    return this.$store.getters["getAddressBooks"];
+  }
+
+  get selectedEthereumAddress(): string {
+    return window.ethereum.selectedAddress;
+  }
+
+  async mounted(): Promise<void> {
+    console.log("this.currentSelected", this.currentSelected);
+    if (this.step) this.e1 = this.step;
+    if (this.currentSelected) this.selectedCurrency = this.currentSelected;
+
+    // this.label = this.setLabel;
+    // if (this.setSwapAmount) this.swapAmount = this.setSwapAmount;
+    // if (this.setContinueLabel) this.continueLabel = this.setContinueLabel;
+    // this.$nextTick(() => {});
+    console.log("this.swapAmountmounted", this.swapAmount);
+    const axiosGet = await axios.get(
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=tether,usd-coin,aave-dai,ethereum`
+    );
+    const data = axiosGet.data as CoingeckoInterface[];
+    this.ethereumPrice = data.find(
+      (d) => d.id === "ethereum"
+    ) as CoingeckoInterface;
+    if (this.swapAmount) {
+      await this.UpdateRecipientGetsAmount(this.swapAmount);
+      await this.updateUsdAmount();
+    }
+  }
+
+  goToHome(): void {
+    this.$router.push(`/`);
+    location.reload();
+  }
+
   async nextSendFrom(coin: BalanceInterface): Promise<void> {
     if (coin.currency?.allowance) {
       this.selectedCurrency = coin;
@@ -1139,15 +1382,12 @@ export default class SendMoney extends Vue {
   }
 
   approveLoading(coin: BalanceInterface): boolean {
-    if (this.currentlyApproved && coin.value === this.currentlyApproved.value) {
-      return true;
-    }
-    return false;
+    return !!(
+      this.currentlyApproved && coin.value === this.currentlyApproved.value
+    );
   }
 
-  currentlyApproved: BalanceInterface | "" = "";
 
-  approveLoadingStatus = false;
   async approve(coin: BalanceInterface): Promise<void> {
     try {
       if (!coin.currency?.allowancePending) {
@@ -1161,37 +1401,14 @@ export default class SendMoney extends Vue {
       this.approveLoadingStatus = false;
     }
   }
-  isReview = false;
-  addARecipientEmail = "";
-  addARecipientWalletAddress = "";
-  addARecipientName = "";
-  createWalletLoading = false;
-  selectedAddress: AddressBookInterface | "" = "";
-  newSubmittedAddressBook: AddressBookInterface | "" = "";
-  newAddressBookSubmitted = false;
-  selectedCurrency: BalanceInterface | "" = "";
-  selectedRecipientToken = this.selectedCurrency
-    ? this.selectedCurrency.value
-    : "usdt";
 
-  reference = "";
-
-  @Watch("selectedCurrency")
-  watchselectedCurrency(value: BalanceInterface): void {
-    if (value) {
-      this.selectedRecipientToken = value.value;
-    }
-  }
-
-  params: TransactionConfig | "" = "";
-  gasFee = "0";
   setGasFee(value: string): void {
     if (value) {
       this.gasFee = value;
     }
   }
 
-  allowance = false;
+
   setAllowance(value: boolean): void {
     this.allowance = value;
   }
@@ -1202,13 +1419,13 @@ export default class SendMoney extends Vue {
     }
   }
 
-  transferFee = "";
+
   setTransferFee(value: string): void {
     if (value) {
       this.transferFee = value;
     }
   }
-  loadingSendMoney = false;
+
   async sendMoney(): Promise<void> {
     try {
       this.loadingSendMoney = true;
@@ -1236,6 +1453,7 @@ export default class SendMoney extends Vue {
                       isToken: this.params.value === "0x0",
                       fee: this.transferFee,
                       reference: this.reference,
+                      reward : {transactionRewardInUsd : this.transactionRewardInUsd, transactionReward: this.transactionReward}
                     });
                     console.log("this.transaction", this.transaction);
                   }
@@ -1360,77 +1578,22 @@ export default class SendMoney extends Vue {
     }
   }
 
-  @Watch("selectedCurrencySync")
-  watchSelectedCurrencySync(value: BalanceInterface): void {
-    this.selectedCurrency = value;
-  }
-
-  get addressBooksWallet(): AddressBookInterface[] {
-    return this.$store.getters["getAddressBooks"].filter(
-      (a: AddressBookInterface) => a.type === "wallet"
-    );
-  }
-
-  get addressBooks(): AddressBookInterface[] {
-    return this.$store.getters["getAddressBooks"];
-  }
-  loadingAddressBooks = false;
-  // @Watch("e1")
-  // async watchE1(value: number): Promise<void> {
-  //   if (value === 3) {
-
-  //   }
-  // }
-
   async getAddressBooks(): Promise<void> {
     this.loadingAddressBooks = true;
     await this.$store.dispatch("getAddressBookList");
     this.loadingAddressBooks = false;
   }
 
-  @Watch("step")
-  watchStep(value: number): void {
-    this.e1 = value;
-  }
-
-  async mounted(): Promise<void> {
-    console.log("this.currentSelected", this.currentSelected);
-    if (this.step) this.e1 = this.step;
-    if (this.currentSelected) this.selectedCurrency = this.currentSelected;
-
-    // this.label = this.setLabel;
-    // if (this.setSwapAmount) this.swapAmount = this.setSwapAmount;
-    // if (this.setContinueLabel) this.continueLabel = this.setContinueLabel;
-    // this.$nextTick(() => {});
-    console.log("this.swapAmountmounted", this.swapAmount);
-    const axiosGet = await axios.get(
-      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=tether,usd-coin,aave-dai,ethereum`
-    );
-    const data = axiosGet.data as CoingeckoInterface[];
-    this.ethereumPrice = data.find(
-      (d) => d.id === "ethereum"
-    ) as CoingeckoInterface;
-    if (this.swapAmount) {
-      await this.UpdateRecipientGetsAmount(this.swapAmount);
-      await this.updateUsdAmount();
-    }
-  }
-
-  e1 = 1;
-  coinSelected = "";
   closeDialog(): void {
     // this.$emit("update-dialog", false);
     // this.e1 = 1;
     location.reload();
   }
-  detailUrl = process.env.VUE_APP_DETAIL_URL;
-  coins = Balances;
 
-  swapAmount = 0;
   setSwapAmount(value: number): void {
     this.swapAmount = Number(value);
   }
-  transaction: TransactionInterface | "" = "";
+
   toHumanDate(date: string): string {
     const interval = shleemy(date);
     return interval.forHumans;
@@ -1506,105 +1669,7 @@ export default class SendMoney extends Vue {
     return 0;
   }
 
-  amountSendUsd = "0";
-  amountReceiptUsd = "0";
-  // transferFee = "0";
-  transferFeeOnUsd = "0";
-  // gasFee = "0";
-  platformFee = "0";
-  platformFeeOnUsd = "";
-  loadingFee = false;
-  recipientGets = 0;
-  // params: TransactionConfig | "" = "";
 
-  selectedRecipientTokenModel = this.selectedRecipientToken;
-  updatingAmount = false;
-  @Watch("swapAmount")
-  async watchswapAmount(value: number): Promise<void> {
-    if (!this.updatingAmount && this.selectedCurrency) {
-      console.log("value", value);
-      this.updatingAmount = true;
-      if (value <= Number(this.selectedCurrency?.currency?.balance)) {
-        await this.UpdateRecipientGetsAmount(value);
-      } else {
-        alert(`Value input is higher than your balance`);
-        this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
-      }
-
-      this.updatingAmount = false;
-    }
-  }
-
-  @Watch("recipientGets")
-  async watchrecipientGets(value: number): Promise<void> {
-    if (!this.updatingAmount && this.selectedCurrency) {
-      this.updatingAmount = true;
-      if (value <= Number(this.selectedCurrency?.currency?.balance)) {
-        await this.UpdateSwapAmount(value);
-        if (
-          this.swapAmount >= Number(this.selectedCurrency?.currency?.balance)
-        ) {
-          alert(`Value input is higher than your balance`);
-          this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
-        }
-      } else {
-        alert(`Value input is higher than your balance`);
-        this.recipientGets = Number(0);
-      }
-      this.updatingAmount = false;
-    }
-  }
-
-  @Watch("transferFee")
-  watchtransferFee(value: string): void {
-    if (value) {
-      this.$emit("transfer-fee", value);
-    }
-  }
-
-  @Watch("gasFee")
-  watchGasFee(value: string): void {
-    if (value) {
-      this.$emit("gas-fee", value);
-    }
-  }
-
-  @Watch("selectedAddress")
-  watchSelectedAddress(value: string): void {
-    if (value) {
-      if (this.swapAmount) {
-        this.UpdateRecipientGetsAmount(this.swapAmount);
-      }
-    }
-  }
-
-  @Watch("params", { deep: true })
-  watchParams(value: TransactionConfig | ""): void {
-    if (value) {
-      this.$emit("params", value);
-    }
-  }
-
-  @Watch("selectedRecipientToken")
-  watchselectedRecipientToken(value: string): void {
-    this.selectedRecipientTokenModel = value;
-  }
-
-  @Watch("selectedRecipientTokenModel")
-  watchSelectedRecipientToken(value: string, prev: string): void {
-    if (
-      this.selectedCurrency &&
-      value.toLowerCase() === this.selectedCurrency.value.toLowerCase()
-    ) {
-      this.$emit("selected-recipient-token", value);
-      this.checkFee(this.swapAmount);
-    } else {
-      console.log("prev", prev);
-
-      alert(`Swap currently are not available `);
-      this.selectedRecipientTokenModel = prev;
-    }
-  }
 
   async UpdateRecipientGetsAmount(value: number): Promise<void> {
     this.recipientGets = 0;
@@ -1784,37 +1849,6 @@ export default class SendMoney extends Vue {
       this.checkFee(inputAmount);
     }
   }
-  gas = 0;
-  gasPrice = "0";
-  // @Watch("transferFee")
-  // async watchPlatformFee(value : string) : void{
-  //   if(value !== "0"){
-
-  //   }
-  // }
-
-  continueLabel = "Continue";
-
-  // coins = balances;
-  // swapAmount = 0;
-  label = "You send";
-  hint = `you have ${
-    this.selectedCurrency && this.selectedCurrency.currency
-      ? this.selectedCurrency?.currency?.balance
-      : "0"
-  }`;
-
-  ethereumPrice: CoingeckoInterface | "" = "";
-
-  @Watch("setSwapAmount")
-  watchSetSwapAmount(value: number): void {
-    this.swapAmount = value;
-  }
-
-  @Watch("swapAmount")
-  watchSwapAmount(value: number): void {
-    this.$emit("swap-amount", value);
-  }
 
   // nextStep(): void {
   //   this.$emit("next-step", this.currentStep + 1);
@@ -1864,8 +1898,7 @@ export default class SendMoney extends Vue {
     return amountOutMin.toSignificant(6);
   }
 
-  transactionReward = "0";
-  transactionRewardInEth = "0";
+
   async checkRewardFee(
     amountFee: string,
     isToken: boolean,
@@ -1998,13 +2031,7 @@ export default class SendMoney extends Vue {
     }
   }
 
-  transactionRewardInUsd = "0";
-  @Watch("transactionRewardInEth")
-  async watchtransactionRewardInEth(value: string): Promise<void> {
-    if (value !== "0") {
-      this.transactionRewardInUsd = this.convertToUsd(value);
-    }
-  }
+
 }
 
 export interface Roi {
