@@ -4,7 +4,8 @@ const BACKEND_URL = process.env.VUE_APP_BACKEND_URL;
 export class Fetcher {
   private static async get(
     path: string,
-    config: AxiosRequestConfig = {}
+    config: AxiosRequestConfig = {},
+    shouldAlert = true
   ): Promise<AxiosResponse> {
     try {
       const axiosGet = await axios.get(`${BACKEND_URL}${path}`, config);
@@ -29,7 +30,7 @@ export class Fetcher {
       }
       console.log("message", message);
       console.log(error.config);
-      alert(message);
+      if (shouldAlert) alert(message);
       throw new Error(message);
     }
   }
@@ -201,7 +202,11 @@ export class Fetcher {
   }
 
   static async checkNewNotification(userId: string): Promise<boolean> {
-    const fetch = await Fetcher.get(`/user/notification/new/${userId}`);
+    const fetch = await Fetcher.get(
+      `/user/notification/new/${userId}`,
+      {},
+      false
+    );
     return fetch.data;
   }
   static async getNotifications(token: string): Promise<UserNotification[]> {
