@@ -68,7 +68,7 @@
             <v-divider></v-divider>
             <v-container>
               <v-row class="mt-n1">
-                <v-col cols="12" md="6" sm="6" lg="6" xl="6">
+                <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> Set Up By </v-card-subtitle>
                     <v-card-title class="primary--text mt-n8">
@@ -76,11 +76,20 @@
                     </v-card-title>
                   </v-card>
                 </v-col>
-                <v-col cols="12" md="6" sm="6" lg="6" xl="6">
+                <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> Reference </v-card-subtitle>
                     <v-card-title class="primary--text mt-n8">
                       {{ transaction.reference }}
+                    </v-card-title>
+                  </v-card>
+                </v-col>
+
+                <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                  <v-card flat tile>
+                    <v-card-subtitle> Rewards </v-card-subtitle>
+                    <v-card-title class="primary--text mt-n8">
+                      {{ transaction.reward ? transaction.reward.transactionReward : "0" }} Ninja Token
                     </v-card-title>
                   </v-card>
                 </v-col>
