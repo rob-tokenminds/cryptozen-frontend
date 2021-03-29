@@ -1,5 +1,5 @@
 <template>
-  <v-list flat dense class="mt-n2" width="350" height="70">
+  <v-list flat dense :class="vListTopClass" width="350" height="70">
     <v-list-item flat dense>
       <v-list-item-icon v-if="syncedShowBell">
         <v-menu
@@ -138,11 +138,16 @@ const EventSource = NativeEventSource || EventSourcePolyfill;
 global.EventSource = NativeEventSource || EventSourcePolyfill;
 @Component({ name: "ProfileMenu", components: {} })
 export default class ProfileMenu extends Vue {
-  @Prop(Boolean) readonly isMobile: boolean = false;
+  @Prop(Boolean) readonly isMobile!: boolean;
+  @Prop(String) readonly classTop!: string;
   @PropSync("showBell", { type: Boolean }) syncedShowBell!: boolean;
 
   editYourEmail = false;
   yourEmail = this.myEmail;
+
+  get vListTopClass():string{
+    if(this.classTop) return this.classTop;else return "mt-n2"
+  }
 
   get selectedAddress(): string {
     return this.$store.getters["getSelectedAddress"];

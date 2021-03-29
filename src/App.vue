@@ -251,7 +251,7 @@ export default class App extends Vue {
   }
 
   async init(): Promise<void> {
-    this.web3 = new Web3(window.ethereum);
+
     await this.$store.dispatch("setWeb3", this.web3);
     const currentProvider = this.web3.currentProvider;
     if (currentProvider !== null && currentProvider !== undefined) {
@@ -333,13 +333,24 @@ export default class App extends Vue {
           "Metamask is not installed, please install metamask to use this Dapps"
         );
       } else {
-        if (this.$route.path !== `/create-address-book`) await this.init();
+        this.web3 = new Web3(window.ethereum);
+        if(this.web3){
+          const chainId = await this.web3.eth.getChainId();
+          if(chainId === 3){
+            if (this.$route.path !== `/create-address-book`) await this.init();
 
-        window.ethereum.on("accountsChanged", () => {
-          Vue.$cookies.remove("cryptozen_token");
-          this.$router.push("/");
-          location.reload();
-        });
+            window.ethereum.on("accountsChanged", () => {
+              Vue.$cookies.remove("cryptozen_token");
+              this.$router.push("/");
+              location.reload();
+            });
+          }else{
+            alert("Invalid network, please select one of these network on your metamask : ROPSTEN. Please change your network and reload the site")
+          }
+
+
+        }
+
       }
     });
   }

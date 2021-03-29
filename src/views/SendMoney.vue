@@ -1,5 +1,5 @@
 <template>
-  <v-card flat>
+  <v-card flat v-if="!pageLoading">
     <v-stepper v-model="e1" class="elevation-0">
       <!-- <v-toolbar dark color="white"> -->
 
@@ -18,17 +18,29 @@
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-stepper-step :complete="e1 > 1" :step="e1 === 1 ? `O` : ``">
-          <v-chip
-            @click="isReview ? (e1 = 1) : ''"
-            :color="e1 === 1 ? `primary` : ``"
+          <v-chip v-if="isReview"
+                  @click="isReview ? (e1 = 1) : ''"
+            :color="e1 === 1 ? `primary` : `secondary`"
+          >
+            Wallet</v-chip
+          >
+          <v-chip v-else
+
+                  :color="e1 === 1 ? `primary` : ``"
           >
             Wallet</v-chip
           >
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step :complete="e1 > 2" :step="e1 === 2 ? `O` : ``">
-          <v-chip
+          <v-chip v-if="isReview"
             @click="isReview ? (e1 = 2) : ''"
+            :color="e1 === 2 ? `primary` : `secondary`"
+          >
+            Recipient</v-chip
+          >
+          <v-chip v-else
+
             :color="e1 === 2 ? `primary` : ``"
           >
             Recipient</v-chip
@@ -36,8 +48,14 @@
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step :complete="e1 > 3" :step="e1 === 3 ? `O` : ``">
-          <v-chip
+          <v-chip v-if="isReview"
             @click="isReview ? (e1 = 3) : ''"
+            :color="e1 === 3 ? `primary` : `secondary`"
+          >
+            Amount</v-chip
+          >
+          <v-chip v-else
+
             :color="e1 === 3 ? `primary` : ``"
           >
             Amount</v-chip
@@ -45,8 +63,14 @@
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step :step="e1 === 4 ? `O` : ``">
-          <v-chip
+          <v-chip v-if="isReview"
             @click="isReview ? (e1 = 4) : ''"
+            :color="e1 === 4 ? `primary` : `secondary`"
+          >
+            Review</v-chip
+          >
+          <v-chip v-else
+
             :color="e1 === 4 ? `primary` : ``"
           >
             Review</v-chip
@@ -54,7 +78,7 @@
         </v-stepper-step>
         <v-spacer></v-spacer>
 
-        <ProfileMenu class="mb-3" :showBell="false"></ProfileMenu>
+        <ProfileMenu :classTop="'aa'" :showBell="false"></ProfileMenu>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
@@ -111,9 +135,11 @@
 
                     <v-spacer></v-spacer>
                     <v-list-item-content>
+
                       <v-icon v-if="coin.currency.allowance"
                         >mdi-chevron-right</v-icon
                       >
+
                       <v-btn
                         :disabled="approveLoadingStatus"
                         v-else
@@ -121,7 +147,7 @@
                         small
                         @click="approve(coin)"
                         >{{
-                          !coin.currency.isApproved
+                          coin.currency.allowancePending
                             ? "Pending"
                             : "Approve Contract"
                         }}</v-btn
@@ -1090,6 +1116,9 @@
       </v-stepper-items>
     </v-stepper>
   </v-card>
+  <v-card v-else :loading="true">
+    <v-card-text>Please wait...</v-card-text>
+  </v-card>
 </template>
 
 <script lang="ts">
@@ -1199,6 +1228,7 @@ export default class SendMoney extends Vue {
   transactionRewardInUsd = "0";
   transactionReward = "0";
   transactionRewardInEth = "0";
+  pageLoading = true;
   @Watch("transactionRewardInEth")
   async watchtransactionRewardInEth(value: string): Promise<void> {
     if (value !== "0") {
@@ -1345,26 +1375,30 @@ export default class SendMoney extends Vue {
   }
 
   async mounted(): Promise<void> {
-    console.log("this.currentSelected", this.currentSelected);
-    if (this.step) this.e1 = this.step;
-    if (this.currentSelected) this.selectedCurrency = this.currentSelected;
 
-    // this.label = this.setLabel;
-    // if (this.setSwapAmount) this.swapAmount = this.setSwapAmount;
-    // if (this.setContinueLabel) this.continueLabel = this.setContinueLabel;
-    // this.$nextTick(() => {});
-    console.log("this.swapAmountmounted", this.swapAmount);
-    const axiosGet = await axios.get(
-      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=tether,usd-coin,aave-dai,ethereum`
-    );
-    const data = axiosGet.data as CoingeckoInterface[];
-    this.ethereumPrice = data.find(
-      (d) => d.id === "ethereum"
-    ) as CoingeckoInterface;
-    if (this.swapAmount) {
-      await this.UpdateRecipientGetsAmount(this.swapAmount);
-      await this.updateUsdAmount();
-    }
+    this.$nextTick(async () => {
+      if (this.step) this.e1 = this.step;
+      if (this.currentSelected) this.selectedCurrency = this.currentSelected;
+
+      // this.label = this.setLabel;
+      // if (this.setSwapAmount) this.swapAmount = this.setSwapAmount;
+      // if (this.setContinueLabel) this.continueLabel = this.setContinueLabel;
+      // this.$nextTick(() => {});
+
+      const axiosGet = await axios.get(
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=tether,usd-coin,aave-dai,ethereum`
+      );
+      const data = axiosGet.data as CoingeckoInterface[];
+      this.ethereumPrice = data.find(
+        (d) => d.id === "ethereum"
+      ) as CoingeckoInterface;
+      if (this.swapAmount) {
+        await this.UpdateRecipientGetsAmount(this.swapAmount);
+        await this.updateUsdAmount();
+      }
+      this.pageLoading = false;
+    })
+
   }
 
   goToHome(): void {
