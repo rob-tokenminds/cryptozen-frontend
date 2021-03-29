@@ -105,7 +105,7 @@
                 <v-card-text>Select balance</v-card-text>
               </v-card>
 
-              <v-card
+              <v-card :loading="approveLoadingStatus"
                 v-for="coin in $store.state.balances"
                 :key="coin.value"
                 elevation="2"

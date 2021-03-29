@@ -12,7 +12,7 @@
         color="secondary"
         @click="swapMoneyDialog = true"
         class="ml-1"
-        >Swap {{ getBalance.name }} Comming soon</v-btn
+        >Swap {{ getBalance.name }} Coming soon</v-btn
       >
       <v-btn disabled color="secondary" class="ml-1"
         >Lock Compound Comming soon</v-btn
