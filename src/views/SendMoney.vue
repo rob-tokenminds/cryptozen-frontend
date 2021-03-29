@@ -96,7 +96,7 @@
             flat
             class="d-flex justify-center"
           >
-            <v-card flat>
+            <v-card flat :loading="approveLoadingStatus">
               <p class="text-center primary--text text-h5">
                 Where do you want to send from ?
               </p>
@@ -105,7 +105,7 @@
                 <v-card-text>Select balance</v-card-text>
               </v-card>
 
-              <v-card :loading="approveLoadingStatus"
+              <v-card
                 v-for="coin in $store.state.balances"
                 :key="coin.value"
                 elevation="2"
