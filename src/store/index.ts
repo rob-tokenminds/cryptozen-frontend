@@ -275,14 +275,12 @@ const store: StoreOptions<storeInterface> = {
       const token = Vue.$cookies.get("cryptozen_token");
       return await Fetcher.getApproval(token, address, contractAddress);
     },
-
     updateSelectedAddress({ state }, address: string) {
       state.selectedAddress = address;
     },
     async updateChainId({ state }, web3: Web3) {
       state.chainId = await web3.eth.getChainId();
     },
-
     async getLoginWord() {
       return await Fetcher.getLoginWords();
     },
@@ -450,6 +448,57 @@ const store: StoreOptions<storeInterface> = {
         fee,
         reference,
         reward
+      );
+      const checkTrx = state.transactions.find((t) => t.id === trx.id);
+      if (!checkTrx) {
+        state.transactions.push(trx);
+      }
+      return trx;
+    },
+    async updateTrx(
+      { state },
+      {
+        id,
+        hash,
+        isToken,
+        fee,
+        reference,
+        reward,
+      }: {
+        id: string;
+        hash: string;
+        isToken: boolean;
+        fee: string;
+        reference: string;
+        reward: any;
+      }
+    ) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const trx = await Fetcher.updateNewTrx(
+        token,
+        id,
+        hash,
+        isToken,
+        fee,
+        reference,
+        reward
+      );
+      const checkTrx = state.transactions.findIndex((t) => t.id === trx.id);
+      if (checkTrx) {
+        state.transactions.splice(checkTrx, 1, trx);
+      }
+      return trx;
+    },
+    async newTrxWithEmail({state}, {currency, name, plainEmail,email, reference, amount}){
+      const token = Vue.$cookies.get("cryptozen_token");
+      const trx = await Fetcher.postNewTrxWithEmail(
+        token,
+        amount,
+        currency,
+        name,
+        plainEmail,
+        email,
+        reference
       );
       const checkTrx = state.transactions.find((t) => t.id === trx.id);
       if (!checkTrx) {

@@ -30,10 +30,10 @@
           >{{ toHumanDate(transaction.created_at) }}
         </v-card-subtitle>
         <v-spacer></v-spacer>
-        <v-chip v-if="!transaction.fee" color="secondary">
-          External Transaction</v-chip
+        <v-chip :color="statusTransaction(transaction).color">
+          {{ statusTransaction(transaction).name }}</v-chip
         >
-        <v-chip v-else color="primary"> Cryptozen Transaction</v-chip>
+
       </v-card-actions>
 
       <v-divider></v-divider>
@@ -64,7 +64,7 @@
               </v-col>
 
               <v-col cols="12" md="6" sm="6" lg="6" xl="6">
-                <p class="primary--text text-right mt-6">
+                <p class="primary--text text-right mt-7">
                   {{ getAmount(transaction) }}
                 </p>
               </v-col>
@@ -104,8 +104,11 @@
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> To </v-card-subtitle>
-                    <v-card-title class="primary--text mt-n8">
+                    <v-card-title v-if="!transaction.isOnHold" class="primary--text mt-n8">
                       {{ getWalletName(transaction.to) }}
+                    </v-card-title>
+                    <v-card-title v-else class="primary--text mt-n8">
+                      <a :ref="`encrypted-email-${transaction.id}`" @click="decryptEmail(transaction)">Encrypted (click to decrypt)</a>
                     </v-card-title>
                   </v-card>
                 </v-col>
@@ -150,7 +153,7 @@
                 </v-col>
 
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4" class="text-right">
-                  <v-btn
+                  <v-btn v-if="!transaction.isOnHold"
                     :href="`${detailUrl}${transaction.hash}`"
                     target="_blank"
                     color="secondary"
@@ -158,6 +161,33 @@
                     class="mt-7"
                     >Tracking URL</v-btn
                   >
+                  <v-btn v-else
+                       @click="sendMoneyDialog = true"
+
+                         color="secondary"
+                         outlined
+                         class="mt-7"
+                         :disabled="!statusAddress(transaction)"
+                  > Submit Transaction </v-btn
+                  >
+
+                  <v-dialog
+                    v-if="statusAddress(transaction)"
+                    v-model="sendMoneyDialog"
+                    fullscreen
+                    hide-overlay
+                    transition="dialog-bottom-transition"
+                  >
+                    <SendMoney
+                      :currentSelected="getBalance(transaction)"
+                      :setAddressSelected="getAddressBookByEmail(transaction)"
+                      :setAmount="transaction.value / 10 ** transaction.tokenDecimal"
+                      :setTransaction="transaction"
+                      :step="4"
+
+                      @update-dialog="updateSendMoneyDialog"
+                    ></SendMoney>
+                  </v-dialog>
                 </v-col>
               </v-row>
             </v-container>
@@ -170,17 +200,97 @@
 
 <script lang="ts">
 import { AddressBookInterface, TransactionInterface } from "@/store/fetcher";
-import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { shleemy } from "shleemy";
 import Web3 from "web3";
 import Bignumber from "bignumber.js";
+import { AbstractProvider } from "web3-core";
+import CryptoJS from "crypto-js";
+import SendMoney from "../SendMoney.vue";
+import { BalanceInterface } from "@/static/balance";
 
-@Component({ name: "TransactionHistory", components: {} })
+@Component({ name: "TransactionHistory", components: {SendMoney} })
 export default class TransactionHistory extends Vue {
   @Prop(String) readonly label!: string;
   @Prop(String) readonly currency!: string;
   loadingTransactions = false;
   detailUrl = process.env.VUE_APP_DETAIL_URL;
+  sendMoneyDialog = false;
+
+  updateSendMoneyDialog(value: boolean): void {
+    this.sendMoneyDialog = value;
+  }
+
+  getBalance(transaction: TransactionInterface) : any {
+    return this.$store.state.balances.find(
+      (b: BalanceInterface) => b.value === transaction.tokenSymbol?.toLowerCase()
+    );
+  }
+
+  statusTransaction(transaction: TransactionInterface) : any {
+    if(transaction.isOnHold){
+        const status = this.statusAddress(transaction);
+        if(status){
+          return {name : 'Waiting Transaction', color : 'success'}
+        }else{
+          return  {name : 'On Hold Transaction', color : 'warning'} ;
+        }
+    }else{
+      if(transaction.fee){
+        return {name : 'Crytozen Transaction', color : 'primary'}
+      }else{
+        return {name : 'External Transaction', color : 'secondary'}
+      }
+    }
+  }
+
+  statusAddress(transaction : TransactionInterface) : boolean {
+    const addressBook = this.getAddressBookByEmail(transaction);
+    if(addressBook){
+      return !!addressBook.address;
+    }
+    return false;
+  }
+
+  getAddressBookByEmail(transaction: TransactionInterface) : AddressBookInterface | undefined {
+    const addressBooks: AddressBookInterface[] = this.$store.getters[
+      "getAddressBooks"
+      ];
+
+    return addressBooks.find(
+      (a) => a.email === transaction.to
+    );
+  }
+
+  async decryptEmail(transaction : TransactionInterface) : Promise<void> {
+    const web3 = this.$store.getters["getWeb3"] as Web3;
+    const message = `We are requesting your signature again to encrypt the email address. Your signature won't be saved on the server`;
+    const params = [message, window.ethereum.selectedAddress];
+    const currentProvider = web3.currentProvider;
+    const signature = await new Promise((resolve) => {
+      (currentProvider as AbstractProvider).sendAsync(
+        {
+          jsonrpc: "1",
+          method: "personal_sign",
+          params,
+        },
+        (error, result) => {
+          if (error) {
+            resolve(false);
+          } else {
+            resolve(result?.result);
+          }
+        }
+      );
+    });
+
+    const email = CryptoJS.AES.decrypt(
+      transaction.to,
+      signature as string
+    ).toString(CryptoJS.enc.Utf8);
+    console.log("this.$refs[`encrypted-email-${transaction.id}`]",this.$refs[`encrypted-email-${transaction.id}`]);
+    (this.$refs[`encrypted-email-${transaction.id}`]as any)[0].innerText = email;
+  }
 
   get isMobile(): boolean {
     return this.$vuetify.breakpoint.xsOnly;
@@ -196,7 +306,7 @@ export default class TransactionHistory extends Vue {
       return `${(
         Number(transaction.value) /
         10 ** Number(transaction.tokenDecimal)
-      ).toString()} ${transaction.tokenName}`;
+      ).toString()} ${transaction.tokenName?.toUpperCase()}`;
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;
       return `${web3.utils.fromWei(

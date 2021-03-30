@@ -154,7 +154,7 @@
     <v-main>
       <!-- Provides the application the proper gutter -->
 
-      <v-container v-if='isLogin'>
+      <v-container>
         <router-view isMobile="isMobile"></router-view>
       </v-container>
 
@@ -289,7 +289,7 @@ export default class App extends Vue {
         try {
           const profile = await this.$store.dispatch("getProfile");
           if (!profile) {
-            throw new Error(`Token is expired, will relogin`);
+            throw new Error(`Token is expired, will re-login`);
           }
           this.$store.state.isLogin = true;
           // this.$socket.send(
@@ -310,16 +310,16 @@ export default class App extends Vue {
           }
         } catch (e) {
           console.log("e", e);
-          alert(`Token is expired, will relogin`);
+          alert(`Token is expired, will re-login`);
 
           this.$cookies.remove("cryptozen_token");
-          this.$router.push("/");
+          await this.$router.push("/");
           location.reload();
           // await this.init();
         }
       } else {
         alert(`Please sign the Signature Request`);
-        this.$router.push("/");
+        await this.$router.push("/");
         location.reload();
         // await this.init();
       }

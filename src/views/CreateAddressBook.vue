@@ -34,7 +34,7 @@
       </v-card>
       <v-card flat width="1000" v-else>
         <p class="text-center text-h6">
-          Hi {{ email }} ! Your address has been successfully submitted !.
+          Your address has been successfully submitted !.
         </p>
       </v-card>
     </v-card>

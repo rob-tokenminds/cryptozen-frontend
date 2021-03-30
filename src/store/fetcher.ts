@@ -284,6 +284,55 @@ export class Fetcher {
     return fetch.data;
   }
 
+  static async updateNewTrx(
+    token: string,
+    id : string,
+    hash: string,
+    isToken: boolean,
+    fee: string,
+    reference: string,
+    reward: any
+  ): Promise<TransactionInterface> {
+    const fetch = await Fetcher.post(
+      `/user/transaction/update`,
+      {
+        id,
+        hash,
+        isToken,
+        fee,
+        reference,
+        reward,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return fetch.data;
+  }
+
+  static async postNewTrxWithEmail(
+    token: string,
+    amount : string,
+    currency : string,
+    name : string,
+    plainEmail : string,
+    email : string,
+    reference: string,
+
+  ): Promise<TransactionInterface> {
+    const fetch = await Fetcher.post(
+      `/user/transaction/new/with-email`,
+      {
+        currency,
+        amount,
+        name,
+        reference,
+        plainEmail,
+        email
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return fetch.data;
+  }
+
   static async postApproval(
     token: string,
     hash: string,
@@ -413,4 +462,5 @@ export interface TransactionInterface {
   created_at: string;
   updated_at: string;
   fee: string;
+  isOnHold : boolean;
 }
