@@ -1,17 +1,18 @@
 <template>
   <v-container>
-    <v-card flat max-width="65%" class="mb-2">
+
+    <v-card flat :max-width="isMobile ? `100%` : `65%`" class="mb-2">
       <v-card-subtitle class="primary--text">All Activity</v-card-subtitle>
     </v-card>
 
     <v-skeleton-loader
-      max-width="65%"
+      :max-width="isMobile ? `100%` : `65%`"
       class="mb-2"
       v-if="loadingSyncTransactions"
       type="expansion-panels, expansion-panel-header, list-item, ist-item-avatar, list-item-two-line"
     ></v-skeleton-loader>
     <v-skeleton-loader
-      max-width="65%"
+      :max-width="isMobile ? `100%` : `65%`"
       class="mb-2"
       v-if="loadingTransactions"
       type="expansion-panels, expansion-panel-header, list-item, ist-item-avatar, list-item-two-line"
@@ -22,7 +23,7 @@
       :key="transaction.id"
       class="mb-2"
       flat
-      max-width="65%"
+      :max-width="isMobile ? `100%` : `65%`"
     >
       <v-card-actions>
         <v-card-subtitle
@@ -39,11 +40,16 @@
       <v-expansion-panels multiple flat>
         <v-expansion-panel>
           <v-expansion-panel-header>
-            <v-row>
+            <v-row no-gutters>
               <v-col cols="12" md="6" sm="6" lg="6" xl="6">
                 <v-list-item>
-                  <v-list-item-avatar>
-                    <v-avatar color="main " size="60"></v-avatar>
+                  <v-list-item-avatar size="60">
+                    <v-avatar  >
+                      <v-img
+                        :src="require(`../../assets/${transaction.tokenSymbol}.svg`)"
+                      ></v-img>
+
+                    </v-avatar>
                   </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title class="primary--text"
@@ -175,6 +181,11 @@ export default class TransactionHistory extends Vue {
   @Prop(String) readonly currency!: string;
   loadingTransactions = false;
   detailUrl = process.env.VUE_APP_DETAIL_URL;
+
+  get isMobile(): boolean {
+    return this.$vuetify.breakpoint.xsOnly;
+  }
+
   toHumanDate(date: string): string {
     const interval = shleemy(date);
     return interval.forHumans;
@@ -217,6 +228,18 @@ export default class TransactionHistory extends Vue {
     }
   }
 
+  shortSelectedAddress(address : string): string {
+    if (address)
+      return `${address.substring(
+        0,
+        6
+      )}....${address.substring(
+        address.length - 4,
+        address.length
+      )}`;
+    else return "0x...00";
+  }
+
   getWalletName(address: string): string {
     const addressBooks: AddressBookInterface[] = this.$store.getters[
       "getAddressBooks"
@@ -233,7 +256,12 @@ export default class TransactionHistory extends Vue {
         window.ethereum.selectedAddress?.toLowerCase()
       )
         return "Current address";
-      else return address;
+      else{
+        if(this.isMobile){
+          return this.shortSelectedAddress(address);
+        }
+        return address;
+      }
     }
   }
 

@@ -410,7 +410,7 @@ export interface TransactionInterface {
   isError: boolean;
   isToken: boolean;
   isInternal: boolean;
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
   fee: string;
 }

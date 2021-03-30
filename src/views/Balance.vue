@@ -2,6 +2,7 @@
   <div>
     <v-container>
       <v-btn
+        class="ma-1"
         :disabled="!allowance"
         color="secondary"
         @click="sendMoneyDialog = true"
@@ -11,14 +12,14 @@
         disabled
         color="secondary"
         @click="swapMoneyDialog = true"
-        class="ml-1"
+        class="ma-1"
         >Swap {{ getBalance.name }} Coming soon</v-btn
       >
       <v-btn disabled color="secondary" class="ml-1"
-        >Lock Compound Comming soon</v-btn
+        >Lock Compound Coming soon</v-btn
       >
       <v-btn
-        class="ml-1"
+        class="ma-1"
         v-if="!allowance"
         :disabled="allowancePending"
         @click="approve"
@@ -77,6 +78,10 @@ export default class Balance extends Vue {
   swapMoneyDialog = false;
   loadingApprove = false;
   label = "Approve contract address";
+
+  get isMobile(): boolean {
+    return this.$vuetify.breakpoint.xsOnly;
+  }
   async approve(): Promise<void> {
     try {
       this.loadingApprove = true;

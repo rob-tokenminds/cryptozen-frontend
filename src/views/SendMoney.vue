@@ -8,7 +8,7 @@
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
-        <v-img
+        <v-img v-if="!isMobile"
           class="ma-5"
           max-height="60"
           max-width="130"
@@ -78,7 +78,7 @@
         </v-stepper-step>
         <v-spacer></v-spacer>
 
-        <ProfileMenu :classTop="'aa'" :showBell="false"></ProfileMenu>
+        <ProfileMenu :classTop="'aa'" :showBell="false" v-if="!isMobile"></ProfileMenu>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
@@ -1229,6 +1229,11 @@ export default class SendMoney extends Vue {
   transactionReward = "0";
   transactionRewardInEth = "0";
   pageLoading = true;
+
+  get isMobile(): boolean {
+    return this.$vuetify.breakpoint.xsOnly;
+  }
+
   @Watch("transactionRewardInEth")
   async watchtransactionRewardInEth(value: string): Promise<void> {
     if (value !== "0") {

@@ -8,7 +8,7 @@
         >
       </v-row>
 
-      <v-dialog v-model="addAWallet" max-width="800">
+      <v-dialog v-model="addAWallet" :max-width="isMobile ? `100%` : `65%`">
         <v-card>
           <v-container>
             <v-card-title class="headline"> Add A Wallet </v-card-title>
@@ -54,7 +54,7 @@
         </v-card>
       </v-dialog>
 
-      <v-dialog v-model="addARecipient" max-width="800">
+      <v-dialog v-model="addARecipient" :max-width="isMobile ? `100%` : `65%`">
         <v-card>
           <v-container>
             <v-card-title class="headline"> Add A Recipient </v-card-title>
@@ -108,7 +108,7 @@
     <v-card
       class="mt-2"
       flat
-      max-width="65%"
+      :max-width="isMobile ? `100%` : `65%`"
       v-for="addressBook in addressBookList"
       :key="addressBook.id"
     >
@@ -273,6 +273,10 @@ export default class AddressBook extends Vue {
   editWalletId = "";
 
   deleteWalletId = "";
+
+  get isMobile(): boolean {
+    return this.$vuetify.breakpoint.xsOnly;
+  }
 
   editWalletData(wallet: AddressBookInterface): void {
     console.log("wallet", wallet);
