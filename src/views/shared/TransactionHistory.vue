@@ -233,7 +233,7 @@ export default class TransactionHistory extends Vue {
         if(status){
           return {name : 'Waiting Transaction', color : 'success'}
         }else{
-          return  {name : 'On Hold Transaction', color : 'warning'} ;
+          return  {name : 'Pending Transaction', color : 'warning'} ;
         }
     }else{
       if(transaction.fee){

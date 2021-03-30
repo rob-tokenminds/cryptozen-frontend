@@ -22,18 +22,14 @@
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step  @click="isReview ? (e1 = 2) : ''" :complete="e1 > 2" :step="e1 === 2 ? `O` : ``">
-
-
             Recipient
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step   @click="isReview ? (e1 = 3) : ''" :complete="e1 > 3" :step="e1 === 3 ? `O` : ``">
-
             Amount
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step  @click="isReview ? (e1 = 4) : ''" :step="e1 === 4 ? `O` : ``">
-
             Review
         </v-stepper-step>
         <v-spacer></v-spacer>
@@ -168,7 +164,11 @@
                           >
                             <v-list-item class="">
                               <v-list-item-avatar size="60">
-                                <v-avatar color="main"></v-avatar>
+                                <v-avatar color="">
+                                  <v-img
+                                    :src="require(`../assets/${addressBook.currency}.svg`)"
+                                  ></v-img>
+                                </v-avatar>
                               </v-list-item-avatar>
                               <v-list-item-content>
                                 <v-list-item-title class="primary--text ma-2"
@@ -259,7 +259,11 @@
                         >
                           <v-list-item class="">
                             <v-list-item-avatar size="60">
-                              <v-avatar color="main"></v-avatar>
+                              <v-avatar color="">
+                                <v-img
+                                  :src="require(`../assets/${newSubmittedAddressBook.currency}.svg`)"
+                                ></v-img>
+                              </v-avatar>
                             </v-list-item-avatar>
                             <v-list-item-content>
                               <v-list-item-title class="primary--text ma-2"
@@ -307,12 +311,12 @@
                       color="primary"
                       outlined
                       :max="selectedCurrency.currency.balance"
-                      v-model.lazy="swapAmount"
+                      v-model="swapAmount"
                       :hint="hint"
                       persistent-hint
                       type="number"
                       :step="0.01"
-                      @change="UpdateRecipientGetsAmount"
+
                     >
                       <template v-slot:append>
                         <v-list-item class="mt-n4">
@@ -469,7 +473,7 @@
                             >
                           </v-col>
                         </v-row>
-                        <v-divider class="mb-3 bala"></v-divider>
+<!--                        <v-divider class="mb-3 bala"></v-divider>-->
                       </v-list-item-content>
                     </v-list-item>
                     <v-row no-gutters>
@@ -480,12 +484,12 @@
                           color="primary"
                           label="Recipient gets"
                           outlined
-                          v-model.lazy="recipientGets"
+                          v-model="recipientGets"
                           type="number"
                           :step="0.01"
                           flat
                           height="50"
-                          @change="UpdateSwapAmount"
+
                         >
                           <!-- <template v-slot:append-outer>
 
@@ -584,12 +588,12 @@
                     color="primary"
                     outlined
                     :max="selectedCurrency.currency.balance"
-                    v-model.lazy="swapAmount"
+                    v-model="swapAmount"
                     :hint="hint"
                     persistent-hint
                     type="number"
                     :step="0.01"
-                    @change="UpdateRecipientGetsAmount"
+
                   >
                     <template v-slot:append>
                       <v-list-item class="mt-n4">
@@ -757,12 +761,12 @@
                         color="primary"
                         label="Recipient gets"
                         outlined
-                        v-model.lazy="recipientGets"
+                        v-model="recipientGets"
                         type="number"
                         :step="0.01"
                         flat
                         height="50"
-                        @change="UpdateSwapAmount"
+
                       >
                         <!-- <template v-slot:append-outer>
 
@@ -899,7 +903,7 @@
         </v-stepper-content>
 
         <v-stepper-content step="5">
-          <p  v-if="transaction" class="text-center primary--text text-h5">  {{ transaction.isOnHold ? "On Hold" : 'Pending' }}</p>
+          <p  v-if="transaction" class="text-center primary--text text-h5">  {{ transaction.isOnHold ? "Awaiting Recipient Wallet Address" : 'Pending' }}</p>
           <p class="text-center primary--text">
             We will notify you once the transaction is confirmed
           </p>
@@ -1175,15 +1179,15 @@ export default class SendMoney extends Vue {
     }
   }
 
-  @Watch("setSwapAmount")
-  watchSetSwapAmount(value: number): void {
-    this.swapAmount = value;
-  }
-
-  @Watch("swapAmount")
-  watchSwapAmount(value: number): void {
-    this.$emit("swap-amount", value);
-  }
+  // @Watch("setSwapAmount")
+  // watchSetSwapAmount(value: number): void {
+  //   this.swapAmount = value;
+  // }
+  //
+  // @Watch("swapAmount")
+  // watchSwapAmount(value: number): void {
+  //   this.$emit("swap-amount", value);
+  // }
 
 
   @Watch("e1")
@@ -1212,24 +1216,36 @@ export default class SendMoney extends Vue {
     this.e1 = value;
   }
 
+  processWatchSwapAmount = false;
+
   @Watch("swapAmount")
   async watchswapAmount(value: number): Promise<void> {
-    if (!this.updatingAmount && this.selectedCurrency) {
-      console.log("value", value);
-      this.updatingAmount = true;
-      if (value <= Number(this.selectedCurrency?.currency?.balance)) {
-        await this.UpdateRecipientGetsAmount(value);
-      } else {
-        alert(`Value input is higher than your balance`);
-        this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
-      }
+    if(!this.processWatchSwapAmount){
+      this.processWatchSwapAmount = true;
+      if (!this.updatingAmount && this.selectedCurrency) {
+        console.log("value", value);
+        this.updatingAmount = true;
+        if (value <= Number(this.selectedCurrency?.currency?.balance)) {
+          await this.UpdateRecipientGetsAmount(value);
+        } else {
+          alert(`Value input is higher than your balance`);
+          this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+        }
 
-      this.updatingAmount = false;
+        this.updatingAmount = false;
+      }
+      this.processWatchSwapAmount = false;
+    }else{
+      await sleep(500)
+      await this.watchswapAmount(value);
     }
+
   }
 
+  processWatchRecipietGets = false;
   @Watch("recipientGets")
   async watchrecipientGets(value: number): Promise<void> {
+    if(!this.processWatchRecipietGets){
     if (!this.updatingAmount && this.selectedCurrency) {
       this.updatingAmount = true;
       if (value <= Number(this.selectedCurrency?.currency?.balance)) {
@@ -1245,6 +1261,11 @@ export default class SendMoney extends Vue {
         this.recipientGets = Number(0);
       }
       this.updatingAmount = false;
+    }
+      this.processWatchRecipietGets = false;
+    }else{
+      await sleep(500)
+      await this.watchrecipientGets(value);
     }
   }
 
@@ -1753,7 +1774,7 @@ export default class SendMoney extends Vue {
   async UpdateRecipientGetsAmount(value: number): Promise<void> {
     this.recipientGets = 0;
     if (this.swapAmount > 0) {
-      await this.checkFee(this.swapAmount);
+      await this.checkFee(value);
 
       this.recipientGets = Number(this.swapAmount) - Number(this.transferFee);
       await this.updateUsdAmount();
@@ -1763,7 +1784,7 @@ export default class SendMoney extends Vue {
   async UpdateSwapAmount(value: number): Promise<void> {
     this.swapAmount = 0;
     if (this.recipientGets > 0) {
-      await this.checkFee(this.recipientGets);
+      await this.checkFee(value);
 
       this.swapAmount = Number(this.recipientGets) + Number(this.transferFee);
       await this.updateUsdAmount();
@@ -1881,7 +1902,7 @@ export default class SendMoney extends Vue {
           const transferFee: number = await contract.methods
             .calculateTransferFee(amount, tier[1])
             .call();
-
+          console.log("amountamountamount",amount)
           console.log("transferFee", transferFee);
           console.log("tier[1]", tier[1]);
           if (transferFee) {
@@ -1926,10 +1947,13 @@ export default class SendMoney extends Vue {
         // this.gasFee = "0";
         // this.platformFee = "0";
         this.loadingFee = false;
+        await sleep(100);
+        await this.checkFee(inputAmount);
       }
     } else {
       await sleep(100);
-      this.checkFee(inputAmount);
+      console.log("checkFee")
+      await this.checkFee(inputAmount);
     }
   }
 
