@@ -1,5 +1,5 @@
 <template>
-  <v-list flat dense :class="vListTopClass" width="350" height="70">
+  <v-list flat dense :class="vListTopClass" :width="myEmail ? 320 : undefined" height="70">
     <v-list-item flat dense>
       <v-list-item-icon v-if="syncedShowBell">
         <v-menu
@@ -54,11 +54,11 @@
         ></v-avatar>
       </v-list-item-avatar>
 
-      <v-list-item-content class="">
+      <v-list-item-content>
         <v-list-item-title class="primary--text">{{
           shortSelectedAddress
         }}</v-list-item-title>
-        <v-list-item-subtitle> {{ myEmail }} </v-list-item-subtitle>
+        <v-list-item-subtitle v-if="myEmail"> {{ myEmail }} </v-list-item-subtitle>
       </v-list-item-content>
       <v-list-item-icon>
         <v-menu offset-y>
