@@ -328,9 +328,9 @@ export default class App extends Vue {
 
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
-      if (typeof window.ethereum === undefined) {
+      if (window.ethereum == undefined) {
         alert(
-          "Metamask is not installed, please install metamask to use this Dapps"
+          "Metamask is not installed, please install Metamask to use this Dapp"
         );
       } else {
         this.web3 = new Web3(window.ethereum);
@@ -345,7 +345,7 @@ export default class App extends Vue {
               location.reload();
             });
           }else{
-            alert("Invalid network, please select one of these network on your metamask : ROPSTEN. Please change your network and reload the site")
+            alert("Invalid network, please select one of these network on your Metamask : ROPSTEN. Please change your network and reload the site")
           }
 
 
