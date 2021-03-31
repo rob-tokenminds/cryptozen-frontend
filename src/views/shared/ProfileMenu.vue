@@ -1,5 +1,11 @@
 <template>
-  <v-list flat dense :class="vListTopClass" :width="myEmail ? 320 : undefined" height="70">
+  <v-list
+    flat
+    dense
+    :class="vListTopClass"
+    :width="myEmail ? 320 : undefined"
+    height="70"
+  >
     <v-list-item flat dense>
       <v-list-item-icon v-if="syncedShowBell">
         <v-menu
@@ -58,7 +64,9 @@
         <v-list-item-title class="primary--text">{{
           shortSelectedAddress
         }}</v-list-item-title>
-        <v-list-item-subtitle v-if="myEmail"> {{ myEmail }} </v-list-item-subtitle>
+        <v-list-item-subtitle v-if="myEmail">
+          {{ myEmail }}
+        </v-list-item-subtitle>
       </v-list-item-content>
       <v-list-item-icon>
         <v-menu offset-y>
@@ -68,6 +76,47 @@
             </v-btn>
           </template>
           <v-list>
+            <v-list-item>
+              <v-list-item-avatar tile>
+                <v-img :src="require(`../../assets/eth.svg`)"></v-img>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title class="primary--text"
+                  >Add Ethereum Wallet</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+
+            <v-list-item>
+              <v-list-item-avatar tile>
+                <v-img :src="require(`../../assets/xdai-wallet.svg`)"></v-img>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title class="primary--text"
+                  >Add xDai Wallet</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+
+            <v-list-item>
+              <v-list-item-avatar tile>
+                <v-img
+                  :src="require(`../../assets/binance-wallet.svg`)"
+                ></v-img>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title class="primary--text"
+                  >Add Binance</v-list-item-title
+                >
+                <v-list-item-title class="primary--text"
+                  >Smart Chain Wallet</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+
             <v-list-item @click="editYourEmail = true">
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
@@ -145,8 +194,9 @@ export default class ProfileMenu extends Vue {
   editYourEmail = false;
   yourEmail = this.myEmail;
 
-  get vListTopClass():string{
-    if(this.classTop) return this.classTop;else return "mt-n2"
+  get vListTopClass(): string {
+    if (this.classTop) return this.classTop;
+    else return "mt-n2";
   }
 
   get selectedAddress(): string {

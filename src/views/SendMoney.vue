@@ -554,6 +554,7 @@
                               :disabled="selectedCurrency.value !== item.value"
                               v-bind="attrs"
                               v-on="on"
+                              style="padding: 0 10px"
                             >
                               <v-list-item-avatar tile>
                                 <v-img
@@ -576,7 +577,7 @@
 
                           <template v-slot:selection="{ item }">
                             <v-list-item>
-                              <v-list-item-avatar tile>
+                              <v-list-item-avatar tile class="">
                                 <v-img
                                   :src="require(`../assets/${item.value}.svg`)"
                                 ></v-img>
