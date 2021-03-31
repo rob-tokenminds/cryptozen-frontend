@@ -554,7 +554,6 @@
                               :disabled="selectedCurrency.value !== item.value"
                               v-bind="attrs"
                               v-on="on"
-                              style="padding: 0 10px !important"
                             >
                               <v-list-item-avatar tile>
                                 <v-img
@@ -576,7 +575,7 @@
                           </template>
 
                           <template v-slot:selection="{ item }">
-                            <v-list-item>
+                            <v-list-item style="padding: 0 10px !important">
                               <v-list-item-avatar tile class="">
                                 <v-img
                                   :src="require(`../assets/${item.value}.svg`)"
@@ -858,7 +857,7 @@
                         </template>
 
                         <template v-slot:selection="{ item }">
-                          <v-list-item>
+                          <v-list-item style="padding: 0 10px !important">
                             <v-list-item-avatar tile>
                               <v-img
                                 :src="require(`../assets/${item.value}.svg`)"
