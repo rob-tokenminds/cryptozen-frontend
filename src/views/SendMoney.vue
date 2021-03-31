@@ -554,7 +554,7 @@
                               :disabled="selectedCurrency.value !== item.value"
                               v-bind="attrs"
                               v-on="on"
-                              style="padding: 0 10px"
+                              style="padding: 0 10px !important"
                             >
                               <v-list-item-avatar tile>
                                 <v-img
@@ -836,7 +836,7 @@
                             :disabled="selectedCurrency.value !== item.value"
                             v-bind="attrs"
                             v-on="on"
-                            style="padding: 0 10px"
+                            style="padding: 0 10px !important"
                           >
                             <v-list-item-avatar tile>
                               <v-img
