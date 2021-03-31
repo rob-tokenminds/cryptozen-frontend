@@ -173,7 +173,7 @@
             ></v-select>
             <v-text-field
               v-model="editAWalletName"
-              label="Wallet Name"
+              label="Nickname"
             ></v-text-field>
 
             <v-text-field

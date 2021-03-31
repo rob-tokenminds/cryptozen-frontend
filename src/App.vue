@@ -313,7 +313,7 @@ export default class App extends Vue {
           alert(`Token is expired, will re-login`);
 
           this.$cookies.remove("cryptozen_token");
-          await this.$router.push("/");
+           this.$router.push("/");
           location.reload();
           // await this.init();
         }

@@ -8,7 +8,8 @@
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
-        <v-img v-if="!isMobile"
+        <v-img
+          v-if="!isMobile"
           class="ma-5"
           max-height="60"
           max-width="130"
@@ -17,24 +18,44 @@
         ></v-img>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
-        <v-stepper-step @click="isReview ? (e1 = 1) : ''" :complete="e1 > 1" :step="e1 === 1 ? `O` : ``">
-            Wallet
+        <v-stepper-step
+          @click="isReview ? (e1 = 1) : ''"
+          :complete="e1 > 1"
+          step="1"
+        >
+          <a :class="isReview ? `text-decoration-underline` : ``"> Wallet</a>
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step  @click="isReview ? (e1 = 2) : ''" :complete="e1 > 2" :step="e1 === 2 ? `O` : ``">
-            Recipient
+        <v-stepper-step
+          @click="isReview ? (e1 = 2) : ''"
+          :complete="e1 > 2"
+          step="2"
+        >
+          <a :class="isReview ? `text-decoration-underline` : ``"> Recipient</a>
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step   @click="isReview ? (e1 = 3) : ''" :complete="e1 > 3" :step="e1 === 3 ? `O` : ``">
-            Amount
+        <v-stepper-step
+          @click="isReview ? (e1 = 3) : ''"
+          :complete="e1 > 3"
+          step="3"
+        >
+          <a :class="isReview ? `text-decoration-underline` : ``"> Amount</a>
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step  @click="isReview ? (e1 = 4) : ''" :step="e1 === 4 ? `O` : ``">
-            Review
+        <v-stepper-step
+          @click="isReview ? (e1 = 4) : ''"
+          step="4"
+          :complete="e1 > 4"
+        >
+          <a :class="isReview ? `text-decoration-underline` : ``"> Review</a>
         </v-stepper-step>
         <v-spacer></v-spacer>
 
-        <ProfileMenu :classTop="'aa'" :showBell="false" v-if="!isMobile"></ProfileMenu>
+        <ProfileMenu
+          :classTop="'aa'"
+          :showBell="false"
+          v-if="!isMobile"
+        ></ProfileMenu>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
@@ -91,7 +112,6 @@
 
                     <v-spacer></v-spacer>
                     <v-list-item-content>
-
                       <v-icon v-if="coin.currency.allowance"
                         >mdi-chevron-right</v-icon
                       >
@@ -166,7 +186,9 @@
                               <v-list-item-avatar size="60">
                                 <v-avatar color="">
                                   <v-img
-                                    :src="require(`../assets/${addressBook.currency}.svg`)"
+                                    :src="
+                                      require(`../assets/${addressBook.currency}.svg`)
+                                    "
                                   ></v-img>
                                 </v-avatar>
                               </v-list-item-avatar>
@@ -209,12 +231,23 @@
                               v-model="addARecipientName"
                               label="Wallet Name"
                             ></v-text-field>
-
+                            <v-radio-group v-model="newRecipientType" row>
+                              <v-radio
+                                label="Wallet Address"
+                                value="address"
+                              ></v-radio>
+                              <v-radio
+                                label="E-Mail Address"
+                                value="email"
+                              ></v-radio>
+                            </v-radio-group>
                             <v-text-field
+                              v-if="newRecipientType === 'email'"
                               v-model="addARecipientEmail"
                               label="Account Holder email address"
                             ></v-text-field>
                             <v-text-field
+                              v-if="newRecipientType === 'address'"
                               v-model="addARecipientWalletAddress"
                               label="Wallet Address"
                             ></v-text-field>
@@ -261,7 +294,9 @@
                             <v-list-item-avatar size="60">
                               <v-avatar color="">
                                 <v-img
-                                  :src="require(`../assets/${newSubmittedAddressBook.currency}.svg`)"
+                                  :src="
+                                    require(`../assets/${newSubmittedAddressBook.currency}.svg`)
+                                  "
                                 ></v-img>
                               </v-avatar>
                             </v-list-item-avatar>
@@ -316,21 +351,20 @@
                       persistent-hint
                       type="number"
                       :step="0.01"
-
                     >
                       <template v-slot:append>
                         <v-list-item class="mt-n4">
                           <v-list-item-avatar tile>
                             <v-img
                               :src="
-                            require(`../assets/${selectedCurrency.value}.svg`)
-                          "
+                                require(`../assets/${selectedCurrency.value}.svg`)
+                              "
                             ></v-img>
                           </v-list-item-avatar>
                           <v-list-item-content>
                             <v-list-item-title
                               class="primary--text text-subtitle-1"
-                            >{{
+                              >{{
                                 selectedCurrency.value === "eth"
                                   ? "Ethereum"
                                   : selectedCurrency.value.toUpperCase()
@@ -349,8 +383,10 @@
                           You have
                           <a
                             class="primary--text font-weight-bold"
-                            @click="swapAmount = selectedCurrency.currency.balance"
-                          >{{ selectedCurrency.currency.balance }}</a
+                            @click="
+                              swapAmount = selectedCurrency.currency.balance
+                            "
+                            >{{ selectedCurrency.currency.balance }}</a
                           >
                         </p>
                         <p v-else>{{ message }}</p>
@@ -370,14 +406,14 @@
                           <v-col cols="12">
                             <v-list-item-subtitle
                               class="secondary--text text-subtitle-2 text-left mb-1"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                            >-{{ gasFee }} ETH ({{
-                                convertToUsd(gasFee)
-                              }}
-                              USD)</a
-                            >
+                              ><a
+                                v-if="!loadingFee"
+                                class="primary--text text-subtitle-2"
+                                >-{{ gasFee }} ETH ({{
+                                  convertToUsd(gasFee)
+                                }}
+                                USD)</a
+                              >
                               <v-progress-circular
                                 v-else
                                 indeterminate
@@ -389,15 +425,15 @@
                             >
                             <v-list-item-subtitle
                               class="secondary--text text-subtitle-2 text-left mb-1"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                            >-{{ transferFee }}
-                              {{ selectedCurrency.value.toUpperCase() }} ({{
-                                transferFeeOnUsd
-                              }}
-                              USD)</a
-                            >
+                              ><a
+                                v-if="!loadingFee"
+                                class="primary--text text-subtitle-2"
+                                >-{{ transferFee }}
+                                {{ selectedCurrency.value.toUpperCase() }} ({{
+                                  transferFeeOnUsd
+                                }}
+                                USD)</a
+                              >
                               <v-progress-circular
                                 v-else
                                 indeterminate
@@ -405,20 +441,21 @@
                                 size="15"
                               >
                               </v-progress-circular>
-                              Platform fee (Tier {{ tier }})</v-list-item-subtitle
+                              Platform fee (Tier
+                              {{ tier }})</v-list-item-subtitle
                             >
                             <v-divider class="mb-1"></v-divider>
                             <v-list-item-subtitle
                               class="secondary--text text-subtitle-2 text-left mb-1"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                            >{{
-                                Number(convertToUsd(gasFee)) +
-                                Number(transferFeeOnUsd)
-                              }}
-                              USD</a
-                            >
+                              ><a
+                                v-if="!loadingFee"
+                                class="primary--text text-subtitle-2"
+                                >{{
+                                  Number(convertToUsd(gasFee)) +
+                                  Number(transferFeeOnUsd)
+                                }}
+                                USD</a
+                              >
                               <v-progress-circular
                                 v-else
                                 indeterminate
@@ -429,19 +466,18 @@
                               Total Fee</v-list-item-subtitle
                             >
                           </v-col>
-
                         </v-row>
                         <v-divider class="mb-3 bala"></v-divider>
                         <v-row>
                           <v-col sm class="" cols="12">
                             <v-list-item-subtitle
                               class="secondary--text text-subtitle-2 text-left mb-1"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                            >+{{ transactionReward }} Ninja Token (
-                              {{ transactionRewardInUsd }} USD)</a
-                            >
+                              ><a
+                                v-if="!loadingFee"
+                                class="primary--text text-subtitle-2"
+                                >+{{ transactionReward }} Ninja Token (
+                                {{ transactionRewardInUsd }} USD)</a
+                              >
                               <v-progress-circular
                                 v-else
                                 indeterminate
@@ -453,15 +489,15 @@
                             >
 
                             <!--                        <v-spacer></v-spacer>-->
-                            <v-divider ></v-divider>
+                            <v-divider></v-divider>
                             <v-list-item-subtitle
                               class="secondary--text text-subtitle-2 text-left mb-1"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                            >
-                              {{ transactionRewardInUsd }} USD</a
-                            >
+                              ><a
+                                v-if="!loadingFee"
+                                class="primary--text text-subtitle-2"
+                              >
+                                {{ transactionRewardInUsd }} USD</a
+                              >
                               <v-progress-circular
                                 v-else
                                 indeterminate
@@ -473,7 +509,7 @@
                             >
                           </v-col>
                         </v-row>
-<!--                        <v-divider class="mb-3 bala"></v-divider>-->
+                        <!--                        <v-divider class="mb-3 bala"></v-divider>-->
                       </v-list-item-content>
                     </v-list-item>
                     <v-row no-gutters>
@@ -489,7 +525,6 @@
                           :step="0.01"
                           flat
                           height="50"
-
                         >
                           <!-- <template v-slot:append-outer>
 
@@ -528,7 +563,7 @@
                               <v-list-item-content>
                                 <v-list-item-title
                                   class="primary--text text-subtitle-1"
-                                >{{ item.name
+                                  >{{ item.name
                                   }}{{
                                     selectedCurrency.value !== item.value
                                       ? `(Swap Coming Soon)`
@@ -549,7 +584,7 @@
                               <v-list-item-content>
                                 <v-list-item-title
                                   class="primary--text text-subtitle-1"
-                                >{{ item.name }}</v-list-item-title
+                                  >{{ item.name }}</v-list-item-title
                                 >
                               </v-list-item-content>
                             </v-list-item>
@@ -561,15 +596,20 @@
                     <!--  -->
                     <v-card-actions>
                       <v-spacer></v-spacer>
-                      <v-btn color="primary" outlined @click="e1 = 2"> Back </v-btn>
-                      <v-btn color="primary" :disabled="loadingFee" @click="e1 = 4">
+                      <v-btn color="primary" outlined @click="e1 = 2">
+                        Back
+                      </v-btn>
+                      <v-btn
+                        color="primary"
+                        :disabled="loadingFee"
+                        @click="e1 = 4"
+                      >
                         {{ continueLabel }}
                       </v-btn>
                     </v-card-actions>
                   </v-card>
                 </v-card>
               </v-card>
-
             </v-card>
           </v-card>
         </v-stepper-content>
@@ -593,21 +633,20 @@
                     persistent-hint
                     type="number"
                     :step="0.01"
-
                   >
                     <template v-slot:append>
                       <v-list-item class="mt-n4">
                         <v-list-item-avatar tile>
                           <v-img
                             :src="
-                            require(`../assets/${selectedCurrency.value}.svg`)
-                          "
+                              require(`../assets/${selectedCurrency.value}.svg`)
+                            "
                           ></v-img>
                         </v-list-item-avatar>
                         <v-list-item-content>
                           <v-list-item-title
                             class="primary--text text-subtitle-1"
-                          >{{
+                            >{{
                               selectedCurrency.value === "eth"
                                 ? "Ethereum"
                                 : selectedCurrency.value.toUpperCase()
@@ -626,8 +665,10 @@
                         You have
                         <a
                           class="primary--text font-weight-bold"
-                          @click="swapAmount = selectedCurrency.currency.balance"
-                        >{{ selectedCurrency.currency.balance }}</a
+                          @click="
+                            swapAmount = selectedCurrency.currency.balance
+                          "
+                          >{{ selectedCurrency.currency.balance }}</a
                         >
                       </p>
                       <p v-else>{{ message }}</p>
@@ -647,14 +688,14 @@
                         <v-col cols="12">
                           <v-list-item-subtitle
                             class="secondary--text text-subtitle-2 text-left mb-1"
-                          ><a
-                            v-if="!loadingFee"
-                            class="primary--text text-subtitle-2"
-                          >-{{ gasFee }} ETH ({{
-                              convertToUsd(gasFee)
-                            }}
-                            USD)</a
-                          >
+                            ><a
+                              v-if="!loadingFee"
+                              class="primary--text text-subtitle-2"
+                              >-{{ gasFee }} ETH ({{
+                                convertToUsd(gasFee)
+                              }}
+                              USD)</a
+                            >
                             <v-progress-circular
                               v-else
                               indeterminate
@@ -666,15 +707,15 @@
                           >
                           <v-list-item-subtitle
                             class="secondary--text text-subtitle-2 text-left mb-1"
-                          ><a
-                            v-if="!loadingFee"
-                            class="primary--text text-subtitle-2"
-                          >-{{ transferFee }}
-                            {{ selectedCurrency.value.toUpperCase() }} ({{
-                              transferFeeOnUsd
-                            }}
-                            USD)</a
-                          >
+                            ><a
+                              v-if="!loadingFee"
+                              class="primary--text text-subtitle-2"
+                              >-{{ transferFee }}
+                              {{ selectedCurrency.value.toUpperCase() }} ({{
+                                transferFeeOnUsd
+                              }}
+                              USD)</a
+                            >
                             <v-progress-circular
                               v-else
                               indeterminate
@@ -687,15 +728,15 @@
                           <v-divider class="mb-1"></v-divider>
                           <v-list-item-subtitle
                             class="secondary--text text-subtitle-2 text-left mb-1"
-                          ><a
-                            v-if="!loadingFee"
-                            class="primary--text text-subtitle-2"
-                          >{{
-                              Number(convertToUsd(gasFee)) +
-                              Number(transferFeeOnUsd)
-                            }}
-                            USD</a
-                          >
+                            ><a
+                              v-if="!loadingFee"
+                              class="primary--text text-subtitle-2"
+                              >{{
+                                Number(convertToUsd(gasFee)) +
+                                Number(transferFeeOnUsd)
+                              }}
+                              USD</a
+                            >
                             <v-progress-circular
                               v-else
                               indeterminate
@@ -706,19 +747,18 @@
                             Total Fee</v-list-item-subtitle
                           >
                         </v-col>
-
                       </v-row>
                       <v-divider class="mb-3 bala"></v-divider>
                       <v-row>
                         <v-col sm class="" cols="12">
                           <v-list-item-subtitle
                             class="secondary--text text-subtitle-2 text-left mb-1"
-                          ><a
-                            v-if="!loadingFee"
-                            class="primary--text text-subtitle-2"
-                          >+{{ transactionReward }} Ninja Token (
-                            {{ transactionRewardInUsd }} USD)</a
-                          >
+                            ><a
+                              v-if="!loadingFee"
+                              class="primary--text text-subtitle-2"
+                              >+{{ transactionReward }} Ninja Token (
+                              {{ transactionRewardInUsd }} USD)</a
+                            >
                             <v-progress-circular
                               v-else
                               indeterminate
@@ -730,15 +770,15 @@
                           >
 
                           <!--                        <v-spacer></v-spacer>-->
-                          <v-divider ></v-divider>
+                          <v-divider></v-divider>
                           <v-list-item-subtitle
                             class="secondary--text text-subtitle-2 text-left mb-1"
-                          ><a
-                            v-if="!loadingFee"
-                            class="primary--text text-subtitle-2"
-                          >
-                            {{ transactionRewardInUsd }} USD</a
-                          >
+                            ><a
+                              v-if="!loadingFee"
+                              class="primary--text text-subtitle-2"
+                            >
+                              {{ transactionRewardInUsd }} USD</a
+                            >
                             <v-progress-circular
                               v-else
                               indeterminate
@@ -766,7 +806,6 @@
                         :step="0.01"
                         flat
                         height="50"
-
                       >
                         <!-- <template v-slot:append-outer>
 
@@ -805,7 +844,7 @@
                             <v-list-item-content>
                               <v-list-item-title
                                 class="primary--text text-subtitle-1"
-                              >{{ item.name
+                                >{{ item.name
                                 }}{{
                                   selectedCurrency.value !== item.value
                                     ? `(Swap Coming Soon)`
@@ -826,7 +865,7 @@
                             <v-list-item-content>
                               <v-list-item-title
                                 class="primary--text text-subtitle-1"
-                              >{{ item.name }}</v-list-item-title
+                                >{{ item.name }}</v-list-item-title
                               >
                             </v-list-item-content>
                           </v-list-item>
@@ -836,13 +875,13 @@
                   </v-row>
 
                   <!--  -->
-<!--                  <v-card-actions>-->
-<!--                    <v-spacer></v-spacer>-->
-<!--                    <v-btn color="primary" outlined @click="e1 = 2"> Back </v-btn>-->
-<!--                    <v-btn color="primary" :disabled="loadingFee" @click="e1 = 4">-->
-<!--                      {{ continueLabel }}-->
-<!--                    </v-btn>-->
-<!--                  </v-card-actions>-->
+                  <!--                  <v-card-actions>-->
+                  <!--                    <v-spacer></v-spacer>-->
+                  <!--                    <v-btn color="primary" outlined @click="e1 = 2"> Back </v-btn>-->
+                  <!--                    <v-btn color="primary" :disabled="loadingFee" @click="e1 = 4">-->
+                  <!--                      {{ continueLabel }}-->
+                  <!--                    </v-btn>-->
+                  <!--                  </v-card-actions>-->
                 </v-card>
               </v-card>
               <p>To</p>
@@ -870,16 +909,13 @@
                   </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title class="primary--text ma-2"
-                    >Email :
-                      {{ addARecipientEmail }}</v-list-item-title
+                      >Email : {{ addARecipientEmail }}</v-list-item-title
                     >
-
                   </v-list-item-content>
                 </v-list-item>
               </v-card>
 
-
-              <v-card flat class='mt-8'>
+              <v-card flat class="mt-8">
                 <v-text-field
                   outlined
                   label="Personal Reference"
@@ -903,12 +939,18 @@
         </v-stepper-content>
 
         <v-stepper-content step="5">
-          <p  v-if="transaction" class="text-center primary--text text-h5">  {{ transaction.isOnHold ? "Awaiting Recipient Wallet Address" : 'Pending' }}</p>
+          <p v-if="transaction" class="text-center primary--text text-h5">
+            {{
+              transaction.isOnHold
+                ? "Awaiting Recipient Wallet Address"
+                : "Pending"
+            }}
+          </p>
           <p class="text-center primary--text">
             We will notify you once the transaction is confirmed
           </p>
 
-          <v-card  v-if="transaction"  flat class="d-flex justify-center">
+          <v-card v-if="transaction" flat class="d-flex justify-center">
             <v-card class="mb-2" max-width="1100">
               <v-card-subtitle>Pending</v-card-subtitle>
               <v-divider></v-divider>
@@ -934,15 +976,18 @@
                   </v-list-item>
                 </v-col>
 
-                <v-col  cols="12" md="6" sm="6" lg="6" xl="6">
-                  <p v-if="!transaction.isOnHold" class="primary--text text-right mt-6 mr-2">
+                <v-col cols="12" md="6" sm="6" lg="6" xl="6">
+                  <p
+                    v-if="!transaction.isOnHold"
+                    class="primary--text text-right mt-6 mr-2"
+                  >
                     Amount sent/receipt :
                     {{ getAmount(transaction).toUpperCase() }} /
                     {{ getAmountReceipt(transaction).toUpperCase() }}
                     <br />
                   </p>
                   <p v-else class="primary--text text-right mt-6 mr-2">
-                    Amount  :
+                    Amount :
                     {{ getAmount(transaction).toUpperCase() }}
                     <br />
                   </p>
@@ -960,36 +1005,66 @@
                       </v-card-title>
                     </v-card>
                   </v-col>
-                  <v-col v-if="!transaction.isOnHold" cols="12" md="6" sm="6" lg="6" xl="6">
+                  <v-col
+                    v-if="!transaction.isOnHold"
+                    cols="12"
+                    md="6"
+                    sm="6"
+                    lg="6"
+                    xl="6"
+                  >
                     <v-card flat tile>
                       <v-card-subtitle> Rewards </v-card-subtitle>
                       <v-card-title class="primary--text mt-n8">
-                        {{ transactionReward }} Ninja Token ({{transactionRewardInUsd}} USD)
+                        {{ transactionReward }} Ninja Token ({{
+                          transactionRewardInUsd
+                        }}
+                        USD)
                       </v-card-title>
                     </v-card>
                   </v-col>
                 </v-row>
                 <v-row class="mt-n6">
-                  <v-col v-if="!transaction.isOnHold" cols="12" md="4" sm="4" lg="4" xl="4">
+                  <v-col
+                    v-if="!transaction.isOnHold"
+                    cols="12"
+                    md="4"
+                    sm="4"
+                    lg="4"
+                    xl="4"
+                  >
                     <v-card flat tile>
                       <v-card-subtitle> To </v-card-subtitle>
                       <v-card-title class="primary--text mt-n8">
-                        {{  getWalletName(transaction.to)  }}
+                        {{ getWalletName(transaction.to) }}
                       </v-card-title>
                       <v-card-subtitle> {{ transaction.to }} </v-card-subtitle>
                     </v-card>
                   </v-col>
-                  <v-col v-else cols="12" >
+                  <v-col v-else cols="12">
                     <v-card flat tile>
                       <v-card-subtitle> To </v-card-subtitle>
                       <v-card-title class="primary--text mt-n8">
-                        {{ addARecipientName ? addARecipientName : addARecipientEmail }}
+                        {{
+                          addARecipientName
+                            ? addARecipientName
+                            : addARecipientEmail
+                        }}
                       </v-card-title>
-                      <v-card-subtitle > {{ addARecipientEmail }} </v-card-subtitle>
+                      <v-card-subtitle>
+                        {{ addARecipientEmail }}
+                      </v-card-subtitle>
                     </v-card>
                   </v-col>
 
-                  <v-col v-if="!transaction.isOnHold" cols="12" md="4" sm="4" lg="4" xl="4">
+                  <v-col
+                    v-if="!transaction.isOnHold"
+                    cols="12"
+                    md="4"
+                    sm="4"
+                    lg="4"
+                    xl="4"
+                  >
                     <v-card flat tile>
                       <v-card-subtitle> TX Hash </v-card-subtitle>
                       <v-card-subtitle class="primary--text mt-n8">
@@ -1009,7 +1084,14 @@
                     </v-card>
                   </v-col>
 
-                  <v-col v-if="!transaction.isOnHold" cols="12" md="4" sm="4" lg="4" xl="4">
+                  <v-col
+                    v-if="!transaction.isOnHold"
+                    cols="12"
+                    md="4"
+                    sm="4"
+                    lg="4"
+                    xl="4"
+                  >
                     <v-card flat tile>
                       <v-card-subtitle> Transfer Fee </v-card-subtitle>
                       <v-card-title class="primary--text mt-n8">
@@ -1023,25 +1105,22 @@
                     <v-card flat tile>
                       <v-card-subtitle> Block Number </v-card-subtitle>
                       <v-card-title class="primary--text mt-n8">
-                        {{ transaction.isOnHold ? "On Hold" : 'Pending' }}
+                        {{ transaction.isOnHold ? "On Hold" : "Pending" }}
                       </v-card-title>
                     </v-card>
                   </v-col>
-
-
                 </v-row>
                 <v-card-actions v-if="!transaction.isOnHold">
                   <v-spacer></v-spacer>
 
-                    <v-btn
-                      :href="`${detailUrl}${transaction.hash}`"
-                      target="_blank"
-                      color="secondary"
-                      outlined
-                      class="mt-7"
+                  <v-btn
+                    :href="`${detailUrl}${transaction.hash}`"
+                    target="_blank"
+                    color="secondary"
+                    outlined
+                    class="mt-7"
                     >Tracking URL</v-btn
-                    >
-
+                  >
                 </v-card-actions>
               </v-container>
             </v-card>
@@ -1097,10 +1176,11 @@ global.EventSource = NativeEventSource || EventSourcePolyfill;
 export default class SendMoney extends Vue {
   @Prop({ type: Number }) readonly step!: number;
   @Prop({ type: Object }) readonly currentSelected!: BalanceInterface;
-  @Prop({type: Object }) readonly setAddressSelected!: AddressBookInterface;
-  @Prop({type : Number}) readonly setAmount!: number;
-  @Prop({type : Object}) readonly setTransaction!: TransactionInterface;
+  @Prop({ type: Object }) readonly setAddressSelected!: AddressBookInterface;
+  @Prop({ type: Number }) readonly setAmount!: number;
+  @Prop({ type: Object }) readonly setTransaction!: TransactionInterface;
   componentKey = 0;
+  newRecipientType = "address";
   e1 = 1;
   coinSelected = "";
   currentlyApproved: BalanceInterface | "" = "";
@@ -1189,7 +1269,6 @@ export default class SendMoney extends Vue {
   //   this.$emit("swap-amount", value);
   // }
 
-
   @Watch("e1")
   watchE1(value: number): void {
     console.log("valuee1", value);
@@ -1220,7 +1299,7 @@ export default class SendMoney extends Vue {
 
   @Watch("swapAmount")
   async watchswapAmount(value: number): Promise<void> {
-    if(!this.processWatchSwapAmount){
+    if (!this.processWatchSwapAmount) {
       this.processWatchSwapAmount = true;
       if (!this.updatingAmount && this.selectedCurrency) {
         console.log("value", value);
@@ -1235,36 +1314,35 @@ export default class SendMoney extends Vue {
         this.updatingAmount = false;
       }
       this.processWatchSwapAmount = false;
-    }else{
-      await sleep(500)
+    } else {
+      await sleep(500);
       await this.watchswapAmount(value);
     }
-
   }
 
   processWatchRecipietGets = false;
   @Watch("recipientGets")
   async watchrecipientGets(value: number): Promise<void> {
-    if(!this.processWatchRecipietGets){
-    if (!this.updatingAmount && this.selectedCurrency) {
-      this.updatingAmount = true;
-      if (value <= Number(this.selectedCurrency?.currency?.balance)) {
-        await this.UpdateSwapAmount(value);
-        if (
-          this.swapAmount >= Number(this.selectedCurrency?.currency?.balance)
-        ) {
+    if (!this.processWatchRecipietGets) {
+      if (!this.updatingAmount && this.selectedCurrency) {
+        this.updatingAmount = true;
+        if (value <= Number(this.selectedCurrency?.currency?.balance)) {
+          await this.UpdateSwapAmount(value);
+          if (
+            this.swapAmount >= Number(this.selectedCurrency?.currency?.balance)
+          ) {
+            alert(`Value input is higher than your balance`);
+            this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+          }
+        } else {
           alert(`Value input is higher than your balance`);
-          this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+          this.recipientGets = Number(0);
         }
-      } else {
-        alert(`Value input is higher than your balance`);
-        this.recipientGets = Number(0);
+        this.updatingAmount = false;
       }
-      this.updatingAmount = false;
-    }
       this.processWatchRecipietGets = false;
-    }else{
-      await sleep(500)
+    } else {
+      await sleep(500);
       await this.watchrecipientGets(value);
     }
   }
@@ -1327,7 +1405,16 @@ export default class SendMoney extends Vue {
   }
 
   get addressBooks(): AddressBookInterface[] {
-    return this.$store.getters["getAddressBooks"];
+    const addressBooks = this.$store.getters["getAddressBooks"];
+    return addressBooks.filter((a: AddressBookInterface) => {
+      if (this.selectedCurrency && this.selectedCurrency?.value) {
+        return (
+          a.currency.toLowerCase() === this.selectedCurrency.value.toLowerCase()
+        );
+      } else {
+        return false;
+      }
+    });
   }
 
   get selectedEthereumAddress(): string {
@@ -1335,12 +1422,11 @@ export default class SendMoney extends Vue {
   }
 
   async mounted(): Promise<void> {
-
     this.$nextTick(async () => {
-
       if (this.currentSelected) this.selectedCurrency = this.currentSelected;
-      if(this.setAddressSelected) this.selectedAddress = this.setAddressSelected;
-      if(this.setAmount) this.swapAmount = this.setAmount;
+      if (this.setAddressSelected)
+        this.selectedAddress = this.setAddressSelected;
+      if (this.setAmount) this.swapAmount = this.setAmount;
       if (this.step) this.e1 = this.step;
       // this.label = this.setLabel;
       // if (this.setSwapAmount) this.swapAmount = this.setSwapAmount;
@@ -1355,15 +1441,14 @@ export default class SendMoney extends Vue {
       this.ethereumPrice = data.find(
         (d) => d.id === "ethereum"
       ) as CoingeckoInterface;
-      console.log("this.swapAmount",this.swapAmount)
+      console.log("this.swapAmount", this.swapAmount);
       // if (this.swapAmount) {
       //   await this.UpdateRecipientGetsAmount(this.swapAmount);
       //   await this.updateUsdAmount();
       // }
-      console.log("this.selectedAddress",this.selectedAddress)
+      console.log("this.selectedAddress", this.selectedAddress);
       this.pageLoading = false;
-    })
-
+    });
   }
 
   goToHome(): void {
@@ -1386,7 +1471,6 @@ export default class SendMoney extends Vue {
     );
   }
 
-
   async approve(coin: BalanceInterface): Promise<void> {
     try {
       if (!coin.currency?.allowancePending) {
@@ -1407,7 +1491,6 @@ export default class SendMoney extends Vue {
     }
   }
 
-
   setAllowance(value: boolean): void {
     this.allowance = value;
   }
@@ -1418,7 +1501,6 @@ export default class SendMoney extends Vue {
     }
   }
 
-
   setTransferFee(value: string): void {
     if (value) {
       this.transferFee = value;
@@ -1428,15 +1510,18 @@ export default class SendMoney extends Vue {
   async sendMoney(): Promise<void> {
     try {
       this.loadingSendMoney = true;
-      if(this.addressByEmail){
+      if (this.addressByEmail) {
         await this.sendRecipientEmail();
-      }else{
+      } else {
         if (this.params) {
           const web3 = this.$store.getters["getWeb3"] as Web3;
           const ethBalanceInWei = await web3.eth.getBalance(
             window.ethereum.selectedAddress
           );
-          const ethBalanceInEther = web3.utils.fromWei(ethBalanceInWei, "ether");
+          const ethBalanceInEther = web3.utils.fromWei(
+            ethBalanceInWei,
+            "ether"
+          );
           if (new Bignumber(ethBalanceInEther).isLessThan(this.gasFee)) {
             alert(
               `You do not have enough ETH for gas fee. Your current ETH balance is ${ethBalanceInEther}`
@@ -1450,23 +1535,37 @@ export default class SendMoney extends Vue {
                     console.log("hash", hash);
                     if (this.params) {
                       console.log("this.params.value", this.params.value);
-                      if(!this.setTransaction){
-                        this.transaction = await this.$store.dispatch("newTrx", {
-                          hash,
-                          isToken: this.params.value === "0x0",
-                          fee: this.transferFee,
-                          reference: this.reference,
-                          reward : {transactionRewardInUsd : this.transactionRewardInUsd, transactionReward: this.transactionReward}
-                        });
-                      }else{
-                        this.transaction = await this.$store.dispatch("updateTrx", {
-                          id :this.setTransaction.id,
-                          hash,
-                          isToken: this.params.value === "0x0",
-                          fee: this.transferFee,
-                          reference: this.reference,
-                          reward : {transactionRewardInUsd : this.transactionRewardInUsd, transactionReward: this.transactionReward}
-                        });
+                      if (!this.setTransaction) {
+                        this.transaction = await this.$store.dispatch(
+                          "newTrx",
+                          {
+                            hash,
+                            isToken: this.params.value === "0x0",
+                            fee: this.transferFee,
+                            reference: this.reference,
+                            reward: {
+                              transactionRewardInUsd: this
+                                .transactionRewardInUsd,
+                              transactionReward: this.transactionReward,
+                            },
+                          }
+                        );
+                      } else {
+                        this.transaction = await this.$store.dispatch(
+                          "updateTrx",
+                          {
+                            id: this.setTransaction.id,
+                            hash,
+                            isToken: this.params.value === "0x0",
+                            fee: this.transferFee,
+                            reference: this.reference,
+                            reward: {
+                              transactionRewardInUsd: this
+                                .transactionRewardInUsd,
+                              transactionReward: this.transactionReward,
+                            },
+                          }
+                        );
                       }
 
                       this.isReview = false;
@@ -1502,7 +1601,7 @@ export default class SendMoney extends Vue {
       this.createWalletLoading = true;
       let allowSubmit = true;
       let signature = null;
-      if(this.addARecipientWalletAddress){
+      if (this.addARecipientWalletAddress) {
         if (this.selectedCurrency) {
           if (this.addARecipientEmail) {
             const web3 = this.$store.getters["getWeb3"] as Web3;
@@ -1560,8 +1659,8 @@ export default class SendMoney extends Vue {
             });
             this.createWalletLoading = false;
             this.newAddressBookSubmitted = true;
-              this.newSubmittedAddressBook = addressBookData;
-              alert("Recipient has been successfully added");
+            this.newSubmittedAddressBook = addressBookData;
+            alert("Recipient has been successfully added");
             this.addARecipientName = "";
             this.addARecipientWalletAddress = "";
             // this.selectedCurrency = "";
@@ -1570,14 +1669,12 @@ export default class SendMoney extends Vue {
         } else {
           alert(`no selected Currency`);
         }
-      }
-      else{
-        if(this.addARecipientEmail){
+      } else {
+        if (this.addARecipientEmail) {
           this.addressByEmail = true;
           this.selectedAddress = "";
-          this.e1 = this.e1 +1;
+          this.e1 = this.e1 + 1;
         }
-
       }
     } catch (e) {
       // console.log("e", e);
@@ -1588,13 +1685,11 @@ export default class SendMoney extends Vue {
 
   async sendRecipientEmail(): Promise<void> {
     try {
-
       let allowSubmit = true;
       let signature = null;
       if (this.selectedCurrency) {
         const web3 = this.$store.getters["getWeb3"] as Web3;
         if (this.addARecipientEmail) {
-
           if (web3) {
             const message = `We are requesting your signature again to encrypt the email address. Your signature won't be saved on the server`;
             const params = [message, window.ethereum.selectedAddress];
@@ -1635,24 +1730,27 @@ export default class SendMoney extends Vue {
             ).toString();
           }
           let amount = web3.utils.toWei(this.swapAmount.toString(), "ether");
-          if(this.selectedCurrency.value.toLowerCase() !== "eth" && this.selectedCurrency.decimal){
+          if (
+            this.selectedCurrency.value.toLowerCase() !== "eth" &&
+            this.selectedCurrency.decimal
+          ) {
             amount = fromExponential(
               Number(
                 this.swapAmount * 10 ** this.selectedCurrency.decimal
               ).toString()
-            )
+            );
           }
           this.transaction = await this.$store.dispatch("newTrxWithEmail", {
             name: this.addARecipientName,
             currency: this.selectedCurrency.value.toLowerCase(),
-            reference : this.reference,
+            reference: this.reference,
             plainEmail: this.addARecipientEmail,
             amount,
             email,
           });
           this.createWalletLoading = false;
 
-          this.e1 = this.e1 +1;
+          this.e1 = this.e1 + 1;
           this.isReview = false;
         }
       } else {
@@ -1726,7 +1824,7 @@ export default class SendMoney extends Vue {
   }
 
   getStatus(transaction: TransactionInterface): string {
-    if(transaction.isOnHold){
+    if (transaction.isOnHold) {
       return "On Hold";
     }
     if (
@@ -1836,7 +1934,10 @@ export default class SendMoney extends Vue {
   async checkFee(inputAmount: number): Promise<void> {
     if (!this.loadingFee) {
       try {
-        if (this.selectedCurrency && (this.selectedAddress || this.addressByEmail)) {
+        if (
+          this.selectedCurrency &&
+          (this.selectedAddress || this.addressByEmail)
+        ) {
           this.loadingFee = true;
           this.transferFee = "0";
           this.gasFee = "0";
@@ -1844,9 +1945,11 @@ export default class SendMoney extends Vue {
           this.transactionReward = "0";
           const web3 = this.$store.getters["getWeb3"] as Web3;
           //addressByEmail
-          let recipientAddress = this.selectedAddress ? this.selectedAddress.address : "";
-          if(this.addressByEmail){
-            recipientAddress = window.ethereum.selectedAddress
+          let recipientAddress = this.selectedAddress
+            ? this.selectedAddress.address
+            : "";
+          if (this.addressByEmail) {
+            recipientAddress = window.ethereum.selectedAddress;
           }
           const contract = new web3.eth.Contract(
             cryptozenabi,
@@ -1872,11 +1975,7 @@ export default class SendMoney extends Vue {
                 ).toString()
               );
               contractData = contract.methods
-                .transferSameToken(
-                  contractAddress,
-                  recipientAddress,
-                  amount
-                )
+                .transferSameToken(contractAddress, recipientAddress, amount)
                 .encodeABI();
             }
           } else {
@@ -1902,7 +2001,7 @@ export default class SendMoney extends Vue {
           const transferFee: number = await contract.methods
             .calculateTransferFee(amount, tier[1])
             .call();
-          console.log("amountamountamount",amount)
+          console.log("amountamountamount", amount);
           console.log("transferFee", transferFee);
           console.log("tier[1]", tier[1]);
           if (transferFee) {
@@ -1952,7 +2051,7 @@ export default class SendMoney extends Vue {
       }
     } else {
       await sleep(100);
-      console.log("checkFee")
+      console.log("checkFee");
       await this.checkFee(inputAmount);
     }
   }
@@ -2004,7 +2103,6 @@ export default class SendMoney extends Vue {
     console.log("amountOutMinninjaToWeth", amountOutMin.toSignificant(6));
     return amountOutMin.toSignificant(6);
   }
-
 
   async checkRewardFee(
     amountFee: string,
@@ -2137,8 +2235,6 @@ export default class SendMoney extends Vue {
       this.transactionRewardInEth = this.transactionReward;
     }
   }
-
-
 }
 
 export interface Roi {
