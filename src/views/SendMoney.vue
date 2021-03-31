@@ -790,7 +790,7 @@
                           >
                         </v-col>
                       </v-row>
-                      <v-divider class="mb-3 bala"></v-divider>
+                      <!--                      <v-divider class="mb-3 bala"></v-divider>-->
                     </v-list-item-content>
                   </v-list-item>
                   <v-row no-gutters>
@@ -1298,7 +1298,7 @@ export default class SendMoney extends Vue {
   processWatchSwapAmount = false;
 
   @Watch("swapAmount")
-  async watchswapAmount(value: number): Promise<void> {
+  async watchSwapAmount(value: number): Promise<void> {
     if (!this.processWatchSwapAmount) {
       this.processWatchSwapAmount = true;
       if (!this.updatingAmount && this.selectedCurrency) {
@@ -1316,13 +1316,13 @@ export default class SendMoney extends Vue {
       this.processWatchSwapAmount = false;
     } else {
       await sleep(500);
-      await this.watchswapAmount(value);
+      await this.watchSwapAmount(value);
     }
   }
 
   processWatchRecipietGets = false;
   @Watch("recipientGets")
-  async watchrecipientGets(value: number): Promise<void> {
+  async watchRecipientGets(value: number): Promise<void> {
     if (!this.processWatchRecipietGets) {
       if (!this.updatingAmount && this.selectedCurrency) {
         this.updatingAmount = true;
@@ -1343,7 +1343,7 @@ export default class SendMoney extends Vue {
       this.processWatchRecipietGets = false;
     } else {
       await sleep(500);
-      await this.watchrecipientGets(value);
+      await this.watchRecipientGets(value);
     }
   }
 
@@ -1409,7 +1409,8 @@ export default class SendMoney extends Vue {
     return addressBooks.filter((a: AddressBookInterface) => {
       if (this.selectedCurrency && this.selectedCurrency?.value) {
         return (
-          a.currency.toLowerCase() === this.selectedCurrency.value.toLowerCase()
+          a.currency.toLowerCase() ===
+            this.selectedCurrency.value.toLowerCase() && a.address
         );
       } else {
         return false;
@@ -1510,6 +1511,7 @@ export default class SendMoney extends Vue {
   async sendMoney(): Promise<void> {
     try {
       this.loadingSendMoney = true;
+      await this.checkFee(this.swapAmount);
       if (this.addressByEmail) {
         await this.sendRecipientEmail();
       } else {
@@ -1911,8 +1913,16 @@ export default class SendMoney extends Vue {
           )
         );
       } else {
-        this.amountReceiptUsd = this.recipientGets.toString();
-        this.amountSendUsd = this.swapAmount.toString();
+        console.log("this.selectedCurrency.value", this.selectedCurrency.value);
+        if (this.selectedCurrency.value === "eth") {
+          this.amountReceiptUsd = this.convertToUsd(
+            this.recipientGets.toString()
+          );
+          this.amountSendUsd = this.convertToUsd(this.swapAmount.toString());
+        } else {
+          this.amountReceiptUsd = this.recipientGets.toString();
+          this.amountSendUsd = this.swapAmount.toString();
+        }
       }
 
       this.componentKey += 1;
