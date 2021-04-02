@@ -163,8 +163,6 @@
 
     <!-- If using vue-router -->
   </v-app>
-
-
 </template>
 
 <script lang="ts">
@@ -204,7 +202,7 @@ export default class App extends Vue {
   sendMoneyDialog = false;
   web3!: Web3;
 
-  get isLogin() : boolean {
+  get isLogin(): boolean {
     return this.$store.state.isLogin;
   }
 
@@ -251,7 +249,6 @@ export default class App extends Vue {
   }
 
   async init(): Promise<void> {
-
     await this.$store.dispatch("setWeb3", this.web3);
     const currentProvider = this.web3.currentProvider;
     if (currentProvider !== null && currentProvider !== undefined) {
@@ -313,7 +310,7 @@ export default class App extends Vue {
           alert(`Token is expired, will re-login`);
 
           this.$cookies.remove("cryptozen_token");
-           this.$router.push("/");
+          this.$router.push("/");
           location.reload();
           // await this.init();
         }
@@ -329,14 +326,19 @@ export default class App extends Vue {
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
       if (window.ethereum == undefined) {
+        if (this.isMobile) {
+          alert(
+            "Mobile browser version not supported yet, please use dekstop version with Metamask extension installed"
+          );
+        }
         alert(
           "Metamask is not installed, please install Metamask to use this Dapp"
         );
       } else {
         this.web3 = new Web3(window.ethereum);
-        if(this.web3){
+        if (this.web3) {
           const chainId = await this.web3.eth.getChainId();
-          if(chainId === 3){
+          if (chainId === 3) {
             if (this.$route.path !== `/create-address-book`) await this.init();
 
             window.ethereum.on("accountsChanged", () => {
@@ -344,13 +346,12 @@ export default class App extends Vue {
               this.$router.push("/");
               location.reload();
             });
-          }else{
-            alert("Invalid network, please select one of these network on your Metamask : ROPSTEN. Please change your network and reload the site")
+          } else {
+            alert(
+              "Invalid network, please select one of these network on your Metamask : ROPSTEN. Please change your network and reload the site"
+            );
           }
-
-
         }
-
       }
     });
   }

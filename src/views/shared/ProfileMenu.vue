@@ -82,7 +82,7 @@
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Add Ethereum Wallet</v-list-item-title
+                  >Add Ethereum Wallet (Comming Soon)</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -94,7 +94,7 @@
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Add xDai Wallet</v-list-item-title
+                  >Add xDai Wallet (Comming Soon)</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -111,7 +111,7 @@
                   >Add Binance</v-list-item-title
                 >
                 <v-list-item-title class="primary--text"
-                  >Smart Chain Wallet</v-list-item-title
+                  >Smart Chain Wallet (Comming Soon)</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -178,9 +178,9 @@ import { UserNotification } from "@/store";
 import { mdiBellAlertOutline } from "@mdi/js";
 import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
 import { BalanceInterface } from "@/static/balance";
-import Web3 from "web3";
-import cryptozenabi from "../../static/cryptozenabi";
-import Bignumber from "bignumber.js";
+// import Web3 from "web3";
+// import cryptozenabi from "../../static/cryptozenabi";
+// import Bignumber from "bignumber.js";
 
 const EventSource = NativeEventSource || EventSourcePolyfill;
 // OR: may also need to set as global property
