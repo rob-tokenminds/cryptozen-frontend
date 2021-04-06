@@ -91,7 +91,7 @@
                   ? getHrNumber(Number(balance.currency.balance))
                   : "0"
               }}
-              {{ balance.name }}</v-list-item-title
+              {{ getBalanceName(balance) }}</v-list-item-title
             >
           </v-list-item-content>
         </v-list-item>
@@ -188,6 +188,8 @@ interface Window {
 }
 declare const window: Window;
 
+const chainIDS = [3, 97, 56];
+
 @Component({ name: "App", components: { SendMoney, ProfileMenu } })
 export default class App extends Vue {
   icons = {
@@ -201,6 +203,10 @@ export default class App extends Vue {
 
   sendMoneyDialog = false;
   web3!: Web3;
+
+  get chainId(): number {
+    return this.$store.state.chainId;
+  }
 
   get isLogin(): boolean {
     return this.$store.state.isLogin;
@@ -226,6 +232,17 @@ export default class App extends Vue {
   @Watch("drawer")
   watchDrawer(value: boolean): void {
     this.navIcon = !value;
+  }
+
+  getBalanceName(balance: BalanceInterface): string {
+    if (balance.mainCurrency) {
+      if (this.chainId === 1 || this.chainId === 3) {
+        return balance.name;
+      } else {
+        return "BNB";
+      }
+    }
+    return balance.name;
   }
 
   getBalance(balance: BalanceInterface): string {
@@ -328,7 +345,7 @@ export default class App extends Vue {
       if (window.ethereum == undefined) {
         if (this.isMobile) {
           alert(
-            "Mobile browser version not supported yet, please use dekstop version with Metamask extension installed"
+            "Mobile browser version not supported yet, please use desktop version with Metamask extension installed OR use browser mode on Metamask mobile"
           );
         }
         alert(
@@ -338,7 +355,7 @@ export default class App extends Vue {
         this.web3 = new Web3(window.ethereum);
         if (this.web3) {
           const chainId = await this.web3.eth.getChainId();
-          if (chainId === 3) {
+          if (chainIDS.find((c) => c === chainId)) {
             if (this.$route.path !== `/create-address-book`) await this.init();
 
             window.ethereum.on("accountsChanged", () => {
@@ -348,7 +365,7 @@ export default class App extends Vue {
             });
           } else {
             alert(
-              "Invalid network, please select one of these network on your Metamask : ROPSTEN. Please change your network and reload the site"
+              "Invalid network, please select one of these network on your Metamask : ROPSTEN, BSC TESTNET, BSC MAINNET. Please change your network and reload the site"
             );
           }
         }

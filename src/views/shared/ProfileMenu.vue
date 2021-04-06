@@ -82,7 +82,7 @@
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Add Ethereum Wallet (Comming Soon)</v-list-item-title
+                  >Add Ethereum Wallet (Coming Soon)</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -94,7 +94,7 @@
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Add xDai Wallet (Comming Soon)</v-list-item-title
+                  >Add xDai Wallet (Coming Soon)</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -111,7 +111,7 @@
                   >Add Binance</v-list-item-title
                 >
                 <v-list-item-title class="primary--text"
-                  >Smart Chain Wallet (Comming Soon)</v-list-item-title
+                  >Smart Chain Wallet (Coming Soon)</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -236,7 +236,7 @@ export default class ProfileMenu extends Vue {
   tier = -1;
   async checkTier(): Promise<void> {
     const tokenBalance = this.$store.state.balances as BalanceInterface[];
-    const balance = tokenBalance.find((t) => t.value === "bf");
+    const balance = tokenBalance.find((t) => t.value === "ninja");
     if (
       balance &&
       balance.value &&
@@ -288,7 +288,7 @@ export default class ProfileMenu extends Vue {
 
   get ninjaBalance(): string {
     const balances = this.$store.state.balances as BalanceInterface[];
-    const balance = balances.find((b) => b.value === "bf");
+    const balance = balances.find((b) => b.value === "ninja");
     if (balance && balance.currency) {
       return balance?.currency?.balance;
     }
@@ -338,9 +338,8 @@ export default class ProfileMenu extends Vue {
 
   logout(): void {
     this.$cookies.remove("cryptozen_token");
-    this.$store.state.profile = null;
-    this.$store.state.currencyBalances = null;
-    this.$store.state.balances = null;
+    this.$router.push("/");
+    location.reload();
   }
 
   get shortSelectedAddress(): string {

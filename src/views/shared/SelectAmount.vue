@@ -256,20 +256,23 @@ import fromExponential from "from-exponential";
 import { AddressBookInterface } from "../../store/fetcher";
 import BigNumber from "bignumber.js";
 import { TransactionConfig } from "web3-core";
+import CryptozenSdk from "../../library/cryptozen-sdk";
+// import {
+//   ChainId,
+//   Token,
+//   WETH,
+//   Fetcher as UniswapFetcher,
+//   Route,
+//   Trade,
+//   TokenAmount,
+//   TradeType,
+//   Percent,
+// } from "@uniswap/sdk";
 import cryptozenabi from "../../static/cryptozenabi";
-import {
-  ChainId,
-  Token,
-  WETH,
-  Fetcher as UniswapFetcher,
-  Route,
-  Trade,
-  TokenAmount,
-  TradeType,
-  Percent,
-} from "@uniswap/sdk";
+
 import { providers } from "ethers";
 import axios from "axios";
+import cryptozen_contract from "@/static/cryptozen_contract";
 
 @Component({ name: "SelectAmount" })
 export default class SelectAmount extends Vue {
@@ -418,8 +421,8 @@ export default class SelectAmount extends Vue {
       this.swapAmount !== 0
     ) {
       if (
-        this.selectedCurrency.value === "bf" &&
-        this.selectedRecipientTokenModel === "bf"
+        this.selectedCurrency.value === "ninja" &&
+        this.selectedRecipientTokenModel === "ninja"
       ) {
         this.amountReceiptUsd = this.convertToUsd(
           await this.ninjaToWeth(
@@ -462,29 +465,42 @@ export default class SelectAmount extends Vue {
           this.platformFee = "0";
           this.transactionReward = "0";
           const web3 = this.$store.getters["getWeb3"] as Web3;
-
+          const CrytozenContract = cryptozen_contract(
+            this.$store.state.chainId
+          );
+          console.log("CrytozenContract", CrytozenContract);
           const contract = new web3.eth.Contract(
             cryptozenabi,
-            process.env.VUE_APP_CRYPTOZEN_CONTRACT
+            CrytozenContract
           );
           let contractData = "";
           let amount = "";
           let value = "0";
-          if (this.selectedCurrency.value !== "eth") {
+          if (!this.selectedCurrency.mainCurrency) {
             if (
               this.selectedCurrency.decimal &&
               this.selectedCurrency.contractAddress
             ) {
               let contractAddress = this.selectedCurrency.contractAddress
                 ?.MAINNET;
-              if (this.$store.state.chainId === 3) {
+              let decimal = this.selectedCurrency.decimal;
+              const chainId = this.$store.state.chainId;
+              if (chainId === 3) {
                 contractAddress = this.selectedCurrency.contractAddress
                   ?.ROPSTEN;
               }
+              if (chainId === 97) {
+                contractAddress = this.selectedCurrency.contractAddress
+                  ?.BSC_TESTNET;
+                decimal = 18;
+              }
+              if (chainId === 56) {
+                contractAddress = this.selectedCurrency.contractAddress
+                  ?.BSC_MAINNET;
+                decimal = 18;
+              }
               amount = fromExponential(
-                Number(
-                  inputAmount * 10 ** this.selectedCurrency.decimal
-                ).toString()
+                Number(inputAmount * 10 ** decimal).toString()
               );
               contractData = contract.methods
                 .transferSameToken(
@@ -506,9 +522,10 @@ export default class SelectAmount extends Vue {
           if (!contractData) {
             throw new Error("Contract data not found !");
           }
+
           const params = {
             from: window.ethereum.selectedAddress,
-            to: process.env.VUE_APP_CRYPTOZEN_CONTRACT,
+            to: CrytozenContract,
             value,
             data: contractData,
           };
@@ -541,7 +558,7 @@ export default class SelectAmount extends Vue {
           this.gasPrice = await web3.eth.getGasPrice();
           await this.checkRewardFee(
             this.transferFee.toString(),
-            this.selectedCurrency.value !== "eth",
+            !this.selectedCurrency.mainCurrency,
             this.selectedCurrency
           );
           console.log("gasPrice", this.gasPrice);
@@ -556,7 +573,7 @@ export default class SelectAmount extends Vue {
           this.loadingFee = false;
         }
       } catch (e) {
-        console.log("e", e);
+        console.log("eaea", e);
         // this.transactionReward = "0";
         // this.transferFee = "0";
         // this.gasFee = "0";
@@ -623,7 +640,7 @@ export default class SelectAmount extends Vue {
   }
 
   async checktransferFeeOnUsd(amount: string): Promise<string> {
-    if (this.selectedCurrency && this.selectedCurrency.value === "bf") {
+    if (this.selectedCurrency && this.selectedCurrency.value === "ninja") {
       return this.convertToUsd(await this.ninjaToWeth(amount));
     } else {
       return amount;
@@ -632,14 +649,30 @@ export default class SelectAmount extends Vue {
 
   async ninjaToWeth(amount: string): Promise<string> {
     console.log("amountninjaToWeth", amount);
+    let network = "eth";
+    const chainId = this.$store.state.chainId as number;
+    if (chainId === 97 || chainId === 56) {
+      network = "bsc";
+    }
+
+    const {
+      Token,
+      Fetcher,
+      WETH,
+      Route,
+      Trade,
+      TokenAmount,
+      Percent,
+      TradeType,
+    } = CryptozenSdk(network);
     const ethProvider = new providers.Web3Provider(window.ethereum);
     const Ninja = new Token(
-      ChainId.ROPSTEN,
+      this.$store.state.chainId,
       process.env.VUE_APP_NINJA_TOKEN_CONTRACT as string,
       18
     );
-    const NinjaWETHPair = await UniswapFetcher.fetchPairData(
-      WETH[ChainId.ROPSTEN],
+    const NinjaWETHPair = await Fetcher.fetchPairData(
+      WETH[this.$store.state.chainId],
       Ninja,
       ethProvider
     );
@@ -670,13 +703,29 @@ export default class SelectAmount extends Vue {
     TRADETOKENContract?: BalanceInterface
   ): Promise<void> {
     const ethProvider = new providers.Web3Provider(window.ethereum);
+    let network = "eth";
+    const chainId = this.$store.state.chainId as number;
+    if (chainId === 97 || chainId === 56) {
+      network = "bsc";
+    }
+    const {
+      ChainId,
+      Token,
+      Fetcher,
+      WETH,
+      Route,
+      Trade,
+      TokenAmount,
+      Percent,
+      TradeType,
+    } = CryptozenSdk(network);
     const Ninja = new Token(
-      ChainId.ROPSTEN,
+      this.$store.state.chainId,
       process.env.VUE_APP_NINJA_TOKEN_CONTRACT as string,
       18
     );
-    const NinjaWETHPair = await UniswapFetcher.fetchPairData(
-      WETH[ChainId.ROPSTEN],
+    const NinjaWETHPair = await Fetcher.fetchPairData(
+      WETH[this.$store.state.chainId],
       Ninja,
       ethProvider
     );
@@ -686,17 +735,27 @@ export default class SelectAmount extends Vue {
         TRADETOKENContract.contractAddress &&
         TRADETOKENContract.decimal
       ) {
-        let contractAddress = TRADETOKENContract.contractAddress.MAINNET;
-        if (this.$store.state.chainId === 3) {
-          contractAddress = TRADETOKENContract.contractAddress.ROPSTEN;
+        let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
+        let decimal = TRADETOKENContract.decimal;
+        const chainId = this.$store.state.chainId;
+        if (chainId === 3) {
+          contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
+        }
+        if (chainId === 97) {
+          contractAddress = this.selectedCurrency.contractAddress?.BSC_TESTNET;
+          decimal = 18;
+        }
+        if (chainId === 56) {
+          contractAddress = this.selectedCurrency.contractAddress?.BSC_MAINNET;
+          decimal = 18;
         }
         const TRADETOKEN = new Token(
-          ChainId.ROPSTEN,
+          this.$store.state.chainId,
           contractAddress,
-          TRADETOKENContract.decimal
+          decimal
         );
-        const TRADETOKENWETHPAIR = await UniswapFetcher.fetchPairData(
-          WETH[ChainId.ROPSTEN],
+        const TRADETOKENWETHPAIR = await Fetcher.fetchPairData(
+          WETH[this.$store.state.chainId],
           TRADETOKEN,
           ethProvider
         );
@@ -709,12 +768,10 @@ export default class SelectAmount extends Vue {
         const routeEth = new Route(
           [NinjaWETHPair],
           Ninja,
-          WETH[ChainId.ROPSTEN]
+          WETH[this.$store.state.chainId]
         );
         // console.log("amountFee", amountFee);
-        const amount = new BigNumber(amountFee)
-          .times(10 ** TRADETOKENContract.decimal)
-          .toFixed();
+        const amount = new BigNumber(amountFee).times(10 ** decimal).toFixed();
         const realAmount = fromExponential(amount);
         const trade = new Trade(
           route,

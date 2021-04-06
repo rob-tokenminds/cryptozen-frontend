@@ -243,11 +243,12 @@ export class Fetcher {
   static async getSyncTransactions(
     token: string,
     address: string,
+    chainId: number,
     currency = ""
   ): Promise<TransactionInterface[]> {
     const fetch = await Fetcher.get(`/user/transactions/sync/${address}`, {
       headers: { Authorization: `Bearer ${token}` },
-      params: { currency },
+      params: { currency, chainId },
     });
     return fetch.data;
   }
@@ -268,7 +269,8 @@ export class Fetcher {
     isToken: boolean,
     fee: string,
     reference: string,
-    reward: any
+    reward: any,
+    chainId: number
   ): Promise<TransactionInterface> {
     const fetch = await Fetcher.post(
       `/user/transaction/new`,
@@ -278,6 +280,7 @@ export class Fetcher {
         fee,
         reference,
         reward,
+        chainId,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -286,12 +289,13 @@ export class Fetcher {
 
   static async updateNewTrx(
     token: string,
-    id : string,
+    id: string,
     hash: string,
     isToken: boolean,
     fee: string,
     reference: string,
-    reward: any
+    reward: any,
+    chainId: number
   ): Promise<TransactionInterface> {
     const fetch = await Fetcher.post(
       `/user/transaction/update`,
@@ -302,6 +306,7 @@ export class Fetcher {
         fee,
         reference,
         reward,
+        chainId,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -310,13 +315,13 @@ export class Fetcher {
 
   static async postNewTrxWithEmail(
     token: string,
-    amount : string,
-    currency : string,
-    name : string,
-    plainEmail : string,
-    email : string,
+    amount: string,
+    currency: string,
+    name: string,
+    plainEmail: string,
+    email: string,
     reference: string,
-
+    chainId: number
   ): Promise<TransactionInterface> {
     const fetch = await Fetcher.post(
       `/user/transaction/new/with-email`,
@@ -326,7 +331,8 @@ export class Fetcher {
         name,
         reference,
         plainEmail,
-        email
+        email,
+        chainId,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -337,7 +343,8 @@ export class Fetcher {
     token: string,
     hash: string,
     address: string,
-    contractAddress: string
+    contractAddress: string,
+    chainId: number
   ): Promise<boolean> {
     const fetch = await Fetcher.post(
       `/user/approval/new`,
@@ -345,6 +352,7 @@ export class Fetcher {
         hash,
         address,
         contractAddress,
+        chainId,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -354,11 +362,13 @@ export class Fetcher {
   static async getApproval(
     token: string,
     address: string,
-    tokenContractAddress: string
+    tokenContractAddress: string,
+    chainId: number
   ): Promise<string> {
     const fetch = await Fetcher.get(
       `/user/approval/get/${address}/${tokenContractAddress}`,
       {
+        params: { chainId },
         headers: { Authorization: `Bearer ${token}` },
       }
     );
@@ -462,5 +472,5 @@ export interface TransactionInterface {
   created_at: string;
   updated_at: string;
   fee: string;
-  isOnHold : boolean;
+  isOnHold: boolean;
 }

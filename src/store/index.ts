@@ -14,6 +14,7 @@ import {
 import cryptozenabi from "@/static/cryptozenabi";
 import bignumber from "bignumber.js";
 import fromExponential from "from-exponential";
+import cryptozen_contract from "@/static/cryptozen_contract";
 // import VuexPersistence from "vuex-persist";
 
 export interface updateCoinBalanceParams {
@@ -121,7 +122,7 @@ const store: StoreOptions<storeInterface> = {
     async updateCoinBalance({ commit, state }, coin: BalanceInterface) {
       const web3 = state.web3;
       if (web3) {
-        if (coin.value === "eth") {
+        if (coin.mainCurrency) {
           await web3.eth
             .getBalance(state.selectedAddress)
             .then(async (balanceInWei) => {
@@ -141,28 +142,36 @@ const store: StoreOptions<storeInterface> = {
             });
         } else {
           if (coin.decimal && coin.contractAddress) {
+            let decimal = coin.decimal;
             let contractAddress = coin.contractAddress?.MAINNET;
             if (state.chainId === 3) {
               contractAddress = coin.contractAddress?.ROPSTEN;
+            }
+            if (state.chainId === 97) {
+              contractAddress = coin.contractAddress?.BSC_TESTNET;
+              decimal = 18;
+            }
+            if (state.chainId === 56) {
+              contractAddress = coin.contractAddress?.BSC_MAINNET;
+              decimal = 18;
             }
             const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
             await contract.methods
               .balanceOf(state.selectedAddress)
               .call({ from: state.selectedAddress })
               .then(async (unscaledBalance: number) => {
-                if (coin.decimal && coin.contractAddress) {
-                  let contractAddress = coin.contractAddress.MAINNET;
-                  if (state.chainId === 3) {
-                    contractAddress = coin.contractAddress?.ROPSTEN;
-                  }
+                if (decimal) {
                   const contract = new web3.eth.Contract(
                     ERC20Abi,
                     contractAddress
                   );
+                  const CRYPTOZEN_CONTRACT = cryptozen_contract(state.chainId);
+                  console.log("CRYPTOZEN_CONTRACT", CRYPTOZEN_CONTRACT);
+                  console.log("contractAddress", contractAddress);
                   const allowance = await contract.methods
                     .allowance(
                       window.ethereum.selectedAddress,
-                      process.env.VUE_APP_CRYPTOZEN_CONTRACT
+                      CRYPTOZEN_CONTRACT
                     )
                     .call();
                   let isApproved = false;
@@ -174,7 +183,8 @@ const store: StoreOptions<storeInterface> = {
                       hash = await Fetcher.getApproval(
                         token,
                         window.ethereum.selectedAddress,
-                        contractAddress
+                        contractAddress,
+                        state.chainId
                       );
                       console.log("hash", hash);
                       if (hash) {
@@ -195,7 +205,7 @@ const store: StoreOptions<storeInterface> = {
                   console.log("isApproved", isApproved);
                   const BN = web3.utils
                     .toBN(unscaledBalance)
-                    .div(web3.utils.toBN(10 ** coin.decimal));
+                    .div(web3.utils.toBN(10 ** decimal));
                   const ethBalance = new CurrencyModel(
                     state.selectedAddress,
                     BN.toString(),
@@ -223,14 +233,19 @@ const store: StoreOptions<storeInterface> = {
           if (state.chainId === 3) {
             contractAddress = coin.contractAddress?.ROPSTEN;
           }
+          if (state.chainId === 97) {
+            contractAddress = coin.contractAddress?.BSC_TESTNET;
+          }
+          if (state.chainId === 56) {
+            contractAddress = coin.contractAddress?.BSC_MAINNET;
+          }
           if (coin.decimal && contractAddress) {
             const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
+            const CRYPTOZEN_CONTRACT = cryptozen_contract(state.chainId);
             const approveData = await contract.methods
               .approve(
-                process.env.VUE_APP_CRYPTOZEN_CONTRACT,
-                fromExponential(
-                  Number(90000000000 * 10 ** coin.decimal).toString()
-                )
+                CRYPTOZEN_CONTRACT,
+                fromExponential(Number(90000000000 * 10 ** 18).toString())
               )
               .encodeABI();
             const params = {
@@ -249,7 +264,8 @@ const store: StoreOptions<storeInterface> = {
                     token,
                     hash,
                     window.ethereum.selectedAddress,
-                    contractAddress as string
+                    contractAddress as string,
+                    state.chainId
                   );
                   alert(
                     "Processing approval function, please wait until it confirmed on the blockchain. You can see the progress directly on metamask "
@@ -273,13 +289,29 @@ const store: StoreOptions<storeInterface> = {
     },
     async getHashApproval({ state }, { address, contractAddress }) {
       const token = Vue.$cookies.get("cryptozen_token");
-      return await Fetcher.getApproval(token, address, contractAddress);
+      return await Fetcher.getApproval(
+        token,
+        address,
+        contractAddress,
+        state.chainId
+      );
     },
     updateSelectedAddress({ state }, address: string) {
       state.selectedAddress = address;
     },
     async updateChainId({ state }, web3: Web3) {
       state.chainId = await web3.eth.getChainId();
+      if (state.chainId !== 1 && state.chainId !== 3) {
+        const index = state.balances.findIndex((b) => b.name === "Ethereum");
+        if (index >= 0) {
+          state.balances.splice(index, 1);
+        }
+      } else {
+        const index = state.balances.findIndex((b) => b.name === "Binance");
+        if (index >= 0) {
+          state.balances.splice(index, 1);
+        }
+      }
     },
     async getLoginWord() {
       return await Fetcher.getLoginWords();
@@ -386,6 +418,7 @@ const store: StoreOptions<storeInterface> = {
       const transactions = await Fetcher.getTransactions(
         token,
         address,
+
         currency
       );
       if (transactions.length) {
@@ -406,6 +439,7 @@ const store: StoreOptions<storeInterface> = {
       const transactions = await Fetcher.getSyncTransactions(
         token,
         address,
+        state.chainId,
         currency
       );
       if (transactions.length) {
@@ -447,7 +481,8 @@ const store: StoreOptions<storeInterface> = {
         isToken,
         fee,
         reference,
-        reward
+        reward,
+        state.chainId
       );
       const checkTrx = state.transactions.find((t) => t.id === trx.id);
       if (!checkTrx) {
@@ -481,7 +516,8 @@ const store: StoreOptions<storeInterface> = {
         isToken,
         fee,
         reference,
-        reward
+        reward,
+        state.chainId
       );
       const checkTrx = state.transactions.findIndex((t) => t.id === trx.id);
       if (checkTrx) {
@@ -489,7 +525,10 @@ const store: StoreOptions<storeInterface> = {
       }
       return trx;
     },
-    async newTrxWithEmail({state}, {currency, name, plainEmail,email, reference, amount}){
+    async newTrxWithEmail(
+      { state },
+      { currency, name, plainEmail, email, reference, amount }
+    ) {
       const token = Vue.$cookies.get("cryptozen_token");
       const trx = await Fetcher.postNewTrxWithEmail(
         token,
@@ -498,7 +537,8 @@ const store: StoreOptions<storeInterface> = {
         name,
         plainEmail,
         email,
-        reference
+        reference,
+        state.chainId
       );
       const checkTrx = state.transactions.find((t) => t.id === trx.id);
       if (!checkTrx) {
@@ -508,12 +548,13 @@ const store: StoreOptions<storeInterface> = {
     },
     async getTier({ state }) {
       const tokenBalance = state.balances;
-      const balance = tokenBalance.find((t) => t.value === "bf");
+      const balance = tokenBalance.find((t) => t.value === "ninja");
       const web3 = state.web3;
       if (web3 && balance && balance.currency) {
+        const CRYPTOZEN_CONTRACT = cryptozen_contract(state.chainId);
         const contract = new web3.eth.Contract(
           cryptozenabi,
-          process.env.VUE_APP_CRYPTOZEN_CONTRACT
+          CRYPTOZEN_CONTRACT
         );
         console.log("alance.currency.balance", balance.currency.balance);
         const balanceAmount = new bignumber(balance.currency.balance).toFixed();
