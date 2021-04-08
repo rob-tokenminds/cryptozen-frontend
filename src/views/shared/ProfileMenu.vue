@@ -54,20 +54,20 @@
         </v-menu>
       </v-list-item-icon>
 
-      <v-list-item-avatar class="mr-2 ml-n2" v-if="!isMobile">
-        <v-avatar size="50">
-          <v-img :src="require(`../../assets/eth.svg`)"></v-img
-        ></v-avatar>
-      </v-list-item-avatar>
+      <v-list-item>
+        <v-list-item-avatar class="mr-2 ml-n2" v-if="!isMobile">
+          <v-img :src="require(`../../assets/${asset}.svg`)"></v-img>
+        </v-list-item-avatar>
 
-      <v-list-item-content>
-        <v-list-item-title class="primary--text">{{
-          shortSelectedAddress
-        }}</v-list-item-title>
-        <v-list-item-subtitle v-if="myEmail">
-          {{ myEmail }}
-        </v-list-item-subtitle>
-      </v-list-item-content>
+        <v-list-item-content>
+          <v-list-item-title class="primary--text">{{
+            shortSelectedAddress
+          }}</v-list-item-title>
+          <v-list-item-subtitle v-if="myEmail">
+            {{ myEmail }}
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
       <v-list-item-icon>
         <v-menu offset-y>
           <template v-slot:activator="{ on, attrs }">
@@ -76,13 +76,30 @@
             </v-btn>
           </template>
           <v-list>
-            <v-list-item>
+            <!--            <v-list-item @click="changeToEthereumChain()">-->
+            <!--              <v-list-item-avatar tile>-->
+            <!--                <v-img :src="require(`../../assets/eth.svg`)"></v-img>-->
+            <!--              </v-list-item-avatar>-->
+            <!--              <v-list-item-content>-->
+            <!--                <v-list-item-title class="primary&#45;&#45;text"-->
+            <!--                  >Add Ethereum Wallet</v-list-item-title-->
+            <!--                >-->
+            <!--              </v-list-item-content>-->
+            <!--            </v-list-item>-->
+            <!--            <v-divider></v-divider>-->
+
+            <v-list-item @click="changeToBinanceChain()">
               <v-list-item-avatar tile>
-                <v-img :src="require(`../../assets/eth.svg`)"></v-img>
+                <v-img
+                  :src="require(`../../assets/binance-wallet.svg`)"
+                ></v-img>
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Add Ethereum Wallet (Coming Soon)</v-list-item-title
+                  >Add Binance</v-list-item-title
+                >
+                <v-list-item-title class="primary--text"
+                  >Smart Chain Wallet</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -95,23 +112,6 @@
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
                   >Add xDai Wallet (Coming Soon)</v-list-item-title
-                >
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider></v-divider>
-
-            <v-list-item>
-              <v-list-item-avatar tile>
-                <v-img
-                  :src="require(`../../assets/binance-wallet.svg`)"
-                ></v-img>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title class="primary--text"
-                  >Add Binance</v-list-item-title
-                >
-                <v-list-item-title class="primary--text"
-                  >Smart Chain Wallet (Coming Soon)</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -178,6 +178,9 @@ import { UserNotification } from "@/store";
 import { mdiBellAlertOutline } from "@mdi/js";
 import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
 import { BalanceInterface } from "@/static/balance";
+import ChainIds from "../../static/chain_ids";
+import { AbstractProvider } from "web3-core";
+import Web3 from "web3";
 // import Web3 from "web3";
 // import cryptozenabi from "../../static/cryptozenabi";
 // import Bignumber from "bignumber.js";
@@ -193,6 +196,15 @@ export default class ProfileMenu extends Vue {
 
   editYourEmail = false;
   yourEmail = this.myEmail;
+
+  get asset(): string {
+    const chainId = this.$store.state.chainId;
+    if (chainId === 3 || chainId === 1) {
+      return `eth`;
+    } else {
+      return `binance-wallet`;
+    }
+  }
 
   get vListTopClass(): string {
     if (this.classTop) return this.classTop;
@@ -214,6 +226,88 @@ export default class ProfileMenu extends Vue {
       return profile.email;
     }
     return "";
+  }
+
+  async changeToEthereumChain(): Promise<void> {
+    const web3 = this.$store.getters["getWeb3"] as Web3;
+    // web3.eth.defaultChain = "ropsten";
+    console.log("web3", web3);
+    const currentProvider = web3.currentProvider;
+    const chainData = ChainIds.find(
+      (id) => id.chainId === Number(process.env.VUE_APP_ETHEREUM_SELECTED_CHAIN)
+    );
+    if (chainData) {
+      const params = [
+        {
+          chainId: web3.utils.toHex(
+            Number(process.env.VUE_APP_ETHEREUM_SELECTED_CHAIN)
+          ),
+          chainName: chainData.name,
+          rpcUrls: [chainData.rpcUrl],
+          nativeCurrency: {
+            name: chainData.currencySymbol,
+            symbol: chainData.currencySymbol,
+            decimals: 18,
+          },
+          blockExplorerUrls: [chainData.blockExplorer],
+        },
+      ];
+      await new Promise((resolve, reject) => {
+        (currentProvider as AbstractProvider).sendAsync(
+          {
+            jsonrpc: "2.0",
+            method: "wallet_addEthereumChain",
+            params,
+          },
+          (error, result) => {
+            if (error) {
+              resolve(false);
+            } else {
+              resolve("true");
+            }
+          }
+        );
+      });
+    } else alert("chain data not found !");
+  }
+
+  async changeToBinanceChain(): Promise<void> {
+    const web3 = this.$store.getters["getWeb3"] as Web3;
+    const currentProvider = web3.currentProvider;
+    const chainData = ChainIds.find(
+      (id) => id.chainId === Number(process.env.VUE_APP_BINANCE_SELECTED_CHAIN)
+    );
+    if (chainData) {
+      const params = [
+        {
+          chainId: web3.utils.toHex(chainData.chainId),
+          chainName: chainData.name,
+          rpcUrls: [chainData.rpcUrl],
+          nativeCurrency: {
+            name: chainData.currencySymbol,
+            symbol: chainData.currencySymbol,
+            decimals: 18,
+          },
+          blockExplorerUrls: [chainData.blockExplorer],
+        },
+      ];
+      await new Promise((resolve, reject) => {
+        (currentProvider as AbstractProvider).sendAsync(
+          {
+            jsonrpc: "2.0",
+            method: "wallet_addEthereumChain",
+            params,
+          },
+          (error, result) => {
+            if (error) {
+              resolve(false);
+            } else {
+              resolve("true");
+            }
+          }
+        );
+      });
+    } else alert("chain data not found !");
   }
 
   async toNotification(notification: UserNotification): Promise<void> {

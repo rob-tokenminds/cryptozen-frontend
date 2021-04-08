@@ -1214,7 +1214,6 @@ export default class SendMoney extends Vue {
   swapAmount = 0;
   amountSendUsd = "0";
   amountReceiptUsd = "0";
-  // transferFee = "0";
   transferFeeOnUsd = "0";
   // gasFee = "0";
   platformFee = "0";
@@ -2068,11 +2067,11 @@ export default class SendMoney extends Vue {
           console.log("tier[1]", tier[1]);
           if (transferFee) {
             if (this.selectedCurrency?.decimal) {
-              this.transferFee = Number(
-                transferFee / 10 ** chainId === 3 || chainId === 1
+              const decimal =
+                chainId === 3 || chainId === 1
                   ? this.selectedCurrency.decimal
-                  : 18
-              ).toFixed(4);
+                  : 18;
+              this.transferFee = Number(transferFee / 10 ** decimal).toFixed(4);
               this.transferFeeOnUsd = await this.checktransferFeeOnUsd(
                 this.transferFee
               );
@@ -2187,7 +2186,7 @@ export default class SendMoney extends Vue {
         new TokenAmount(Ninja, realAmount),
         TradeType.EXACT_INPUT
       );
-      const slippageTolerance = new Percent("50", realAmount);
+      const slippageTolerance = new Percent("50", "10000");
       const amountOutMin = trade.minimumAmountOut(slippageTolerance);
       console.log("amountOutMinninjaToWeth", amountOutMin.toSignificant(6));
       return amountOutMin.toSignificant(6);
@@ -2207,7 +2206,6 @@ export default class SendMoney extends Vue {
     }
     console.log("network", network);
     const {
-      ChainId,
       Token,
       Fetcher,
       WETH,
@@ -2278,21 +2276,21 @@ export default class SendMoney extends Vue {
           const routeEth = new Route(
             [NinjaWETHPair] as any,
             Ninja,
-            WETH[ChainId.ROPSTEN]
+            WETH[chainId]
           );
           // console.log("amountFee", amountFee);
           const amount = new BigNumber(amountFee)
-            .times(10 ** TRADETOKENContract.decimal)
+            .times(10 ** decimal)
             .toFixed();
           const realAmount = fromExponential(amount);
-          console.log("realAmount", realAmount);
+          console.log("realAmount22", realAmount);
           const trade = new Trade(
             route,
             new TokenAmount(TRADETOKEN, realAmount),
             TradeType.EXACT_INPUT
           );
-
-          const slippageTolerance = new Percent("50", realAmount);
+          console.log("trade", trade);
+          const slippageTolerance = new Percent("50", "10000");
           const amountOutMin = trade.minimumAmountOut(slippageTolerance);
 
           const txFee = Number(this.gasPrice) * Number(this.gas);
@@ -2307,7 +2305,7 @@ export default class SendMoney extends Vue {
             new TokenAmount(WETH[NinjaWETHPair.chainId], txFee.toFixed()),
             TradeType.EXACT_INPUT
           );
-          const slippageTolerance3 = new Percent("50", txFee.toFixed());
+          const slippageTolerance3 = new Percent("50", "10000");
           const amountOutMin3 = trade3.minimumAmountOut(slippageTolerance3);
 
           this.transactionReward = (
@@ -2341,7 +2339,7 @@ export default class SendMoney extends Vue {
           new TokenAmount(WETH[NinjaWETHPair.chainId], realAmount),
           TradeType.EXACT_INPUT
         );
-        const slippageTolerance = new Percent("50", realAmount);
+        const slippageTolerance = new Percent("50", "10000");
         const amountOutMin = trade.minimumAmountOut(slippageTolerance);
 
         const txFee = Number(this.gasPrice) * Number(this.gas);
@@ -2356,7 +2354,7 @@ export default class SendMoney extends Vue {
           new TokenAmount(WETH[NinjaWETHPair.chainId], txFee.toFixed()),
           TradeType.EXACT_INPUT
         );
-        const slippageTolerance3 = new Percent("50", txFee.toFixed());
+        const slippageTolerance3 = new Percent("50", "10000");
         const amountOutMin3 = trade3.minimumAmountOut(slippageTolerance3);
         console.log("amountOutMin3", amountOutMin3.toSignificant(6));
         this.transactionReward = (

@@ -363,6 +363,10 @@ export default class App extends Vue {
               this.$router.push("/");
               location.reload();
             });
+            window.ethereum.on("chainChanged", () => {
+              this.$router.push("/");
+              location.reload();
+            });
           } else {
             alert(
               "Invalid network, please select one of these network on your Metamask : ROPSTEN, BSC TESTNET, BSC MAINNET. Please change your network and reload the site"
