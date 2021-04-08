@@ -473,4 +473,5 @@ export interface TransactionInterface {
   updated_at: string;
   fee: string;
   isOnHold: boolean;
+  chainId: number;
 }

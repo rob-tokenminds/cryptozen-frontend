@@ -31,7 +31,7 @@
 
           <v-list-item-content>
             <v-list-item-title class="white--text text-subtitle-1"
-              >Home</v-list-item-title
+              >All Transactions</v-list-item-title
             >
           </v-list-item-content>
         </v-list-item>
@@ -155,7 +155,8 @@
       <!-- Provides the application the proper gutter -->
 
       <v-container>
-        <router-view isMobile="isMobile"></router-view>
+        <!--        <v-alert color="secondary">Logging in. Please sign on Metamask</v-alert>-->
+        <!--        <router-view isMobile="isMobile"></router-view>-->
       </v-container>
 
       <!-- If using vue-router -->
@@ -185,6 +186,7 @@ import HRNumber from "human-readable-numbers";
 interface Window {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ethereum: any;
+  location: any;
 }
 declare const window: Window;
 
@@ -351,6 +353,7 @@ export default class App extends Vue {
         alert(
           "Metamask is not installed, please install Metamask to use this Dapp"
         );
+        window.location.replace("https://lp.cryptozen.ninja/");
       } else {
         this.web3 = new Web3(window.ethereum);
         if (this.web3) {
@@ -369,7 +372,7 @@ export default class App extends Vue {
             });
           } else {
             alert(
-              "Invalid network, please select one of these network on your Metamask : ROPSTEN, BSC TESTNET, BSC MAINNET. Please change your network and reload the site"
+              "Invalid network, please select one of these network on your Metamask : ROPSTEN, BSC TESTNET. Please change your network and reload the site"
             );
           }
         }

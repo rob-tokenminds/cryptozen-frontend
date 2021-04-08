@@ -183,14 +183,12 @@
                             "
                           >
                             <v-list-item class="">
-                              <v-list-item-avatar size="60">
-                                <v-avatar color="">
-                                  <v-img
-                                    :src="
-                                      require(`../assets/${addressBook.currency}.svg`)
-                                    "
-                                  ></v-img>
-                                </v-avatar>
+                              <v-list-item-avatar>
+                                <v-img
+                                  :src="
+                                    require(`../assets/${addressBook.currency}.svg`)
+                                  "
+                                ></v-img>
                               </v-list-item-avatar>
                               <v-list-item-content>
                                 <v-list-item-title class="primary--text ma-2"
@@ -577,7 +575,7 @@
                           </template>
 
                           <template v-slot:selection="{ item }">
-                            <v-list-item style="padding: 0 10px !important">
+                            <v-list-item style="padding: 0 0px !important">
                               <v-list-item-avatar tile class="">
                                 <v-img
                                   :src="require(`../assets/${item.value}.svg`)"
@@ -837,7 +835,7 @@
                             :disabled="selectedCurrency.value !== item.value"
                             v-bind="attrs"
                             v-on="on"
-                            style="padding: 0 10px !important"
+                            style="padding: 0 0px !important"
                           >
                             <v-list-item-avatar tile>
                               <v-img
@@ -859,7 +857,7 @@
                         </template>
 
                         <template v-slot:selection="{ item }">
-                          <v-list-item style="padding: 0 10px !important">
+                          <v-list-item style="padding: 0 0px !important">
                             <v-list-item-avatar tile>
                               <v-img
                                 :src="require(`../assets/${item.value}.svg`)"
@@ -890,8 +888,12 @@
               <p>To</p>
               <v-card class="mb-2" v-if="selectedAddress">
                 <v-list-item class="">
-                  <v-list-item-avatar size="60">
-                    <v-avatar color="main"></v-avatar>
+                  <v-list-item-avatar>
+                    <v-img
+                      :src="
+                        require(`../assets/${selectedAddress.currency}.svg`)
+                      "
+                    ></v-img>
                   </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title class="primary--text ma-2"
@@ -910,6 +912,7 @@
                   <v-list-item-avatar size="60">
                     <v-avatar color="main"></v-avatar>
                   </v-list-item-avatar>
+
                   <v-list-item-content>
                     <v-list-item-title class="primary--text ma-2"
                       >Email : {{ addARecipientEmail }}</v-list-item-title
@@ -1259,7 +1262,10 @@ export default class SendMoney extends Vue {
   @Watch("transactionRewardInEth")
   async watchtransactionRewardInEth(value: string): Promise<void> {
     if (value !== "0") {
-      this.transactionRewardInUsd = this.convertToUsd(value);
+      const usd = this.convertToUsd(value);
+      console.log("usdusd", usd);
+      console.log("usdusdvalue", value);
+      this.transactionRewardInUsd = usd;
     }
   }
 
@@ -1971,7 +1977,12 @@ export default class SendMoney extends Vue {
     if (this.ethereumPrice && eth !== "NaN") {
       console.log("eth", eth);
       const currentPrice = this.ethereumPrice.current_price;
-      return fromExponential(new BigNumber(eth).times(currentPrice).toFixed(2));
+      console.log("currentPrice", currentPrice);
+      const price = fromExponential(
+        new BigNumber(eth).times(currentPrice).toFixed(2)
+      );
+      console.log("priceInUsd", price);
+      return price;
     }
     return "0";
   }
@@ -2111,7 +2122,7 @@ export default class SendMoney extends Vue {
         // this.platformFee = "0";
         this.loadingFee = false;
         await sleep(100);
-        // await this.checkFee(inputAmount);
+        await this.checkFee(inputAmount);
       }
     } else {
       await sleep(100);
@@ -2326,42 +2337,53 @@ export default class SendMoney extends Vue {
           this.transactionRewardInEth = amountOutMinEth.toSignificant();
         }
       } else {
-        const route = new Route(
-          [NinjaWETHPair],
-          WETH[NinjaWETHPair.chainId],
-          Ninja
-        );
+        // const route = new Route(
+        //   [NinjaWETHPair],
+        //   WETH[NinjaWETHPair.chainId],
+        //   Ninja
+        // );
         const web3 = this.$store.getters["getWeb3"] as Web3;
-        console.log("amountFee", amountFee);
-        const realAmount = web3.utils.toWei(amountFee, "ether");
-        const trade = new Trade(
-          route,
-          new TokenAmount(WETH[NinjaWETHPair.chainId], realAmount),
-          TradeType.EXACT_INPUT
-        );
-        const slippageTolerance = new Percent("50", "10000");
-        const amountOutMin = trade.minimumAmountOut(slippageTolerance);
-
+        // console.log("amountFee", amountFee);
+        // const realAmount = web3.utils.toWei(amountFee, "ether");
+        // console.log("realAmount", realAmount);
+        // const trade = new Trade(
+        //   route,
+        //   new TokenAmount(WETH[NinjaWETHPair.chainId], realAmount),
+        //   TradeType.EXACT_INPUT
+        // );
+        // const slippageTolerance = new Percent("50", "10000");
+        // const amountOutMin = trade.minimumAmountOut(slippageTolerance);
+        // console.log("amountOutMin", amountOutMin.toSignificant(6));
+        //
         const txFee = Number(this.gasPrice) * Number(this.gas);
-        const route3 = new Route(
-          [NinjaWETHPair],
-          WETH[NinjaWETHPair.chainId],
-          Ninja
-        );
-        console.log("txFee.toFixed()", txFee.toFixed());
-        const trade3 = new Trade(
-          route3,
-          new TokenAmount(WETH[NinjaWETHPair.chainId], txFee.toFixed()),
-          TradeType.EXACT_INPUT
-        );
-        const slippageTolerance3 = new Percent("50", "10000");
-        const amountOutMin3 = trade3.minimumAmountOut(slippageTolerance3);
-        console.log("amountOutMin3", amountOutMin3.toSignificant(6));
-        this.transactionReward = (
-          Number(amountOutMin.toSignificant(6)) +
-          Number(amountOutMin3.toSignificant(6))
+        // const route3 = new Route(
+        //   [NinjaWETHPair],
+        //   WETH[NinjaWETHPair.chainId],
+        //   Ninja
+        // );
+        // console.log("txFee.toFixed()", txFee.toFixed());
+        // const trade3 = new Trade(
+        //   route3,
+        //   new TokenAmount(WETH[NinjaWETHPair.chainId], txFee.toFixed()),
+        //   TradeType.EXACT_INPUT
+        // );
+        // const slippageTolerance3 = new Percent("50", "10000");
+        // const amountOutMin3 = trade3.minimumAmountOut(slippageTolerance3);
+        // console.log("amountOutMin3", amountOutMin3.toSignificant(6));
+        // console.log("amountOutMin3", amountOutMin3.toSignificant(6));
+        // this.transactionReward = (
+        //   Number(amountOutMin.toSignificant(6)) +
+        //   Number(amountOutMin3.toSignificant(6))
+        // ).toString();
+
+        this.transactionRewardInEth = (
+          Number(amountFee) +
+          Number(web3.utils.fromWei(txFee.toFixed(), "ether"))
         ).toString();
-        this.transactionRewardInEth = this.transactionReward;
+        console.log(
+          "usdusdtransactionRewardInEth",
+          this.transactionRewardInEth
+        );
       }
     }
   }

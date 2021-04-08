@@ -1,6 +1,5 @@
 <template>
   <v-container>
-
     <v-card flat :max-width="isMobile ? `100%` : `65%`" class="mb-2">
       <v-card-subtitle class="primary--text">All Activity</v-card-subtitle>
     </v-card>
@@ -33,7 +32,6 @@
         <v-chip :color="statusTransaction(transaction).color">
           {{ statusTransaction(transaction).name }}</v-chip
         >
-
       </v-card-actions>
 
       <v-divider></v-divider>
@@ -44,11 +42,12 @@
               <v-col cols="12" md="6" sm="6" lg="6" xl="6">
                 <v-list-item>
                   <v-list-item-avatar size="60">
-                    <v-avatar  >
+                    <v-avatar>
                       <v-img
-                        :src="require(`../../assets/${transaction.tokenSymbol}.svg`)"
+                        :src="
+                          require(`../../assets/${transaction.tokenSymbol}.svg`)
+                        "
                       ></v-img>
-
                     </v-avatar>
                   </v-list-item-avatar>
                   <v-list-item-content>
@@ -95,7 +94,12 @@
                   <v-card flat tile>
                     <v-card-subtitle> Rewards </v-card-subtitle>
                     <v-card-title class="primary--text mt-n8">
-                      {{ transaction.reward ? transaction.reward.transactionReward : "0" }} Ninja Token
+                      {{
+                        transaction.reward
+                          ? transaction.reward.transactionReward
+                          : "0"
+                      }}
+                      Ninja Token
                     </v-card-title>
                   </v-card>
                 </v-col>
@@ -104,11 +108,18 @@
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> To </v-card-subtitle>
-                    <v-card-title v-if="!transaction.isOnHold" class="primary--text mt-n8">
+                    <v-card-title
+                      v-if="!transaction.isOnHold"
+                      class="primary--text mt-n8"
+                    >
                       {{ getWalletName(transaction.to) }}
                     </v-card-title>
                     <v-card-title v-else class="primary--text mt-n8">
-                      <a :ref="`encrypted-email-${transaction.id}`" @click="decryptEmail(transaction)">Encrypted (click to decrypt)</a>
+                      <a
+                        :ref="`encrypted-email-${transaction.id}`"
+                        @click="decryptEmail(transaction)"
+                        >Encrypted (click to decrypt)</a
+                      >
                     </v-card-title>
                   </v-card>
                 </v-col>
@@ -138,7 +149,8 @@
                   <v-card flat tile>
                     <v-card-subtitle> Gas Fee </v-card-subtitle>
                     <v-card-title class="primary--text mt-n8">
-                      {{ getFee(transaction) }} ETH
+                      {{ getFee(transaction) }}
+                      {{ currencyByChainId(transaction) }}
                     </v-card-title>
                   </v-card>
                 </v-col>
@@ -153,7 +165,8 @@
                 </v-col>
 
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4" class="text-right">
-                  <v-btn v-if="!transaction.isOnHold"
+                  <v-btn
+                    v-if="!transaction.isOnHold"
                     :href="`${detailUrl}${transaction.hash}`"
                     target="_blank"
                     color="secondary"
@@ -161,15 +174,16 @@
                     class="mt-7"
                     >Tracking URL</v-btn
                   >
-                  <v-btn v-else
-                       @click="sendMoneyDialog = true"
-
-                         color="secondary"
-                         outlined
-                         class="mt-7"
-                         :disabled="!statusAddress(transaction)"
-                  > Submit Transaction </v-btn
+                  <v-btn
+                    v-else
+                    @click="sendMoneyDialog = true"
+                    color="secondary"
+                    outlined
+                    class="mt-7"
+                    :disabled="!statusAddress(transaction)"
                   >
+                    Submit Transaction
+                  </v-btn>
 
                   <v-dialog
                     v-if="statusAddress(transaction)"
@@ -181,10 +195,11 @@
                     <SendMoney
                       :currentSelected="getBalance(transaction)"
                       :setAddressSelected="getAddressBookByEmail(transaction)"
-                      :setAmount="transaction.value / 10 ** transaction.tokenDecimal"
+                      :setAmount="
+                        transaction.value / 10 ** transaction.tokenDecimal
+                      "
                       :setTransaction="transaction"
                       :step="4"
-
                       @update-dialog="updateSendMoneyDialog"
                     ></SendMoney>
                   </v-dialog>
@@ -209,7 +224,7 @@ import CryptoJS from "crypto-js";
 import SendMoney from "../SendMoney.vue";
 import { BalanceInterface } from "@/static/balance";
 
-@Component({ name: "TransactionHistory", components: {SendMoney} })
+@Component({ name: "TransactionHistory", components: { SendMoney } })
 export default class TransactionHistory extends Vue {
   @Prop(String) readonly label!: string;
   @Prop(String) readonly currency!: string;
@@ -221,48 +236,57 @@ export default class TransactionHistory extends Vue {
     this.sendMoneyDialog = value;
   }
 
-  getBalance(transaction: TransactionInterface) : any {
+  getBalance(transaction: TransactionInterface): any {
     return this.$store.state.balances.find(
-      (b: BalanceInterface) => b.value === transaction.tokenSymbol?.toLowerCase()
+      (b: BalanceInterface) =>
+        b.value === transaction.tokenSymbol?.toLowerCase()
     );
   }
 
-  statusTransaction(transaction: TransactionInterface) : any {
-    if(transaction.isOnHold){
-        const status = this.statusAddress(transaction);
-        if(status){
-          return {name : 'Waiting Transaction', color : 'success'}
-        }else{
-          return  {name : 'Pending Transaction', color : 'warning'} ;
-        }
-    }else{
-      if(transaction.fee){
-        return {name : 'Crytozen Transaction', color : 'primary'}
-      }else{
-        return {name : 'External Transaction', color : 'secondary'}
+  currencyByChainId(transition: TransactionInterface): string {
+    if (transition.chainId === 3 || transition.chainId === 1) {
+      return "ETH";
+    } else {
+      return "BNB";
+    }
+  }
+
+  statusTransaction(transaction: TransactionInterface): any {
+    if (transaction.isOnHold) {
+      const status = this.statusAddress(transaction);
+      if (status) {
+        return { name: "Waiting Transaction", color: "success" };
+      } else {
+        return { name: "Pending Transaction", color: "warning" };
+      }
+    } else {
+      if (transaction.fee) {
+        return { name: "Crytozen Transaction", color: "primary" };
+      } else {
+        return { name: "External Transaction", color: "secondary" };
       }
     }
   }
 
-  statusAddress(transaction : TransactionInterface) : boolean {
+  statusAddress(transaction: TransactionInterface): boolean {
     const addressBook = this.getAddressBookByEmail(transaction);
-    if(addressBook){
+    if (addressBook) {
       return !!addressBook.address;
     }
     return false;
   }
 
-  getAddressBookByEmail(transaction: TransactionInterface) : AddressBookInterface | undefined {
+  getAddressBookByEmail(
+    transaction: TransactionInterface
+  ): AddressBookInterface | undefined {
     const addressBooks: AddressBookInterface[] = this.$store.getters[
       "getAddressBooks"
-      ];
+    ];
 
-    return addressBooks.find(
-      (a) => a.email === transaction.to
-    );
+    return addressBooks.find((a) => a.email === transaction.to);
   }
 
-  async decryptEmail(transaction : TransactionInterface) : Promise<void> {
+  async decryptEmail(transaction: TransactionInterface): Promise<void> {
     const web3 = this.$store.getters["getWeb3"] as Web3;
     const message = `We are requesting your signature again to encrypt the email address. Your signature won't be saved on the server`;
     const params = [message, window.ethereum.selectedAddress];
@@ -288,8 +312,13 @@ export default class TransactionHistory extends Vue {
       transaction.to,
       signature as string
     ).toString(CryptoJS.enc.Utf8);
-    console.log("this.$refs[`encrypted-email-${transaction.id}`]",this.$refs[`encrypted-email-${transaction.id}`]);
-    (this.$refs[`encrypted-email-${transaction.id}`]as any)[0].innerText = email;
+    console.log(
+      "this.$refs[`encrypted-email-${transaction.id}`]",
+      this.$refs[`encrypted-email-${transaction.id}`]
+    );
+    (this.$refs[
+      `encrypted-email-${transaction.id}`
+    ] as any)[0].innerText = email;
   }
 
   get isMobile(): boolean {
@@ -338,12 +367,9 @@ export default class TransactionHistory extends Vue {
     }
   }
 
-  shortSelectedAddress(address : string): string {
+  shortSelectedAddress(address: string): string {
     if (address)
-      return `${address.substring(
-        0,
-        6
-      )}....${address.substring(
+      return `${address.substring(0, 6)}....${address.substring(
         address.length - 4,
         address.length
       )}`;
@@ -366,8 +392,8 @@ export default class TransactionHistory extends Vue {
         window.ethereum.selectedAddress?.toLowerCase()
       )
         return "Current address";
-      else{
-        if(this.isMobile){
+      else {
+        if (this.isMobile) {
           return this.shortSelectedAddress(address);
         }
         return address;
