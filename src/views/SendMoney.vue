@@ -584,7 +584,9 @@
                               <v-list-item-content>
                                 <v-list-item-title
                                   class="primary--text text-subtitle-1"
-                                  >{{ item.value }}</v-list-item-title
+                                  >{{
+                                    item.value.toUpperCase()
+                                  }}</v-list-item-title
                                 >
                               </v-list-item-content>
                             </v-list-item>
@@ -866,7 +868,9 @@
                             <v-list-item-content>
                               <v-list-item-title
                                 class="primary--text text-subtitle-1"
-                                >{{ item.value }}</v-list-item-title
+                                >{{
+                                  item.value.toUpperCase()
+                                }}</v-list-item-title
                               >
                             </v-list-item-content>
                           </v-list-item>
