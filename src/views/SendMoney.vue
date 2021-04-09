@@ -584,7 +584,7 @@
                               <v-list-item-content>
                                 <v-list-item-title
                                   class="primary--text text-subtitle-1"
-                                  >{{ item.name }}</v-list-item-title
+                                  >{{ item.value }}</v-list-item-title
                                 >
                               </v-list-item-content>
                             </v-list-item>
@@ -866,7 +866,7 @@
                             <v-list-item-content>
                               <v-list-item-title
                                 class="primary--text text-subtitle-1"
-                                >{{ item.name }}</v-list-item-title
+                                >{{ item.value }}</v-list-item-title
                               >
                             </v-list-item-content>
                           </v-list-item>
@@ -1120,7 +1120,7 @@
                   <v-spacer></v-spacer>
 
                   <v-btn
-                    :href="`${detailUrl}${transaction.hash}`"
+                    :href="`${getTxDetailUrl(transaction.hash)}`"
                     target="_blank"
                     color="secondary"
                     outlined
@@ -1835,9 +1835,13 @@ export default class SendMoney extends Vue {
 
   getAmount(transaction: TransactionInterface): string {
     if (transaction.isToken) {
+      let decimals = transaction.tokenDecimal;
+      if (this.chainId !== 1 && this.chainId !== 3) {
+        decimals = 18;
+      }
       return `${(
         Number(transaction.value) /
-        10 ** Number(transaction.tokenDecimal)
+        10 ** Number(decimals)
       ).toString()} ${transaction.tokenName}`;
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;
@@ -1973,13 +1977,29 @@ export default class SendMoney extends Vue {
     }
   }
 
+  getTxDetailUrl(hash: string): string {
+    const chainId = this.$store.state.chainId;
+    switch (chainId) {
+      case 1:
+        return `https://etherscan.io/tx/${hash}`;
+      case 3:
+        return `https://ropsten.etherscan.io/tx/${hash}`;
+      case 64:
+        return `https://bscscan.com/tx/${hash}`;
+      case 97:
+        return `https://testnet.bscscan.com/tx/${hash}`;
+      default:
+        return `https://etherscan.io/tx/${hash}`;
+    }
+  }
+
   convertToUsd(eth: string): string {
     if (this.ethereumPrice && eth !== "NaN") {
       console.log("eth", eth);
       const currentPrice = this.ethereumPrice.current_price;
       console.log("currentPrice", currentPrice);
       const price = fromExponential(
-        new BigNumber(eth).times(currentPrice).toFixed(2)
+        new BigNumber(eth).times(currentPrice).toFixed(4)
       );
       console.log("priceInUsd", price);
       return price;
@@ -2292,6 +2312,7 @@ export default class SendMoney extends Vue {
           // console.log("amountFee", amountFee);
           const amount = new BigNumber(amountFee)
             .times(10 ** decimal)
+
             .toFixed();
           const realAmount = fromExponential(amount);
           console.log("realAmount22", realAmount);
@@ -2323,6 +2344,7 @@ export default class SendMoney extends Vue {
             Number(amountOutMin.toSignificant(6)) +
             Number(amountOutMin3.toSignificant(6))
           ).toFixed(4);
+          console.log("this.transactionReward", this.transactionReward);
           const tradeEth = new Trade(
             routeEth,
             new TokenAmount(
@@ -2334,7 +2356,7 @@ export default class SendMoney extends Vue {
             TradeType.EXACT_INPUT
           );
           const amountOutMinEth = tradeEth.minimumAmountOut(slippageTolerance);
-          this.transactionRewardInEth = amountOutMinEth.toSignificant();
+          this.transactionRewardInEth = amountOutMinEth.toSignificant(6);
         }
       } else {
         // const route = new Route(
@@ -2380,6 +2402,26 @@ export default class SendMoney extends Vue {
           Number(amountFee) +
           Number(web3.utils.fromWei(txFee.toFixed(), "ether"))
         ).toString();
+
+        const route3 = new Route(
+          [NinjaWETHPair],
+          WETH[NinjaWETHPair.chainId],
+          Ninja
+        );
+
+        const trade3 = new Trade(
+          route3,
+          new TokenAmount(
+            WETH[NinjaWETHPair.chainId],
+            web3.utils.toWei(this.transactionRewardInEth, "ether")
+          ),
+          TradeType.EXACT_INPUT
+        );
+        const slippageTolerance3 = new Percent("50", "10000");
+        const amountOutMin3 = trade3.minimumAmountOut(slippageTolerance3);
+
+        this.transactionReward = amountOutMin3.toSignificant(6);
+
         console.log(
           "usdusdtransactionRewardInEth",
           this.transactionRewardInEth

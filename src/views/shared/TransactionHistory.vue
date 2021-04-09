@@ -167,7 +167,7 @@
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4" class="text-right">
                   <v-btn
                     v-if="!transaction.isOnHold"
-                    :href="`${detailUrl}${transaction.hash}`"
+                    :href="`${getTxDetailUrl(transaction.hash)}`"
                     target="_blank"
                     color="secondary"
                     outlined
@@ -229,7 +229,7 @@ export default class TransactionHistory extends Vue {
   @Prop(String) readonly label!: string;
   @Prop(String) readonly currency!: string;
   loadingTransactions = false;
-  detailUrl = process.env.VUE_APP_DETAIL_URL;
+
   sendMoneyDialog = false;
 
   updateSendMoneyDialog(value: boolean): void {
@@ -251,6 +251,22 @@ export default class TransactionHistory extends Vue {
     }
   }
 
+  getTxDetailUrl(hash: string): string {
+    const chainId = this.$store.state.chainId;
+    switch (chainId) {
+      case 1:
+        return `https://etherscan.io/tx/${hash}`;
+      case 3:
+        return `https://ropsten.etherscan.io/tx/${hash}`;
+      case 64:
+        return `https://bscscan.com/tx/${hash}`;
+      case 97:
+        return `https://testnet.bscscan.com/tx/${hash}`;
+      default:
+        return `https://etherscan.io/tx/${hash}`;
+    }
+  }
+
   statusTransaction(transaction: TransactionInterface): any {
     if (transaction.isOnHold) {
       const status = this.statusAddress(transaction);
@@ -261,7 +277,7 @@ export default class TransactionHistory extends Vue {
       }
     } else {
       if (transaction.fee) {
-        return { name: "Crytozen Transaction", color: "primary" };
+        return { name: "Cryptozen Transaction", color: "primary" };
       } else {
         return { name: "External Transaction", color: "secondary" };
       }
@@ -325,6 +341,10 @@ export default class TransactionHistory extends Vue {
     return this.$vuetify.breakpoint.xsOnly;
   }
 
+  get chainId(): number {
+    return this.$store.state.chainId;
+  }
+
   toHumanDate(date: string): string {
     const interval = shleemy(date);
     return interval.forHumans;
@@ -332,16 +352,20 @@ export default class TransactionHistory extends Vue {
 
   getAmount(transaction: TransactionInterface): string {
     if (transaction.isToken) {
+      let decimals = transaction.tokenDecimal;
+      if (this.chainId !== 1 && this.chainId !== 3) {
+        decimals = 18;
+      }
       return `${(
         Number(transaction.value) /
-        10 ** Number(transaction.tokenDecimal)
+        10 ** Number(decimals)
       ).toString()} ${transaction.tokenName?.toUpperCase()}`;
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;
       return `${web3.utils.fromWei(
         Number(transaction.value).toString(),
         "ether"
-      )} ETH`;
+      )} ${this.currencyByChainId(transaction)}`;
     }
   }
 
@@ -425,7 +449,6 @@ export default class TransactionHistory extends Vue {
 
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
-      this.detailUrl = process.env.VUE_APP_DETAIL_URL;
       await this.getTransactions();
       this.getSyncTransactions();
     });
