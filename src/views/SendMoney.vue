@@ -1853,9 +1853,13 @@ export default class SendMoney extends Vue {
 
   getAmountReceipt(transaction: TransactionInterface): string {
     if (transaction.isToken) {
+      let decimals = transaction.tokenDecimal;
+      if (this.chainId !== 1 && this.chainId !== 3) {
+        decimals = 18;
+      }
       return `${(
         (Number(transaction.value) - Number(transaction.fee)) /
-        10 ** Number(transaction.tokenDecimal)
+        10 ** Number(decimals)
       ).toString()} ${transaction.tokenName}`;
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;
