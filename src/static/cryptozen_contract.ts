@@ -1,6 +1,6 @@
-const ROPSTEN = "0x11cbd1eb707fd652c6a98395960d422d9da5d430";
+const ROPSTEN = "0xc13588ff090dec50260eb2c9f3e405ce407a9e8b";
 const MAINNET = "";
-const BSC_TESTNET = "0xa09bbf8e372b9ee7519de2812cb1eeba8feedb32";
+const BSC_TESTNET = "0x3ddb757a8b21e196336931289c019ac3c18f3905";
 const BSC_MAINNET = "";
 
 const contract = (id: number) => {

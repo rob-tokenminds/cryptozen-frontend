@@ -73,7 +73,8 @@ const balances: BalanceInterface[] = [
     contractAddress: {
       ROPSTEN: "0x47d88fff2978a25787d618d22dc090a65651cdf9",
       MAINNET: "",
-      BSC_TESTNET: "0x289856272f27185433b9f9403516a254d2e2959e",
+      BSC_TESTNET: "",
+      // BSC_TESTNET: "0x289856272f27185433b9f9403516a254d2e2959e",
       BSC_MAINNET: "",
     },
     decimal: 18,

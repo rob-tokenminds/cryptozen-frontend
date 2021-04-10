@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { UserNotification } from ".";
+
 const BACKEND_URL = process.env.VUE_APP_BACKEND_URL;
 export class Fetcher {
   private static async get(
@@ -8,8 +9,7 @@ export class Fetcher {
     shouldAlert = true
   ): Promise<AxiosResponse> {
     try {
-      const axiosGet = await axios.get(`${BACKEND_URL}${path}`, config);
-      return axiosGet;
+      return await axios.get(`${BACKEND_URL}${path}`, config);
     } catch (error) {
       let message: any = "";
       if (error.response) {
