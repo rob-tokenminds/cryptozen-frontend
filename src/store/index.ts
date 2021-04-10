@@ -16,7 +16,7 @@ import bignumber from "bignumber.js";
 import fromExponential from "from-exponential";
 import cryptozen_contract from "@/static/cryptozen_contract";
 // import VuexPersistence from "vuex-persist";
-
+const StaticBalances = Balances;
 export interface updateCoinBalanceParams {
   web3: Web3;
   coin: BalanceInterface;
@@ -26,6 +26,7 @@ export interface storeInterface {
   selectedAddress: string;
   chainId: number;
   balances: BalanceInterface[];
+  reverseBalances: BalanceInterface[];
   words: string;
   profile: ProfileInterface | null;
   addressBooks: AddressBookInterface[];
@@ -79,6 +80,7 @@ const store: StoreOptions<storeInterface> = {
     selectedAddress: "",
     chainId: 1,
     balances: Balances,
+    reverseBalances: [],
     words: "",
     profile: null,
     addressBooks: [],
@@ -225,6 +227,119 @@ const store: StoreOptions<storeInterface> = {
         }
       }
     },
+    async updateReverseBalance({ state }) {
+      const balances = StaticBalances;
+      console.log("balances", balances);
+      const chainId = state.chainId;
+      let nodeUrl = process.env.VUE_APP_MAINNET_NODE_URL;
+      switch (chainId) {
+        case 1:
+          nodeUrl = process.env.VUE_APP_BNB_MAINNET_NODE_URL;
+          break;
+        case 3:
+          nodeUrl = process.env.VUE_APP_BNB_TESTNET_NODE_URL;
+          break;
+        case 97:
+          nodeUrl = process.env.VUE_APP_ROPSTEN_NODE_URL;
+          break;
+        case 56:
+          nodeUrl = process.env.VUE_APP_MAINNET_NODE_URL;
+          break;
+      }
+
+      for (const balance of balances) {
+        let shouldPush = false;
+        if (balance.value === "eth" || balance.value === "ninja") {
+          shouldPush = !(chainId === 1 || chainId === 3);
+        } else {
+          if (balance.value === "bnb") {
+            shouldPush = !(chainId === 97 || chainId === 56);
+          } else {
+            shouldPush = true;
+          }
+        }
+
+        if (shouldPush) {
+          state.reverseBalances.push({
+            name: balance.name,
+            value: balance.value,
+            contractAddress: balance.contractAddress,
+            decimal: balance.decimal,
+            mainCurrency: balance.mainCurrency,
+          });
+          // eslint-disable-next-line no-async-promise-executor
+          new Promise(async (resolve) => {
+            const web3 = new Web3(nodeUrl as string);
+
+            let currency;
+            if (balance.mainCurrency) {
+              console.log("state.selectedAddress", state.selectedAddress);
+              const balanceAmount = web3.utils.fromWei(
+                await web3.eth.getBalance(state.selectedAddress),
+                "ether"
+              );
+              currency = new CurrencyModel(
+                state.selectedAddress,
+                balanceAmount,
+                balance.value,
+                true,
+                false,
+                ""
+              );
+            } else {
+              const balanceData = balances.find((b) => b.name === balance.name);
+              let contractAddress = balanceData?.contractAddress?.MAINNET;
+              let decimal = 18;
+              switch (chainId) {
+                case 1:
+                  contractAddress = balanceData?.contractAddress?.BSC_MAINNET;
+                  break;
+                case 3:
+                  contractAddress = balanceData?.contractAddress?.BSC_TESTNET;
+
+                  break;
+                case 97:
+                  contractAddress = balanceData?.contractAddress?.ROPSTEN;
+                  decimal = balance.decimal as number;
+                  break;
+                case 56:
+                  contractAddress = balanceData?.contractAddress?.MAINNET;
+                  decimal = balance.decimal as number;
+                  break;
+              }
+              const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
+              const balanceAmount = await contract.methods
+                .balanceOf(state.selectedAddress)
+                .call({ from: state.selectedAddress });
+              currency = new CurrencyModel(
+                state.selectedAddress,
+                (Number(balanceAmount) / 10 ** decimal).toString(),
+                balance.value,
+                true,
+                false,
+                ""
+              );
+            }
+            if (currency) {
+              const index = state.reverseBalances.findIndex(
+                (r) => r.name === balance.name
+              );
+              if (index >= 0) {
+                state.reverseBalances.splice(index, 1, {
+                  name: balance.name,
+                  value: balance.value,
+                  contractAddress: balance.contractAddress,
+                  decimal: balance.decimal,
+                  mainCurrency: balance.mainCurrency,
+                  currency,
+                });
+              }
+            }
+            resolve("true");
+          });
+        }
+      }
+    },
     async approve({ state }, coin: BalanceInterface) {
       const web3 = state.web3;
       if (web3) {
@@ -299,8 +414,9 @@ const store: StoreOptions<storeInterface> = {
     updateSelectedAddress({ state }, address: string) {
       state.selectedAddress = address;
     },
-    async updateChainId({ state }, web3: Web3) {
+    async updateChainId({ state, dispatch }, web3: Web3) {
       state.chainId = await web3.eth.getChainId();
+      await dispatch("updateReverseBalance");
       if (state.chainId !== 1 && state.chainId !== 3) {
         const index = state.balances.findIndex((b) => b.name === "Ethereum");
         if (index >= 0) {

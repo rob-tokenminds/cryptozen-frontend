@@ -71,13 +71,43 @@
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="white--text"
-              ><h3>Balances</h3></v-list-item-title
+              ><h3>{{ chainName }} Balances</h3></v-list-item-title
             >
           </v-list-item-content>
         </v-list-item>
 
         <v-list-item
           v-for="balance in $store.state.balances"
+          :key="balance.value"
+          :to="`/balance/${balance.value}`"
+        >
+          <v-list-item-avatar tile>
+            <v-img :src="require(`./assets/${balance.value}.svg`)"></v-img>
+          </v-list-item-avatar>
+          <v-list-item-content>
+            <v-list-item-title class="white--text text-subtitle-1"
+              >{{
+                balance.currency
+                  ? getHrNumber(Number(balance.currency.balance))
+                  : "0"
+              }}
+              {{ getBalanceName(balance) }}</v-list-item-title
+            >
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+
+      <v-list>
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="white--text"
+              ><h3>{{ chainNameReverse }} Balances</h3></v-list-item-title
+            >
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item
+          v-for="balance in $store.state.reverseBalances"
           :key="balance.value"
           :to="`/balance/${balance.value}`"
         >
@@ -206,6 +236,22 @@ export default class App extends Vue {
   sendMoneyDialog = false;
   web3!: Web3;
 
+  get chainName(): string {
+    if (this.chainId === 1 || this.chainId === 3) {
+      return "Ethereum";
+    } else {
+      return "Binance";
+    }
+  }
+
+  get chainNameReverse(): string {
+    if (this.chainId === 1 || this.chainId === 3) {
+      return "Binance";
+    } else {
+      return "Ethereum";
+    }
+  }
+
   get chainId(): number {
     return this.$store.state.chainId;
   }
@@ -314,13 +360,14 @@ export default class App extends Vue {
           //     data: { id: profile.id },
           //   })
           // );
-
-          await this.$store.dispatch("updateChainId", this.web3);
           await this.$store.dispatch(
             "updateSelectedAddress",
             window.ethereum.selectedAddress
           );
+          await this.$store.dispatch("updateChainId", this.web3);
+
           const balances: BalanceInterface[] = this.$store.state.balances;
+          // await this.$store.dispatch("updateReverseBalance");
           for (const balance of balances) {
             await this.$store.dispatch("updateCoinBalance", balance);
           }
