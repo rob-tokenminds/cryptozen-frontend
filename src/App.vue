@@ -19,7 +19,7 @@
             large
             color="secondary"
             block
-            >Send Money</v-btn
+            >Send Crypto</v-btn
           >
         </v-list-item>
       </v-list>
@@ -62,7 +62,7 @@
 
         <v-list-item>
           <v-btn class="mt-2" to="/rewards" large color="secondary" block>
-            Reward</v-btn
+            Claim Rewards</v-btn
           >
         </v-list-item>
       </v-list>

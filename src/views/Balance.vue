@@ -7,7 +7,9 @@
             >Send {{ getBalance.name }}</v-btn
           >
         </template>
-        <span>Please switch the network</span>
+        <span
+          >Please switch the network to {{ chainNameReverse }} on Metamask</span
+        >
       </v-tooltip>
       <v-btn
         v-else
@@ -174,12 +176,24 @@ export default class Balance extends Vue {
     else return "";
   }
 
+  get chainId(): number {
+    return this.$store.state.chainId;
+  }
+
   get allowancePending(): boolean {
     const balance = this.getBalance;
     if (balance.currency) {
       return balance.currency.allowancePending;
     }
     return false;
+  }
+
+  get chainNameReverse(): string {
+    if (this.chainId === 1 || this.chainId === 3) {
+      return "Binance";
+    } else {
+      return "Ethereum";
+    }
   }
 
   get isReversed(): boolean {

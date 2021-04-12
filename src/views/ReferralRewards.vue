@@ -47,7 +47,7 @@
     >
       <v-container>
         <v-alert dense type="info">
-          Claimable reward will be updated at the end of the week
+          Claimable rewards will be updated at the end of the week
         </v-alert>
         <v-row class="mt-2">
           <v-col cols="12" md="3" sm="3" lg="3" xl="3">
@@ -65,7 +65,7 @@
             <v-text-field
               :loading="loadingReward"
               dense
-              label="Claimable Reward"
+              label="Claimable Rewards"
               outlined
               readonly
               :value="claimableReward"
@@ -78,7 +78,7 @@
               color="secondary"
               :disabled="!claimableReward || loadingClaimReward"
               :loading="loadingClaimReward"
-              >Claim Reward</v-btn
+              >Claim Rewards</v-btn
             >
           </v-col>
         </v-row>
