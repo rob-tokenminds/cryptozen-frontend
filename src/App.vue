@@ -369,7 +369,7 @@ export default class App extends Vue {
           if (!profile) {
             throw new Error(`Token is expired, will re-login`);
           }
-          this.$store.state.isLogin = true;
+
           // this.$socket.send(
           //   JSON.stringify({
           //     event: "notification",
@@ -387,6 +387,7 @@ export default class App extends Vue {
           for (const balance of balances) {
             await this.$store.dispatch("updateCoinBalance", balance);
           }
+          this.$store.state.isLogin = true;
         } catch (e) {
           console.log("e", e);
           alert(`Token is expired, will re-login`);

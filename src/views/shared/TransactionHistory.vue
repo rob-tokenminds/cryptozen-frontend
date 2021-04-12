@@ -29,7 +29,7 @@
           >{{ toHumanDate(transaction.created_at) }}
         </v-card-subtitle>
         <v-spacer></v-spacer>
-        <v-avatar size="50">
+        <v-avatar class="mr-2" size="40">
           <v-img
             :src="
               require(`../../assets/${currencyByChainId(
@@ -363,7 +363,7 @@ export default class TransactionHistory extends Vue {
   getAmount(transaction: TransactionInterface): string {
     if (transaction.isToken) {
       let decimals = transaction.tokenDecimal;
-      if (this.chainId !== 1 && this.chainId !== 3) {
+      if (transaction.chainId !== 1 && transaction.chainId !== 3) {
         decimals = 18;
       }
       return `${(

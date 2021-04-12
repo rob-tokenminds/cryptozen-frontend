@@ -41,6 +41,7 @@ export interface storeInterface {
   isLogin: boolean;
   tier: [];
   rewards: RewardInterface[];
+  claimableReward: number;
 }
 // const vuexLocal = new VuexPersistence<storeInterface>({
 //   storage: window.localStorage,
@@ -78,7 +79,7 @@ const store: StoreOptions<storeInterface> = {
   state: {
     currencyBalances: [],
     selectedAddress: "",
-    chainId: 1,
+    chainId: 0,
     balances: Balances,
     reverseBalances: [],
     words: "",
@@ -95,6 +96,7 @@ const store: StoreOptions<storeInterface> = {
     isLogin: false,
     tier: [],
     rewards: [],
+    claimableReward: 0,
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -707,6 +709,25 @@ const store: StoreOptions<storeInterface> = {
           state.rewards.push(reward);
         }
       }
+      let web3 = state.web3 as Web3;
+      console.log("state.chainId", state.chainId);
+      let cryptozenContract = cryptozen_contract(state.chainId);
+      if (state.chainId !== 1 && state.chainId !== 3) {
+        if (state.chainId === 56) {
+          web3 = new Web3(process.env.VUE_APP_MAINNET_NODE_URL as string);
+          cryptozenContract = cryptozen_contract(1);
+        } else {
+          web3 = new Web3(process.env.VUE_APP_ROPSTEN_NODE_URL as string);
+          cryptozenContract = cryptozen_contract(3);
+        }
+      }
+      console.log("cryptozenContract", cryptozenContract);
+      const contract = new web3.eth.Contract(cryptozenabi, cryptozenContract);
+      const claimableReward = await contract.methods
+        .getReward()
+        .call({ from: state.selectedAddress });
+      console.log("claimableReward", claimableReward);
+      state.claimableReward = claimableReward / 10 ** 18;
     },
   },
   getters: {
