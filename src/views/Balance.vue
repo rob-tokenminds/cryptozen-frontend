@@ -1,9 +1,18 @@
 <template>
   <div>
     <v-container>
+      <v-tooltip bottom v-if="isReversed">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn class="ma-1" color="grey" v-bind="attrs" v-on="on"
+            >Send {{ getBalance.name }}</v-btn
+          >
+        </template>
+        <span>Please switch the network</span>
+      </v-tooltip>
       <v-btn
+        v-else
         class="ma-1"
-        :disabled="!allowance"
+        :disabled="!allowance && isReversed"
         color="secondary"
         @click="sendMoneyDialog = true"
         >Send {{ getBalance.name }}</v-btn
@@ -18,9 +27,10 @@
       <v-btn disabled color="secondary" class="ml-1"
         >Lock Compound Coming soon</v-btn
       >
+
       <v-btn
         class="ma-1"
-        v-if="!allowance"
+        v-if="!allowance && !isReversed"
         :disabled="allowancePending"
         @click="approve"
         color="secondary"
@@ -144,7 +154,7 @@ export default class Balance extends Vue {
   }
 
   get getBalance(): BalanceInterface {
-    const balance = this.$store.state.balances.find(
+    let balance = this.$store.state.balances.find(
       (b: BalanceInterface) => b.value === this.$route.params.coin
     );
     return balance;
@@ -170,6 +180,12 @@ export default class Balance extends Vue {
       return balance.currency.allowancePending;
     }
     return false;
+  }
+
+  get isReversed(): boolean {
+    return (
+      Number(this.$route.params.chain_id) !== Number(this.$store.state.chainId)
+    );
   }
 }
 

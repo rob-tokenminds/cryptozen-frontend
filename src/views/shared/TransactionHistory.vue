@@ -29,6 +29,16 @@
           >{{ toHumanDate(transaction.created_at) }}
         </v-card-subtitle>
         <v-spacer></v-spacer>
+        <v-avatar size="50">
+          <v-img
+            :src="
+              require(`../../assets/${currencyByChainId(
+                transaction
+              ).toLowerCase()}.svg`)
+            "
+          >
+          </v-img>
+        </v-avatar>
         <v-chip :color="statusTransaction(transaction).color">
           {{ statusTransaction(transaction).name }}</v-chip
         >
@@ -243,8 +253,8 @@ export default class TransactionHistory extends Vue {
     );
   }
 
-  currencyByChainId(transition: TransactionInterface): string {
-    if (transition.chainId === 3 || transition.chainId === 1) {
+  currencyByChainId(transaction: TransactionInterface): string {
+    if (transaction.chainId === 3 || transaction.chainId === 1) {
       return "ETH";
     } else {
       return "BNB";
@@ -433,18 +443,32 @@ export default class TransactionHistory extends Vue {
     }
   }
 
+  @Watch("$route.params.chain_id")
+  watchRouteParamschain_id(value: string): void {
+    if (value) {
+      this.getTransactions();
+      this.getSyncTransactions();
+    }
+  }
+
   get transactions(): TransactionInterface[] {
-    const transactions: TransactionInterface[] = this.$store.getters[
+    let transactions: TransactionInterface[] = this.$store.getters[
       "getTransactions"
     ];
     if (this.$route.params.coin) {
-      return transactions.filter(
+      transactions = transactions.filter(
         (t) => t.tokenSymbol === this.$route.params.coin
       );
     }
-    return transactions.sort((t, t2) => {
+    if (this.$route.params.chain_id) {
+      transactions = transactions.filter(
+        (t) => Number(t.chainId) === Number(this.$route.params.chain_id)
+      );
+    }
+    transactions = transactions.sort((t, t2) => {
       return t2.timestamp - t.timestamp;
     });
+    return transactions;
   }
 
   async mounted(): Promise<void> {
@@ -491,6 +515,10 @@ export default class TransactionHistory extends Vue {
     } catch (e) {
       this.loadingTransactions = false;
     }
+  }
+
+  get isReversed(): boolean {
+    return !!this.$route.params.chain_id;
   }
 }
 

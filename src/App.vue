@@ -79,7 +79,7 @@
         <v-list-item
           v-for="balance in $store.state.balances"
           :key="balance.value"
-          :to="`/balance/${balance.value}`"
+          :to="`/balance/${balance.value}/${chainId}`"
         >
           <v-list-item-avatar tile>
             <v-img :src="require(`./assets/${balance.value}.svg`)"></v-img>
@@ -109,7 +109,7 @@
         <v-list-item
           v-for="balance in $store.state.reverseBalances"
           :key="balance.value"
-          :to="`/balance/${balance.value}`"
+          :to="`/balance/${balance.value}/${chainReverseId}`"
         >
           <v-list-item-avatar tile>
             <v-img :src="require(`./assets/${balance.value}.svg`)"></v-img>
@@ -250,6 +250,22 @@ export default class App extends Vue {
     } else {
       return "Ethereum";
     }
+  }
+
+  get chainReverseId(): number {
+    if (this.chainId === 1) {
+      return 56;
+    }
+    if (this.chainId === 3) {
+      return 97;
+    }
+    if (this.chainId === 56) {
+      return 1;
+    }
+    if (this.chainId === 97) {
+      return 3;
+    }
+    return 56;
   }
 
   get chainId(): number {
