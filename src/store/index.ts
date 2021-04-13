@@ -174,7 +174,7 @@ const store: StoreOptions<storeInterface> = {
           } else {
             if (coin.decimal && coin.contractAddress && reverseDecimal) {
               let decimal = coin.decimal;
-              let skip = false;
+
               let contractAddress = coin.contractAddress?.MAINNET;
               let reverseContractAddress = coin.contractAddress?.BSC_MAINNET;
               if (state.chainId === 3) {
@@ -182,21 +182,23 @@ const store: StoreOptions<storeInterface> = {
                 reverseContractAddress = coin.contractAddress?.BSC_TESTNET;
               }
               if (state.chainId === 97) {
-                if (coin.value === "ninja") {
-                  skip = true;
-                }
                 contractAddress = coin.contractAddress?.BSC_TESTNET;
+                if (coin.value === "ninja") {
+                  contractAddress = coin.contractAddress?.ROPSTEN;
+                }
+
                 reverseContractAddress = coin.contractAddress?.ROPSTEN;
                 decimal = 18;
               }
               if (state.chainId === 56) {
-                if (coin.value === "ninja") {
-                  skip = true;
-                }
                 contractAddress = coin.contractAddress?.BSC_MAINNET;
+                if (coin.value === "ninja") {
+                  contractAddress = coin.contractAddress?.MAINNET;
+                }
                 reverseContractAddress = coin.contractAddress?.MAINNET;
                 decimal = 18;
               }
+              const skip = false;
               if (!skip) {
                 const contract = new web3.eth.Contract(
                   ERC20Abi,
@@ -257,7 +259,11 @@ const store: StoreOptions<storeInterface> = {
                         .toBN(unscaledBalance)
                         .div(web3.utils.toBN(10 ** decimal));
                       let reverseBalance;
-                      if (reverseContractAddress && reverseDecimal) {
+                      if (
+                        reverseContractAddress &&
+                        reverseDecimal &&
+                        coin.value !== "ninja"
+                      ) {
                         const reverseContract = new reverseWeb3.eth.Contract(
                           ERC20Abi,
                           reverseContractAddress

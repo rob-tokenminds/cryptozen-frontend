@@ -393,14 +393,14 @@ export default class App extends Vue {
   }
 
   getBalanceName(balance: BalanceInterface): string {
-    if (balance.mainCurrency) {
-      if (this.chainId === 1 || this.chainId === 3) {
-        return balance.value.toUpperCase();
-      } else {
-        return "BNB";
-      }
-    }
-    return balance.name;
+    // if (balance.mainCurrency) {
+    //   if (this.chainId === 1 || this.chainId === 3) {
+    //     return balance.value.toUpperCase();
+    //   } else {
+    //     return "BNB";
+    //   }
+    // }
+    return balance.value.toUpperCase();
   }
 
   getBalance(balance: BalanceInterface): string {
