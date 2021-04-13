@@ -330,7 +330,10 @@ export default class AddressBook extends Vue {
   }
 
   get addressBookList(): AddressBookInterface[] {
-    return this.$store.getters["getAddressBooks"];
+    const addressBook = this.$store.getters[
+      "getAddressBooks"
+    ] as AddressBookInterface[];
+    return addressBook.filter((a) => a.chainId === this.$store.state.chainId);
   }
 
   async mounted(): Promise<void> {

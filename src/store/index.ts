@@ -544,7 +544,8 @@ const store: StoreOptions<storeInterface> = {
         params.email,
         params.sendEmail,
         params.plainEmail,
-        params.type
+        params.type,
+        state.chainId
       );
       state.addressBooks.push(addressBookData);
       return addressBookData;

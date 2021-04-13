@@ -1424,7 +1424,8 @@ export default class SendMoney extends Vue {
 
   get addressBooksWallet(): AddressBookInterface[] {
     return this.$store.getters["getAddressBooks"].filter(
-      (a: AddressBookInterface) => a.type === "wallet"
+      (a: AddressBookInterface) =>
+        a.type === "wallet" && a.chainId === this.chainId
     );
   }
 
@@ -1434,7 +1435,9 @@ export default class SendMoney extends Vue {
       if (this.selectedCurrency && this.selectedCurrency?.value) {
         return (
           a.currency.toLowerCase() ===
-            this.selectedCurrency.value.toLowerCase() && a.address
+            this.selectedCurrency.value.toLowerCase() &&
+          a.address &&
+          a.chainId === this.chainId
         );
       } else {
         return false;

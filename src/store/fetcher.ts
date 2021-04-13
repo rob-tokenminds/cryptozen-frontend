@@ -126,7 +126,8 @@ export class Fetcher {
     email: string,
     sendEmail: boolean,
     plainEmail: string,
-    type: string
+    type: string,
+    chainId: number
   ): Promise<AddressBookInterface> {
     const fetch = await Fetcher.post(
       `/user/address-book/create`,
@@ -138,6 +139,7 @@ export class Fetcher {
         sendEmail,
         plainEmail,
         type,
+        chainId,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -464,6 +466,7 @@ export interface AddressBookInterface {
   created_at: Date;
   updated_at: Date;
   type: "wallet" | "recipient";
+  chainId: number;
 }
 
 export interface TransactionInterface {
