@@ -76,17 +76,17 @@
             </v-btn>
           </template>
           <v-list>
-            <!--            <v-list-item @click="changeToEthereumChain()">-->
-            <!--              <v-list-item-avatar tile>-->
-            <!--                <v-img :src="require(`../../assets/eth.svg`)"></v-img>-->
-            <!--              </v-list-item-avatar>-->
-            <!--              <v-list-item-content>-->
-            <!--                <v-list-item-title class="primary&#45;&#45;text"-->
-            <!--                  >Add Ethereum Wallet</v-list-item-title-->
-            <!--                >-->
-            <!--              </v-list-item-content>-->
-            <!--            </v-list-item>-->
-            <!--            <v-divider></v-divider>-->
+            <v-list-item @click="changeToEthereumChain()">
+              <v-list-item-avatar tile>
+                <v-img :src="require(`../../assets/eth.svg`)"></v-img>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title class="primary--text"
+                  >Add Ethereum Wallet</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
 
             <v-list-item @click="changeToBinanceChain()">
               <v-list-item-avatar tile>
@@ -229,46 +229,47 @@ export default class ProfileMenu extends Vue {
   }
 
   async changeToEthereumChain(): Promise<void> {
-    const web3 = this.$store.getters["getWeb3"] as Web3;
-    // web3.eth.defaultChain = "ropsten";
-    console.log("web3", web3);
-    const currentProvider = web3.currentProvider;
-    const chainData = ChainIds.find(
-      (id) => id.chainId === Number(process.env.VUE_APP_ETHEREUM_SELECTED_CHAIN)
-    );
-    if (chainData) {
-      const params = [
-        {
-          chainId: web3.utils.toHex(
-            Number(process.env.VUE_APP_ETHEREUM_SELECTED_CHAIN)
-          ),
-          chainName: chainData.name,
-          rpcUrls: [chainData.rpcUrl],
-          nativeCurrency: {
-            name: chainData.currencySymbol,
-            symbol: chainData.currencySymbol,
-            decimals: 18,
-          },
-          blockExplorerUrls: [chainData.blockExplorer],
-        },
-      ];
-      await new Promise((resolve, reject) => {
-        (currentProvider as AbstractProvider).sendAsync(
-          {
-            jsonrpc: "2.0",
-            method: "wallet_addEthereumChain",
-            params,
-          },
-          (error, result) => {
-            if (error) {
-              resolve(false);
-            } else {
-              resolve("true");
-            }
-          }
-        );
-      });
-    } else alert("chain data not found !");
+    alert("Please change the network directly on Metamask");
+    // const web3 = this.$store.getters["getWeb3"] as Web3;
+    // // web3.eth.defaultChain = "ropsten";
+    // console.log("web3", web3);
+    // const currentProvider = web3.currentProvider;
+    // const chainData = ChainIds.find(
+    //   (id) => id.chainId === Number(process.env.VUE_APP_ETHEREUM_SELECTED_CHAIN)
+    // );
+    // if (chainData) {
+    //   const params = [
+    //     {
+    //       chainId: web3.utils.toHex(
+    //         Number(process.env.VUE_APP_ETHEREUM_SELECTED_CHAIN)
+    //       ),
+    //       chainName: chainData.name,
+    //       rpcUrls: [chainData.rpcUrl],
+    //       nativeCurrency: {
+    //         name: chainData.currencySymbol,
+    //         symbol: chainData.currencySymbol,
+    //         decimals: 18,
+    //       },
+    //       blockExplorerUrls: [chainData.blockExplorer],
+    //     },
+    //   ];
+    //   await new Promise((resolve, reject) => {
+    //     (currentProvider as AbstractProvider).sendAsync(
+    //       {
+    //         jsonrpc: "2.0",
+    //         method: "wallet_addEthereumChain",
+    //         params,
+    //       },
+    //       (error, result) => {
+    //         if (error) {
+    //           resolve(false);
+    //         } else {
+    //           resolve("true");
+    //         }
+    //       }
+    //     );
+    //   });
+    // } else alert("chain data not found !");
   }
 
   async changeToBinanceChain(): Promise<void> {
