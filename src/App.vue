@@ -71,61 +71,86 @@
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="white--text"
-              ><h3>{{ chainName }} Balances</h3></v-list-item-title
+              ><h3>Balances</h3></v-list-item-title
             >
           </v-list-item-content>
         </v-list-item>
 
         <v-list-item
-          v-for="balance in $store.state.balances"
+          dense
+          v-for="balance in balances"
           :key="balance.value"
-          :to="`/balance/${balance.value}/${chainId}`"
+          :to="`/balance/${balance.value}`"
+          class=""
         >
           <v-list-item-avatar tile>
             <v-img :src="require(`./assets/${balance.value}.svg`)"></v-img>
           </v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title class="white--text text-subtitle-1"
-              >{{
-                balance.currency
-                  ? getHrNumber(Number(balance.currency.balance))
-                  : "0"
-              }}
+              >{{ getBalanceTotal(balance) }}
               {{ getBalanceName(balance) }}</v-list-item-title
             >
+
+            <v-list-item-content>
+              <v-list-item
+                dense
+                v-if="balance.value !== 'bnb'"
+                :to="`/balance/${balance.value}/${ethereumChainId}`"
+              >
+                <v-list-item-subtitle class="white--text">
+                  <v-avatar size="20">
+                    <v-img :src="require(`./assets/eth.svg`)"></v-img
+                  ></v-avatar>
+                  {{ shortSelectedAddress }}</v-list-item-subtitle
+                >
+              </v-list-item>
+              <v-list-item
+                dense
+                v-if="balance.value !== 'eth' && balance.value !== 'ninja'"
+                :to="`/balance/${balance.value}/${binanceChainId}`"
+              >
+                <v-list-item-subtitle class="white--text">
+                  <v-avatar size="20">
+                    <v-img :src="require(`./assets/bnb.svg`)"></v-img
+                  ></v-avatar>
+                  {{ shortSelectedAddress }}</v-list-item-subtitle
+                >
+              </v-list-item>
+            </v-list-item-content>
           </v-list-item-content>
         </v-list-item>
       </v-list>
 
-      <v-list>
-        <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="white--text"
-              ><h3>{{ chainNameReverse }} Balances</h3></v-list-item-title
-            >
-          </v-list-item-content>
-        </v-list-item>
+      <!--      <v-list>-->
+      <!--        <v-list-item>-->
+      <!--          <v-list-item-content>-->
+      <!--            <v-list-item-title class="white&#45;&#45;text"-->
+      <!--              ><h3>{{ chainNameReverse }} Balances</h3></v-list-item-title-->
+      <!--            >-->
+      <!--          </v-list-item-content>-->
+      <!--        </v-list-item>-->
 
-        <v-list-item
-          v-for="balance in $store.state.reverseBalances"
-          :key="balance.value"
-          :to="`/balance/${balance.value}/${chainReverseId}`"
-        >
-          <v-list-item-avatar tile>
-            <v-img :src="require(`./assets/${balance.value}.svg`)"></v-img>
-          </v-list-item-avatar>
-          <v-list-item-content>
-            <v-list-item-title class="white--text text-subtitle-1"
-              >{{
-                balance.currency
-                  ? getHrNumber(Number(balance.currency.balance))
-                  : "0"
-              }}
-              {{ getBalanceName(balance) }}</v-list-item-title
-            >
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
+      <!--        <v-list-item-->
+      <!--          v-for="balance in $store.state.reverseBalances"-->
+      <!--          :key="balance.value"-->
+      <!--          :to="`/balance/${balance.value}/${chainReverseId}`"-->
+      <!--        >-->
+      <!--          <v-list-item-avatar tile>-->
+      <!--            <v-img :src="require(`./assets/${balance.value}.svg`)"></v-img>-->
+      <!--          </v-list-item-avatar>-->
+      <!--          <v-list-item-content>-->
+      <!--            <v-list-item-title class="white&#45;&#45;text text-subtitle-1"-->
+      <!--              >{{-->
+      <!--                balance.currency-->
+      <!--                  ? getHrNumber(Number(balance.currency.balance))-->
+      <!--                  : "0"-->
+      <!--              }}-->
+      <!--              {{ getBalanceName(balance) }}</v-list-item-title-->
+      <!--            >-->
+      <!--          </v-list-item-content>-->
+      <!--        </v-list-item>-->
+      <!--      </v-list>-->
     </v-navigation-drawer>
 
     <v-dialog
@@ -236,6 +261,39 @@ export default class App extends Vue {
   sendMoneyDialog = false;
   web3!: Web3;
 
+  getBalanceTotal(balance: BalanceInterface): string {
+    return balance.currency
+      ? this.getHrNumber(
+          Number(balance.currency.balance) +
+            Number(
+              balance.currency.balanceReverse
+                ? balance.currency.balanceReverse
+                : 0
+            )
+        )
+      : "0";
+  }
+
+  get balances(): BalanceInterface[] {
+    return this.$store.state.balances as BalanceInterface[];
+  }
+
+  get selectedAddress(): string {
+    return this.$store.getters["getSelectedAddress"];
+  }
+
+  get shortSelectedAddress(): string {
+    if (this.selectedAddress)
+      return `${this.selectedAddress.substring(
+        0,
+        6
+      )}....${this.selectedAddress.substring(
+        this.selectedAddress.length - 4,
+        this.selectedAddress.length
+      )}`;
+    else return "0x...00";
+  }
+
   get chainName(): string {
     if (this.chainId === 1 || this.chainId === 3) {
       return "Ethereum";
@@ -249,6 +307,22 @@ export default class App extends Vue {
       return "Binance";
     } else {
       return "Ethereum";
+    }
+  }
+
+  get chainIconReverse(): string {
+    if (this.chainId === 1 || this.chainId === 3) {
+      return "bnb";
+    } else {
+      return "eth";
+    }
+  }
+
+  get chainIcon(): string {
+    if (this.chainId === 1 || this.chainId === 3) {
+      return "eth";
+    } else {
+      return "bnb";
     }
   }
 
@@ -266,6 +340,26 @@ export default class App extends Vue {
       return 3;
     }
     return 56;
+  }
+
+  get binanceChainId(): number {
+    if (this.chainId === 1) {
+      return 56;
+    }
+    if (this.chainId === 3) {
+      return 97;
+    }
+    return this.chainId;
+  }
+
+  get ethereumChainId(): number {
+    if (this.chainId === 56) {
+      return 1;
+    }
+    if (this.chainId === 97) {
+      return 3;
+    }
+    return this.chainId;
   }
 
   get chainId(): number {

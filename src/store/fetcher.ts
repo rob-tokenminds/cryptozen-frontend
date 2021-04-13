@@ -381,6 +381,24 @@ export class Fetcher {
     });
     return fetch.data;
   }
+
+  static async newClaimReward(
+    token: string,
+    hash: string,
+    chainId: number,
+    amount: string
+  ): Promise<TransactionInterface> {
+    const fetch = await Fetcher.post(
+      `/user/claim-reward/new`,
+      {
+        hash,
+        chainId,
+        amount,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return fetch.data;
+  }
 }
 
 export interface RewardInterface {
@@ -474,4 +492,5 @@ export interface TransactionInterface {
   fee: string;
   isOnHold: boolean;
   chainId: number;
+  isClaimReward: boolean;
 }

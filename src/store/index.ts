@@ -124,86 +124,125 @@ const store: StoreOptions<storeInterface> = {
   },
   actions: {
     async updateCoinBalance({ commit, state }, coin: BalanceInterface) {
-      const web3 = state.web3;
-      if (web3) {
-        if (coin.mainCurrency) {
-          await web3.eth
-            .getBalance(state.selectedAddress)
-            .then(async (balanceInWei) => {
-              const ethBalance = new CurrencyModel(
-                state.selectedAddress,
-                web3.utils.fromWei(balanceInWei, "ether"),
-                coin.value,
-                true,
-                false,
-                ""
-              );
-              commit("pushCurrencyBalances", ethBalance);
-              commit(
-                "pushBalance",
-                Object.assign(coin, { currency: ethBalance })
-              );
-            });
-        } else {
-          if (coin.decimal && coin.contractAddress) {
-            let decimal = coin.decimal;
-            let skip = false;
-            let contractAddress = coin.contractAddress?.MAINNET;
-            if (state.chainId === 3) {
-              contractAddress = coin.contractAddress?.ROPSTEN;
-            }
-            if (state.chainId === 97) {
-              if (coin.value === "ninja") {
-                skip = true;
+      if (state.chainId) {
+        let web3 = state.web3;
+        let reverseNodeUrl = process.env.VUE_APP_MAINNET_NODE_URL as string;
+        let reverseDecimal = coin.decimal;
+        switch (state.chainId) {
+          case 1:
+            reverseNodeUrl = process.env.VUE_APP_BNB_MAINNET_NODE_URL as string;
+            reverseDecimal = 18;
+            break;
+          case 3:
+            reverseNodeUrl = process.env.VUE_APP_BNB_TESTNET_NODE_URL as string;
+            reverseDecimal = 18;
+            break;
+          case 56:
+            reverseNodeUrl = process.env.VUE_APP_MAINNET_NODE_URL as string;
+            break;
+          case 97:
+            reverseNodeUrl = process.env.VUE_APP_ROPSTEN_NODE_URL as string;
+            break;
+        }
+        console.log("coin", coin);
+        console.log("coinnodeUrl", reverseNodeUrl);
+        const reverseWeb3 = new Web3(reverseNodeUrl);
+        if (!coin.chainIds.find((c) => c === state.chainId)) {
+          web3 = reverseWeb3;
+        }
+        if (web3) {
+          if (coin.mainCurrency) {
+            await web3.eth
+              .getBalance(state.selectedAddress)
+              .then(async (balanceInWei) => {
+                if (web3) {
+                  const ethBalance = new CurrencyModel(
+                    state.selectedAddress,
+                    web3.utils.fromWei(balanceInWei, "ether"),
+                    coin.value,
+                    true,
+                    false,
+                    ""
+                  );
+                  commit("pushCurrencyBalances", ethBalance);
+                  commit(
+                    "pushBalance",
+                    Object.assign(coin, { currency: ethBalance })
+                  );
+                }
+              });
+          } else {
+            if (coin.decimal && coin.contractAddress && reverseDecimal) {
+              let decimal = coin.decimal;
+              let skip = false;
+              let contractAddress = coin.contractAddress?.MAINNET;
+              let reverseContractAddress = coin.contractAddress?.BSC_MAINNET;
+              if (state.chainId === 3) {
+                contractAddress = coin.contractAddress?.ROPSTEN;
+                reverseContractAddress = coin.contractAddress?.BSC_TESTNET;
               }
-              contractAddress = coin.contractAddress?.BSC_TESTNET;
-              decimal = 18;
-            }
-            if (state.chainId === 56) {
-              if (coin.value === "ninja") {
-                skip = true;
+              if (state.chainId === 97) {
+                if (coin.value === "ninja") {
+                  skip = true;
+                }
+                contractAddress = coin.contractAddress?.BSC_TESTNET;
+                reverseContractAddress = coin.contractAddress?.ROPSTEN;
+                decimal = 18;
               }
-              contractAddress = coin.contractAddress?.BSC_MAINNET;
-              decimal = 18;
-            }
-            if (!skip) {
-              const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
-              await contract.methods
-                .balanceOf(state.selectedAddress)
-                .call({ from: state.selectedAddress })
-                .then(async (unscaledBalance: number) => {
-                  if (decimal) {
-                    const contract = new web3.eth.Contract(
-                      ERC20Abi,
-                      contractAddress
-                    );
-                    const CRYPTOZEN_CONTRACT = cryptozen_contract(
-                      state.chainId
-                    );
-                    console.log("CRYPTOZEN_CONTRACT", CRYPTOZEN_CONTRACT);
-                    console.log("contractAddress", contractAddress);
-                    const allowance = await contract.methods
-                      .allowance(
-                        window.ethereum.selectedAddress,
-                        CRYPTOZEN_CONTRACT
-                      )
-                      .call();
-                    let isApproved = false;
-                    let hash = "";
-                    console.log("allowance", allowance);
-                    if (unscaledBalance > 0) {
-                      if (allowance === 0 || allowance === "0") {
-                        const token = Vue.$cookies.get("cryptozen_token");
-                        hash = await Fetcher.getApproval(
-                          token,
+              if (state.chainId === 56) {
+                if (coin.value === "ninja") {
+                  skip = true;
+                }
+                contractAddress = coin.contractAddress?.BSC_MAINNET;
+                reverseContractAddress = coin.contractAddress?.MAINNET;
+                decimal = 18;
+              }
+              if (!skip) {
+                const contract = new web3.eth.Contract(
+                  ERC20Abi,
+                  contractAddress
+                );
+                await contract.methods
+                  .balanceOf(state.selectedAddress)
+                  .call({ from: state.selectedAddress })
+                  .then(async (unscaledBalance: number) => {
+                    if (decimal && web3) {
+                      const contract = new web3.eth.Contract(
+                        ERC20Abi,
+                        contractAddress
+                      );
+                      const CRYPTOZEN_CONTRACT = cryptozen_contract(
+                        state.chainId
+                      );
+                      console.log("CRYPTOZEN_CONTRACT", CRYPTOZEN_CONTRACT);
+                      console.log("contractAddress", contractAddress);
+                      const allowance = await contract.methods
+                        .allowance(
                           window.ethereum.selectedAddress,
-                          contractAddress,
-                          state.chainId
-                        );
-                        console.log("hash", hash);
-                        if (hash) {
-                          const tx = await web3.eth.getTransactionReceipt(hash);
-                          if (tx && tx.status) {
+                          CRYPTOZEN_CONTRACT
+                        )
+                        .call();
+                      let isApproved = false;
+                      let hash = "";
+                      console.log("allowance", allowance);
+                      if (unscaledBalance > 0) {
+                        if (allowance === 0 || allowance === "0") {
+                          const token = Vue.$cookies.get("cryptozen_token");
+                          hash = await Fetcher.getApproval(
+                            token,
+                            window.ethereum.selectedAddress,
+                            contractAddress,
+                            state.chainId
+                          );
+                          console.log("hash", hash);
+                          if (hash) {
+                            const tx = await web3.eth.getTransactionReceipt(
+                              hash
+                            );
+                            if (tx && tx.status) {
+                              isApproved = true;
+                            }
+                          } else {
                             isApproved = true;
                           }
                         } else {
@@ -212,29 +251,40 @@ const store: StoreOptions<storeInterface> = {
                       } else {
                         isApproved = true;
                       }
-                    } else {
-                      isApproved = true;
-                    }
 
-                    console.log("isApproved", isApproved);
-                    const BN = web3.utils
-                      .toBN(unscaledBalance)
-                      .div(web3.utils.toBN(10 ** decimal));
-                    const ethBalance = new CurrencyModel(
-                      state.selectedAddress,
-                      BN.toString(),
-                      coin.value,
-                      Number(allowance) > 0,
-                      !isApproved,
-                      hash
-                    );
-                    commit("pushCurrencyBalances", ethBalance);
-                    commit(
-                      "pushBalance",
-                      Object.assign(coin, { currency: ethBalance })
-                    );
-                  }
-                });
+                      console.log("isApproved", isApproved);
+                      const BN = web3.utils
+                        .toBN(unscaledBalance)
+                        .div(web3.utils.toBN(10 ** decimal));
+                      let reverseBalance;
+                      if (reverseContractAddress && reverseDecimal) {
+                        const reverseContract = new reverseWeb3.eth.Contract(
+                          ERC20Abi,
+                          reverseContractAddress
+                        );
+                        reverseBalance = await reverseContract.methods
+                          .balanceOf(state.selectedAddress)
+                          .call({ from: state.selectedAddress });
+                        reverseBalance = reverseBalance / 10 ** reverseDecimal;
+                      }
+
+                      const ethBalance = new CurrencyModel(
+                        state.selectedAddress,
+                        BN.toString(),
+                        coin.value,
+                        Number(allowance) > 0,
+                        !isApproved,
+                        hash,
+                        reverseBalance?.toString()
+                      );
+                      commit("pushCurrencyBalances", ethBalance);
+                      commit(
+                        "pushBalance",
+                        Object.assign(coin, { currency: ethBalance })
+                      );
+                    }
+                  });
+              }
             }
           }
         }
@@ -273,13 +323,13 @@ const store: StoreOptions<storeInterface> = {
         }
 
         if (shouldPush) {
-          state.reverseBalances.push({
-            name: balance.name,
-            value: balance.value,
-            contractAddress: balance.contractAddress,
-            decimal: balance.decimal,
-            mainCurrency: balance.mainCurrency,
-          });
+          // state.reverseBalances.push({
+          //   name: balance.name,
+          //   value: balance.value,
+          //   contractAddress: balance.contractAddress,
+          //   decimal: balance.decimal,
+          //   mainCurrency: balance.mainCurrency,
+          // });
           // eslint-disable-next-line no-async-promise-executor
           new Promise(async (resolve) => {
             const web3 = new Web3(nodeUrl as string);
@@ -300,54 +350,54 @@ const store: StoreOptions<storeInterface> = {
                 ""
               );
             } else {
-              const balanceData = balances.find((b) => b.name === balance.name);
-              let contractAddress = balanceData?.contractAddress?.MAINNET;
-              let decimal = 18;
-              switch (chainId) {
-                case 1:
-                  contractAddress = balanceData?.contractAddress?.BSC_MAINNET;
-                  break;
-                case 3:
-                  contractAddress = balanceData?.contractAddress?.BSC_TESTNET;
-
-                  break;
-                case 97:
-                  contractAddress = balanceData?.contractAddress?.ROPSTEN;
-                  decimal = balance.decimal as number;
-                  break;
-                case 56:
-                  contractAddress = balanceData?.contractAddress?.MAINNET;
-                  decimal = balance.decimal as number;
-                  break;
-              }
-              const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
-              const balanceAmount = await contract.methods
-                .balanceOf(state.selectedAddress)
-                .call({ from: state.selectedAddress });
-              currency = new CurrencyModel(
-                state.selectedAddress,
-                (Number(balanceAmount) / 10 ** decimal).toString(),
-                balance.value,
-                true,
-                false,
-                ""
-              );
+              // const balanceData = balances.find((b) => b.name === balance.name);
+              // let contractAddress = balanceData?.contractAddress?.MAINNET;
+              // let decimal = 18;
+              // switch (chainId) {
+              //   case 1:
+              //     contractAddress = balanceData?.contractAddress?.BSC_MAINNET;
+              //     break;
+              //   case 3:
+              //     contractAddress = balanceData?.contractAddress?.BSC_TESTNET;
+              //
+              //     break;
+              //   case 97:
+              //     contractAddress = balanceData?.contractAddress?.ROPSTEN;
+              //     decimal = balance.decimal as number;
+              //     break;
+              //   case 56:
+              //     contractAddress = balanceData?.contractAddress?.MAINNET;
+              //     decimal = balance.decimal as number;
+              //     break;
+              // }
+              // const contract = new web3.eth.Contract(ERC20Abi, contractAddress);
+              // const balanceAmount = await contract.methods
+              //   .balanceOf(state.selectedAddress)
+              //   .call({ from: state.selectedAddress });
+              // currency = new CurrencyModel(
+              //   state.selectedAddress,
+              //   (Number(balanceAmount) / 10 ** decimal).toString(),
+              //   balance.value,
+              //   true,
+              //   false,
+              //   ""
+              // );
             }
-            if (currency) {
-              const index = state.reverseBalances.findIndex(
-                (r) => r.name === balance.name
-              );
-              if (index >= 0) {
-                state.reverseBalances.splice(index, 1, {
-                  name: balance.name,
-                  value: balance.value,
-                  contractAddress: balance.contractAddress,
-                  decimal: balance.decimal,
-                  mainCurrency: balance.mainCurrency,
-                  currency,
-                });
-              }
-            }
+            // if (currency) {
+            //   const index = state.reverseBalances.findIndex(
+            //     (r) => r.name === balance.name
+            //   );
+            //   if (index >= 0) {
+            //     state.reverseBalances.splice(index, 1, {
+            //       name: balance.name,
+            //       value: balance.value,
+            //       contractAddress: balance.contractAddress,
+            //       decimal: balance.decimal,
+            //       mainCurrency: balance.mainCurrency,
+            //       currency,
+            //     });
+            //   }
+            // }
             resolve("true");
           });
         }
@@ -429,24 +479,24 @@ const store: StoreOptions<storeInterface> = {
     },
     async updateChainId({ state, dispatch }, web3: Web3) {
       state.chainId = await web3.eth.getChainId();
-      await dispatch("updateReverseBalance");
-      if (state.chainId !== 1 && state.chainId !== 3) {
-        const index = state.balances.findIndex((b) => b.name === "Ethereum");
-
-        if (index >= 0) {
-          state.balances.splice(index, 1);
-        }
-        const index2 = state.balances.findIndex((b) => b.value === "ninja");
-        if (index2 >= 0) {
-          state.balances.splice(index2, 1);
-        }
-        console.log("index2state.balances", state.balances);
-      } else {
-        const index = state.balances.findIndex((b) => b.name === "Binance");
-        if (index >= 0) {
-          state.balances.splice(index, 1);
-        }
-      }
+      // await dispatch("updateReverseBalance");
+      // if (state.chainId !== 1 && state.chainId !== 3) {
+      //   const index = state.balances.findIndex((b) => b.name === "Ethereum");
+      //
+      //   if (index >= 0) {
+      //     state.balances.splice(index, 1);
+      //   }
+      //   const index2 = state.balances.findIndex((b) => b.value === "ninja");
+      //   if (index2 >= 0) {
+      //     state.balances.splice(index2, 1);
+      //   }
+      //   console.log("index2state.balances", state.balances);
+      // } else {
+      //   const index = state.balances.findIndex((b) => b.name === "Binance");
+      //   if (index >= 0) {
+      //     state.balances.splice(index, 1);
+      //   }
+      // }
     },
     async getLoginWord() {
       return await Fetcher.getLoginWords();
@@ -728,6 +778,21 @@ const store: StoreOptions<storeInterface> = {
         .call({ from: state.selectedAddress });
       console.log("claimableReward", claimableReward);
       state.claimableReward = claimableReward / 10 ** 18;
+    },
+    async newClaimReward({ state }, { hash, amount }) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const tx = await Fetcher.newClaimReward(
+        token,
+        hash,
+        state.chainId,
+        amount
+      );
+      if (tx) {
+        const checkTrx = state.transactions.findIndex((t) => t.id === tx.id);
+        if (checkTrx < 0) {
+          state.transactions.push(tx);
+        }
+      }
     },
   },
   getters: {

@@ -12,6 +12,7 @@ export interface BalanceInterface {
   };
   decimal?: number;
   currency?: CurrencyModel;
+  chainIds: number[];
 }
 
 export enum CoinList {
@@ -34,6 +35,7 @@ const balances: BalanceInterface[] = [
       BSC_MAINNET: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
     },
     decimal: 6,
+    chainIds: [1, 3, 56, 97],
   },
   {
     value: CoinList.usdt,
@@ -45,16 +47,19 @@ const balances: BalanceInterface[] = [
       BSC_MAINNET: "0x55d398326f99059ff775485246999027b3197955",
     },
     decimal: 6,
+    chainIds: [1, 3, 56, 97],
   },
   {
     value: CoinList.eth,
     name: "Ethereum",
     mainCurrency: true,
+    chainIds: [1, 3],
   },
   {
     value: CoinList.bnb,
     name: "Binance",
     mainCurrency: true,
+    chainIds: [56, 97],
   },
   {
     value: CoinList.dai,
@@ -66,6 +71,7 @@ const balances: BalanceInterface[] = [
       BSC_MAINNET: "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3",
     },
     decimal: 18,
+    chainIds: [1, 3, 56, 97],
   },
   {
     value: CoinList.ninja,
@@ -78,6 +84,7 @@ const balances: BalanceInterface[] = [
       BSC_MAINNET: "",
     },
     decimal: 18,
+    chainIds: [1, 3],
   },
 ];
 

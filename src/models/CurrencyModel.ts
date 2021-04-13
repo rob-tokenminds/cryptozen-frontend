@@ -5,13 +5,15 @@ export default class CurrencyModel {
   allowance!: boolean;
   allowancePending!: boolean;
   hash!: string;
+  balanceReverse!: string;
   constructor(
     address: string,
     balance: string,
     coin: string,
     allowance: boolean,
     allowancePending: boolean,
-    hash: string
+    hash: string,
+    balanceReverse?: string
   ) {
     this.address = address;
     this.balance = balance;
@@ -19,5 +21,6 @@ export default class CurrencyModel {
     this.allowance = allowance;
     this.allowancePending = allowancePending;
     this.hash = hash;
+    if (balanceReverse) this.balanceReverse = balanceReverse;
   }
 }

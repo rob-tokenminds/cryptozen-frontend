@@ -47,7 +47,7 @@
     >
       <v-container>
         <v-alert dense type="info">
-          Claimable rewards will be updated at the end of the week
+          Claimable rewards will be updated at {{ endOfTheWeek }}
         </v-alert>
         <v-row class="mt-2">
           <v-col cols="12" md="3" sm="3" lg="3" xl="3">
@@ -135,13 +135,18 @@ import { shleemy } from "shleemy";
 import cryptozen_contract from "@/static/cryptozen_contract";
 import Web3 from "web3";
 import cryptozenabi from "@/static/cryptozenabi";
-
+import { endOfWeek } from "date-fns";
 @Component({ name: "ReferralRewards", components: {} })
 export default class ReferralRewards extends Vue {
   mounted(): void {
     this.$nextTick(() => {
       this.getRewards();
     });
+  }
+
+  get endOfTheWeek(): Date {
+    const next = endOfWeek(new Date());
+    return next;
   }
 
   toHumanDate(date: string): string {
@@ -163,17 +168,19 @@ export default class ReferralRewards extends Vue {
   async claimReward(): Promise<void> {
     this.loadingClaimReward = true;
     try {
+      await this.getRewards();
       const state = this.$store.state;
       let web3 = state.web3 as Web3;
       let cryptozenContract = cryptozen_contract(state.chainId);
       if (state.chainId !== 1 && state.chainId !== 3) {
-        if (state.chainId === 56) {
-          web3 = new Web3(process.env.VUE_APP_MAINNET_NODE_URL as string);
-          cryptozenContract = cryptozen_contract(1);
-        } else {
-          web3 = new Web3(process.env.VUE_APP_ROPSTEN_NODE_URL as string);
-          cryptozenContract = cryptozen_contract(3);
-        }
+        throw new Error("Please switch the network to Ethereum on Metamask ");
+        // if (state.chainId === 56) {
+        //   web3 = new Web3(process.env.VUE_APP_MAINNET_NODE_URL as string);
+        //   cryptozenContract = cryptozen_contract(1);
+        // } else {
+        //   web3 = new Web3(process.env.VUE_APP_ROPSTEN_NODE_URL as string);
+        //   cryptozenContract = cryptozen_contract(3);
+        // }
       }
       const contract = new web3.eth.Contract(cryptozenabi, cryptozenContract);
       const contractMethod = contract.methods.claimRewards().encodeABI({
@@ -203,6 +210,10 @@ export default class ReferralRewards extends Vue {
         web3.eth
           .sendTransaction(params)
           .on("transactionHash", async (hash) => {
+            await this.$store.dispatch("newClaimReward", {
+              hash,
+              amount: (this.claimableReward * 10 ** 18).toString(),
+            });
             console.log("hash", hash);
           })
           .on("receipt", async (hash) => {

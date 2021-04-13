@@ -83,7 +83,7 @@
               </v-card>
 
               <v-card
-                v-for="coin in $store.state.balances"
+                v-for="coin in balances"
                 :key="coin.value"
                 elevation="2"
                 class="mx-auto mt-2"
@@ -1258,6 +1258,17 @@ export default class SendMoney extends Vue {
   pageLoading = true;
   addressByEmail = false;
 
+  get balances(): BalanceInterface[] {
+    const balances = this.$store.state.balances as BalanceInterface[];
+    const realBalances = [];
+    for (const balance of balances) {
+      if (!this.isReversed(balance)) {
+        realBalances.push(balance);
+      }
+    }
+    return realBalances;
+  }
+
   get isMobile(): boolean {
     return this.$vuetify.breakpoint.xsOnly;
   }
@@ -1429,6 +1440,10 @@ export default class SendMoney extends Vue {
         return false;
       }
     });
+  }
+
+  isReversed(balance: BalanceInterface): boolean {
+    return !balance.chainIds.find((c) => c === this.chainId);
   }
 
   get selectedEthereumAddress(): string {
@@ -2248,6 +2263,7 @@ export default class SendMoney extends Vue {
           BSC_MAINNET: "",
         },
         decimal: 18,
+        chainIds: [1, 3],
       };
     }
 

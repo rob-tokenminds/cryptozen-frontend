@@ -19,6 +19,7 @@
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "crypto-js": "^4.0.0",
+    "date-fns": "^2.20.2",
     "ethers": "^5.1.0",
     "event-source-polyfill": "^1.0.22",
     "from-exponential": "^1.0.0",

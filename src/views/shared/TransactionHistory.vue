@@ -278,6 +278,9 @@ export default class TransactionHistory extends Vue {
   }
 
   statusTransaction(transaction: TransactionInterface): any {
+    if (transaction.isClaimReward) {
+      return { name: "Claim Reward", color: "success" };
+    }
     if (transaction.isOnHold) {
       const status = this.statusAddress(transaction);
       if (status) {
@@ -380,6 +383,9 @@ export default class TransactionHistory extends Vue {
   }
 
   getStatus(transaction: TransactionInterface): string {
+    if (transaction.isClaimReward) {
+      return "Claim Reward";
+    }
     if (
       transaction.to?.toLowerCase() ===
       window.ethereum.selectedAddress?.toLowerCase()
