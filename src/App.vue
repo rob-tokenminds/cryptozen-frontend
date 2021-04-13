@@ -262,6 +262,36 @@ export default class App extends Vue {
   web3!: Web3;
 
   getBalanceTotal(balance: BalanceInterface): string {
+    if (balance.currency?.balanceReverse) {
+      if (this.$route.params.chain_id) {
+        if (this.isReversed) {
+          return balance.currency
+            ? this.getHrNumber(
+                Number(
+                  balance.currency.balanceReverse
+                    ? balance.currency.balanceReverse
+                    : 0
+                )
+              )
+            : "0";
+        } else {
+          return balance.currency
+            ? this.getHrNumber(Number(balance.currency.balance))
+            : "0";
+        }
+      } else {
+        return balance.currency
+          ? this.getHrNumber(
+              Number(balance.currency.balance) +
+                Number(
+                  balance.currency.balanceReverse
+                    ? balance.currency.balanceReverse
+                    : 0
+                )
+            )
+          : "0";
+      }
+    }
     return balance.currency
       ? this.getHrNumber(
           Number(balance.currency.balance) +
@@ -272,6 +302,12 @@ export default class App extends Vue {
             )
         )
       : "0";
+  }
+
+  get isReversed(): boolean {
+    return (
+      Number(this.$route.params.chain_id) !== Number(this.$store.state.chainId)
+    );
   }
 
   get balances(): BalanceInterface[] {
