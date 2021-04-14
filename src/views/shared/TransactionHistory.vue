@@ -419,7 +419,7 @@ export default class TransactionHistory extends Vue {
       } else {
         value = value.toFixed(4);
       }
-      return `${value} ${transaction.tokenName?.toUpperCase()}`;
+      return `${value.toString()} ${transaction.tokenName?.toUpperCase()}`;
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;
       let value: any = Number(transaction.value);
@@ -428,9 +428,10 @@ export default class TransactionHistory extends Vue {
       } else {
         value = value.toFixed(4);
       }
-      return `${web3.utils.fromWei(value, "ether")} ${this.currencyByChainId(
-        transaction
-      )}`;
+      return `${web3.utils.fromWei(
+        value.toString(),
+        "ether"
+      )} ${this.currencyByChainId(transaction)}`;
     }
   }
 
