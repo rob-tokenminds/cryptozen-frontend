@@ -173,6 +173,28 @@
                     </v-card-title>
                   </v-card>
                 </v-col>
+              </v-row>
+
+              <v-row class="mt-n5">
+                <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                  <v-card flat tile>
+                    <v-card-subtitle> Sent Amount </v-card-subtitle>
+                    <v-card-title class="primary--text mt-n8">
+                      {{ getAmount(transaction, true) }}
+                    </v-card-title>
+                  </v-card>
+                </v-col>
+
+                <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                  <v-card flat tile>
+                    <v-card-subtitle>
+                      Recipient Received Amount
+                    </v-card-subtitle>
+                    <v-card-title class="primary--text mt-n8">
+                      {{ getAmountReceipt(transaction) }}
+                    </v-card-title>
+                  </v-card>
+                </v-col>
 
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4" class="text-right">
                   <v-btn
@@ -233,6 +255,7 @@ import { AbstractProvider } from "web3-core";
 import CryptoJS from "crypto-js";
 import SendMoney from "../SendMoney.vue";
 import { BalanceInterface } from "@/static/balance";
+import fromExponential from "from-exponential";
 
 @Component({ name: "TransactionHistory", components: { SendMoney } })
 export default class TransactionHistory extends Vue {
@@ -241,6 +264,27 @@ export default class TransactionHistory extends Vue {
   loadingTransactions = false;
 
   sendMoneyDialog = false;
+
+  getAmountReceipt(transaction: TransactionInterface): string {
+    if (transaction.isToken) {
+      let decimals = transaction.tokenDecimal;
+      if (transaction.chainId !== 1 && transaction.chainId !== 3) {
+        decimals = 18;
+      }
+      return `${fromExponential(
+        (
+          (Number(transaction.value) - Number(transaction.fee)) /
+          10 ** Number(decimals)
+        ).toString()
+      )} ${transaction.tokenName}`;
+    } else {
+      const web3 = this.$store.getters["getWeb3"] as Web3;
+      return `${
+        Number(web3.utils.fromWei(transaction.value, "ether")) -
+        Number(transaction.fee)
+      } ${this.currencyByChainId(transaction)}`;
+    }
+  }
 
   updateSendMoneyDialog(value: boolean): void {
     this.sendMoneyDialog = value;
@@ -363,22 +407,30 @@ export default class TransactionHistory extends Vue {
     return interval.forHumans;
   }
 
-  getAmount(transaction: TransactionInterface): string {
+  getAmount(transaction: TransactionInterface, toString = false): string {
     if (transaction.isToken) {
       let decimals = transaction.tokenDecimal;
       if (transaction.chainId !== 1 && transaction.chainId !== 3) {
         decimals = 18;
       }
-      return `${(
-        Number(transaction.value) /
-        10 ** Number(decimals)
-      ).toString()} ${transaction.tokenName?.toUpperCase()}`;
+      let value: any = Number(transaction.value) / 10 ** Number(decimals);
+      if (toString) {
+        value = value.toString();
+      } else {
+        value = value.toFixed(4);
+      }
+      return `${value} ${transaction.tokenName?.toUpperCase()}`;
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;
-      return `${web3.utils.fromWei(
-        Number(transaction.value).toString(),
-        "ether"
-      )} ${this.currencyByChainId(transaction)}`;
+      let value: any = Number(transaction.value);
+      if (toString) {
+        value = value.toString();
+      } else {
+        value = value.toFixed(4);
+      }
+      return `${web3.utils.fromWei(value, "ether")} ${this.currencyByChainId(
+        transaction
+      )}`;
     }
   }
 

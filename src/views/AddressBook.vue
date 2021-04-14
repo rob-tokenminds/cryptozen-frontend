@@ -130,6 +130,10 @@
           </v-list-item-subtitle>
         </v-list-item-content>
 
+        <v-avatar class="mr-2" size="30">
+          <v-img :src="getChainIdIcon(addressBook)"></v-img>
+        </v-avatar>
+
         <v-menu bottom left>
           <template v-slot:activator="{ on, attrs }">
             <v-btn icon v-bind="attrs" v-on="on">
@@ -278,6 +282,14 @@ export default class AddressBook extends Vue {
     return this.$vuetify.breakpoint.xsOnly;
   }
 
+  getChainIdIcon(addressBook: AddressBookInterface): string {
+    let icon = "eth";
+    if (addressBook.chainId === 97 || addressBook.chainId === 56) {
+      icon = "bnb";
+    }
+    return require(`../assets/${icon}.svg`);
+  }
+
   editWalletData(wallet: AddressBookInterface): void {
     console.log("wallet", wallet);
     if (wallet) {
@@ -330,10 +342,8 @@ export default class AddressBook extends Vue {
   }
 
   get addressBookList(): AddressBookInterface[] {
-    const addressBook = this.$store.getters[
-      "getAddressBooks"
-    ] as AddressBookInterface[];
-    return addressBook.filter((a) => a.chainId === this.$store.state.chainId);
+    return this.$store.getters["getAddressBooks"] as AddressBookInterface[];
+    // return addressBook.filter((a) => a.chainId === this.$store.state.chainId);
   }
 
   async mounted(): Promise<void> {

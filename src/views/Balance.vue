@@ -14,7 +14,7 @@
       <v-btn
         v-else
         class="ma-1"
-        :disabled="!allowance && isReversed"
+        :disabled="!allowance"
         color="secondary"
         @click="sendMoneyDialog = true"
         >Send {{ getBalance.name }}</v-btn
@@ -197,9 +197,12 @@ export default class Balance extends Vue {
   }
 
   get isReversed(): boolean {
-    return (
-      Number(this.$route.params.chain_id) !== Number(this.$store.state.chainId)
-    );
+    if (this.$route.params.chain_id)
+      return (
+        Number(this.$route.params.chain_id) !==
+        Number(this.$store.state.chainId)
+      );
+    return false;
   }
 }
 

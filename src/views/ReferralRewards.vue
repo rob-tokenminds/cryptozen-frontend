@@ -108,7 +108,7 @@
         <v-col cols="12" md="6" sm="6" lg="6" xl="6">
           <v-list-item>
             <v-list-item-avatar>
-              <v-avatar color="main " size="60"></v-avatar>
+              <v-img :src="require(`../assets/ninja.svg`)"></v-img>
             </v-list-item-avatar>
             <v-list-item-content>
               <v-list-item-title class="primary--text"

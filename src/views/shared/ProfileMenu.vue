@@ -82,7 +82,7 @@
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Add Ethereum Wallet</v-list-item-title
+                  >Switch to Ethereum Wallet</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -96,7 +96,7 @@
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Add Binance</v-list-item-title
+                  >Switch to Binance</v-list-item-title
                 >
                 <v-list-item-title class="primary--text"
                   >Smart Chain Wallet</v-list-item-title
