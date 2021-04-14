@@ -209,9 +209,8 @@
     <v-main>
       <!-- Provides the application the proper gutter -->
 
-      <v-container>
-        <!--        <v-alert color="secondary">Logging in. Please sign on Metamask</v-alert>-->
-        <!--        <router-view isMobile="isMobile"></router-view>-->
+      <v-container v-if="$route.path === `/create-address-book`">
+        <router-view isMobile="isMobile"></router-view>
       </v-container>
 
       <!-- If using vue-router -->
