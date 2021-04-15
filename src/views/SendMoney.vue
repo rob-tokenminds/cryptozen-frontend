@@ -1572,12 +1572,16 @@ export default class SendMoney extends Vue {
         this.approveLoadingStatus = true;
         this.currentlyApproved = coin;
         await this.$store.dispatch("approve", coin);
-        await this.$store.dispatch("updateCoinBalance", coin);
+        await this.$store.dispatch("updateCoinBalance", {
+          coin,
+          address: this.$store.state.selectedAddress,
+        });
         this.approveLoadingStatus = false;
       } else {
         throw new Error("Something went wrong");
       }
     } catch (e) {
+      console.error("e", e);
       alert(e.message);
       this.approveLoadingStatus = false;
     }

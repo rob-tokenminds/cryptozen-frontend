@@ -100,7 +100,10 @@ export default class Balance extends Vue {
       this.loadingApprove = true;
 
       await this.$store.dispatch("approve", this.getBalance);
-      await this.$store.dispatch("updateCoinBalance", this.getBalance);
+      await this.$store.dispatch("updateCoinBalance", {
+        coin: this.getBalance,
+        address: this.$store.state.selectedAddress,
+      });
 
       this.loadingApprove = false;
     } catch (e) {
