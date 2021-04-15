@@ -41,15 +41,15 @@
     <v-card
       :loading="loadingReward"
       flat
-      height="160"
-      max-width="65%"
+      :height="isMobile ? 320 : 160"
+      :max-width="isMobile ? '100%' : '65%'"
       class="mb-2"
     >
       <v-container>
         <v-alert dense type="info">
           Claimable rewards will be updated at {{ endOfTheWeek }}
         </v-alert>
-        <v-row class="mt-2">
+        <v-row :no-gutters="isMobile" class="mt-2">
           <v-col cols="12" md="3" sm="3" lg="3" xl="3">
             <v-text-field
               :loading="loadingReward"
@@ -86,7 +86,7 @@
     </v-card>
 
     <v-skeleton-loader
-      max-width="65%"
+      :max-width="isMobile ? '100%' : '65%'"
       class="mb-2 mt-2"
       v-if="loadingReward"
       type="expansion-panels, expansion-panel-header, list-item, ist-item-avatar, list-item-two-line"
@@ -97,7 +97,7 @@
       :key="reward.id"
       class="mb-5"
       flat
-      max-width="65%"
+      :max-width="isMobile ? '100%' : '65%'"
     >
       <v-card-actions>
         <v-card-subtitle>{{ toHumanDate(reward.created_at) }} </v-card-subtitle>
@@ -132,16 +132,21 @@
 import { RewardInterface } from "@/store/fetcher";
 import { Vue, Component, Watch, Ref } from "vue-property-decorator";
 import { shleemy } from "shleemy";
-import cryptozen_contract from "@/static/cryptozen_contract";
+// import cryptozen_contract from "@/static/cryptozen_contract";
 import Web3 from "web3";
 import cryptozenabi from "@/static/cryptozenabi";
 import { endOfWeek } from "date-fns";
+import { CRYPTOZEN_CONTRACTS, NETWORKS_LIST } from "@/static/balance";
 @Component({ name: "ReferralRewards", components: {} })
 export default class ReferralRewards extends Vue {
   mounted(): void {
     this.$nextTick(() => {
       this.getRewards();
     });
+  }
+
+  get isMobile(): boolean {
+    return this.$vuetify.breakpoint.xsOnly;
   }
 
   get endOfTheWeek(): Date {
@@ -171,7 +176,10 @@ export default class ReferralRewards extends Vue {
       await this.getRewards();
       const state = this.$store.state;
       let web3 = state.web3 as Web3;
-      let cryptozenContract = cryptozen_contract(state.chainId);
+      const networkName = `${state.networkName.toUpperCase()}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
+
+      const cryptozenContract = CRYPTOZEN_CONTRACTS[networkName];
+
       if (state.chainId !== 1 && state.chainId !== 3) {
         throw new Error("Please switch the network to Ethereum on Metamask ");
         // if (state.chainId === 56) {

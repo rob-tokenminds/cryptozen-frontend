@@ -1,3 +1,5 @@
+import { NETWORKS, CHAIN_IDS } from "../static/balance";
+
 export default class CurrencyModel {
   address!: string;
   balance!: string;
@@ -6,6 +8,8 @@ export default class CurrencyModel {
   allowancePending!: boolean;
   hash!: string;
   balanceReverse!: string;
+  network!: NETWORKS;
+  chainId!: CHAIN_IDS;
   constructor(
     address: string,
     balance: string,
@@ -13,7 +17,8 @@ export default class CurrencyModel {
     allowance: boolean,
     allowancePending: boolean,
     hash: string,
-    balanceReverse?: string
+    network: NETWORKS,
+    chainId: CHAIN_IDS
   ) {
     this.address = address;
     this.balance = balance;
@@ -21,6 +26,7 @@ export default class CurrencyModel {
     this.allowance = allowance;
     this.allowancePending = allowancePending;
     this.hash = hash;
-    if (balanceReverse) this.balanceReverse = balanceReverse;
+    this.network = network;
+    this.chainId = chainId;
   }
 }

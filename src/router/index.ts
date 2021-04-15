@@ -27,7 +27,7 @@ const routes: Array<RouteConfig> = [
     component: AddressBook,
   },
   {
-    path: "/balance/:coin/:chain_id?",
+    path: "/balance/:coin/:chain_id?/:address?",
     name: "Balance",
     component: Balance,
   },

@@ -248,7 +248,11 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import { BalanceInterface } from "../../static/balance";
+import {
+  BalanceInterface,
+  CRYPTOZEN_CONTRACTS,
+  NETWORKS_LIST,
+} from "../../static/balance";
 import balances from "../../static/balance";
 import Web3 from "web3";
 // import erc20abi from "../../static/erc20abi";
@@ -272,7 +276,8 @@ import cryptozenabi from "../../static/cryptozenabi";
 
 import { providers } from "ethers";
 import axios from "axios";
-import cryptozen_contract from "@/static/cryptozen_contract";
+import CurrencyModel from "@/models/CurrencyModel";
+// import cryptozen_contract from "@/static/cryptozen_contract";
 
 @Component({ name: "SelectAmount" })
 export default class SelectAmount extends Vue {
@@ -297,6 +302,17 @@ export default class SelectAmount extends Vue {
     return 0;
   }
 
+  get getBalanceCurrency(): CurrencyModel | undefined {
+    if (this.selectedCurrency.currency) {
+      return this.selectedCurrency.currency.find(
+        (c) =>
+          c.network.toLowerCase() === this.$store.state.networkName &&
+          c.address === this.$store.state.selectedAddress
+      );
+    }
+    return undefined;
+  }
+
   amountSendUsd = "0";
   amountReceiptUsd = "0";
   transferFee = "0";
@@ -315,11 +331,11 @@ export default class SelectAmount extends Vue {
     if (!this.updatingAmount) {
       console.log("value", value);
       this.updatingAmount = true;
-      if (value <= Number(this.selectedCurrency?.currency?.balance)) {
+      if (value <= Number(this.getBalanceCurrency?.balance)) {
         await this.UpdateRecipientGetsAmount(value);
       } else {
         alert(`Value input is higher than your balance`);
-        this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+        this.swapAmount = Number(this.getBalanceCurrency?.balance);
       }
 
       this.updatingAmount = false;
@@ -330,13 +346,11 @@ export default class SelectAmount extends Vue {
   async watchrecipientGets(value: number): Promise<void> {
     if (!this.updatingAmount) {
       this.updatingAmount = true;
-      if (value <= Number(this.selectedCurrency?.currency?.balance)) {
+      if (value <= Number(this.getBalanceCurrency?.balance)) {
         await this.UpdateSwapAmount(value);
-        if (
-          this.swapAmount >= Number(this.selectedCurrency?.currency?.balance)
-        ) {
+        if (this.swapAmount >= Number(this.getBalanceCurrency?.balance)) {
           alert(`Value input is higher than your balance`);
-          this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+          this.swapAmount = Number(this.getBalanceCurrency?.balance);
         }
       } else {
         alert(`Value input is higher than your balance`);
@@ -465,9 +479,10 @@ export default class SelectAmount extends Vue {
           this.platformFee = "0";
           this.transactionReward = "0";
           const web3 = this.$store.getters["getWeb3"] as Web3;
-          const CrytozenContract = cryptozen_contract(
-            this.$store.state.chainId
-          );
+          const state = this.$store.state;
+          const networkName = `${state.networkName.toUpperCase()}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
+
+          const CrytozenContract = CRYPTOZEN_CONTRACTS[networkName];
           console.log("CrytozenContract", CrytozenContract);
           const contract = new web3.eth.Contract(
             cryptozenabi,
@@ -481,24 +496,11 @@ export default class SelectAmount extends Vue {
               this.selectedCurrency.decimal &&
               this.selectedCurrency.contractAddress
             ) {
-              let contractAddress = this.selectedCurrency.contractAddress
-                ?.MAINNET;
-              let decimal = this.selectedCurrency.decimal;
-              const chainId = this.$store.state.chainId;
-              if (chainId === 3) {
-                contractAddress = this.selectedCurrency.contractAddress
-                  ?.ROPSTEN;
-              }
-              if (chainId === 97) {
-                contractAddress = this.selectedCurrency.contractAddress
-                  ?.BSC_TESTNET;
-                decimal = 18;
-              }
-              if (chainId === 56) {
-                contractAddress = this.selectedCurrency.contractAddress
-                  ?.BSC_MAINNET;
-                decimal = 18;
-              }
+              let contractAddress = this.selectedCurrency.contractAddress[
+                networkName
+              ];
+              let decimal = this.selectedCurrency.decimal[networkName];
+
               amount = fromExponential(
                 Number(inputAmount * 10 ** decimal).toString()
               );
@@ -540,7 +542,7 @@ export default class SelectAmount extends Vue {
           if (transferFee) {
             if (this.selectedCurrency?.decimal) {
               this.transferFee = Number(
-                transferFee / 10 ** this.selectedCurrency.decimal
+                transferFee / 10 ** this.selectedCurrency.decimal[networkName]
               ).toString();
               this.transferFeeOnUsd = await this.checktransferFeeOnUsd(
                 this.transferFee
@@ -599,7 +601,7 @@ export default class SelectAmount extends Vue {
   coins = balances;
   swapAmount = 0;
   label = "You send";
-  hint = `you have ${this.selectedCurrency?.currency?.balance}`;
+  hint = `you have ${this.getBalanceCurrency?.balance}`;
 
   ethereumPrice: CoingeckoInterface | "" = "";
   async mounted(): Promise<void> {
@@ -733,22 +735,16 @@ export default class SelectAmount extends Vue {
       if (
         TRADETOKENContract &&
         TRADETOKENContract.contractAddress &&
-        TRADETOKENContract.decimal
+        TRADETOKENContract.decimal &&
+        this.selectedCurrency.contractAddress
       ) {
-        let contractAddress = this.selectedCurrency.contractAddress?.MAINNET;
-        let decimal = TRADETOKENContract.decimal;
-        const chainId = this.$store.state.chainId;
-        if (chainId === 3) {
-          contractAddress = this.selectedCurrency.contractAddress?.ROPSTEN;
-        }
-        if (chainId === 97) {
-          contractAddress = this.selectedCurrency.contractAddress?.BSC_TESTNET;
-          decimal = 18;
-        }
-        if (chainId === 56) {
-          contractAddress = this.selectedCurrency.contractAddress?.BSC_MAINNET;
-          decimal = 18;
-        }
+        const state = this.$store.state;
+        const networkName = `${state.networkName.toUpperCase()}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
+        let contractAddress = this.selectedCurrency.contractAddress[
+          networkName
+        ];
+        let decimal = TRADETOKENContract.decimal[networkName];
+
         const TRADETOKEN = new Token(
           this.$store.state.chainId,
           contractAddress,

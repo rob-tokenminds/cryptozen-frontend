@@ -95,26 +95,19 @@
             <v-list-item-content>
               <v-list-item
                 dense
-                v-if="balance.value !== 'bnb'"
-                :to="`/balance/${balance.value}/${ethereumChainId}`"
+                v-for="(currency, index) in balance.currency"
+                :to="`/balance/${balance.value}/${currency.chainId}/${currency.address}`"
+                :key="index"
               >
                 <v-list-item-subtitle class="white--text">
                   <v-avatar size="20">
-                    <v-img :src="require(`./assets/eth.svg`)"></v-img
+                    <v-img
+                      :src="
+                        require(`./assets/${currency.network.toLowerCase()}.svg`)
+                      "
+                    ></v-img
                   ></v-avatar>
-                  {{ shortSelectedAddress }}</v-list-item-subtitle
-                >
-              </v-list-item>
-              <v-list-item
-                dense
-                v-if="balance.value !== 'eth' && balance.value !== 'ninja'"
-                :to="`/balance/${balance.value}/${binanceChainId}`"
-              >
-                <v-list-item-subtitle class="white--text">
-                  <v-avatar size="20">
-                    <v-img :src="require(`./assets/bnb.svg`)"></v-img
-                  ></v-avatar>
-                  {{ shortSelectedAddress }}</v-list-item-subtitle
+                  {{ shortAddress(currency.address) }}</v-list-item-subtitle
                 >
               </v-list-item>
             </v-list-item-content>
@@ -164,7 +157,7 @@
       </v-card>
     </v-dialog>
     <v-app-bar app color="white" flat :prominent="isMobile">
-      <v-app-bar color="white" flat max-width="65%">
+      <v-app-bar color="white" flat :max-width="isMobile ? '100%' : '65%'">
         <v-app-bar-nav-icon
           v-if="navIcon"
           @click.stop="drawer = !drawer"
@@ -262,43 +255,28 @@ export default class App extends Vue {
 
   getBalanceTotal(balance: BalanceInterface): string {
     // console.log("balance", balance);
-    if (balance.currency?.balanceReverse) {
-      // console.log("this.$route.params.chain_id", this.$route.params.chain_id);
-      if (this.$route.params.chain_id) {
-        if (this.isReversed) {
-          return balance.currency
-            ? this.getHrNumber(
-                Number(
-                  balance.currency.balanceReverse
-                    ? balance.currency.balanceReverse
-                    : 0
-                )
-              )
-            : "0";
-        } else {
-          return balance.currency
-            ? this.getHrNumber(Number(balance.currency.balance))
-            : "0";
-        }
-      } else {
-        return balance.currency
-          ? this.getHrNumber(
-              Number(balance.currency.balance) +
-                Number(balance.currency.balanceReverse)
-            )
-          : "0";
+    // if (balance.currency?.balanceReverse) {
+    //   // console.log("this.$route.params.chain_id", this.$route.params.chain_id);
+    if (
+      this.$route.params.chain_id &&
+      this.$route.params.address &&
+      balance.currency
+    ) {
+      const currency = balance.currency.find(
+        (c) =>
+          c.chainId === Number(this.$route.params.chain_id) &&
+          c.address === this.$route.params.address
+      );
+      if (currency) {
+        return this.getHrNumber(Number(currency.balance));
       }
+      return "0";
     }
-    return balance.currency
-      ? this.getHrNumber(
-          Number(balance.currency.balance) +
-            Number(
-              balance.currency.balanceReverse
-                ? balance.currency.balanceReverse
-                : 0
-            )
-        )
-      : "0";
+    let total = 0;
+    for (const currency of balance.currency ? balance.currency : []) {
+      total += Number(currency.balance);
+    }
+    return this.getHrNumber(total);
   }
 
   get isReversed(): boolean {
@@ -425,6 +403,15 @@ export default class App extends Vue {
     this.navIcon = !value;
   }
 
+  shortAddress(address: string): string {
+    if (address)
+      return `${address.substring(0, 6)}....${address.substring(
+        address.length - 4,
+        address.length
+      )}`;
+    else return "0x...00";
+  }
+
   getBalanceName(balance: BalanceInterface): string {
     // if (balance.mainCurrency) {
     //   if (this.chainId === 1 || this.chainId === 3) {
@@ -461,8 +448,9 @@ export default class App extends Vue {
     const currentProvider = this.web3.currentProvider;
     if (currentProvider !== null && currentProvider !== undefined) {
       let accessToken = this.$cookies.get("cryptozen_token");
+      const accounts = await this.web3.eth.requestAccounts();
+      console.log("accounts", accounts);
       if (!accessToken) {
-        await this.web3.eth.requestAccounts();
         const message = await this.$store.dispatch("getLoginWord");
         const params = [message, window.ethereum.selectedAddress];
         const signature = await new Promise((resolve, reject) => {
@@ -503,6 +491,7 @@ export default class App extends Vue {
           //     data: { id: profile.id },
           //   })
           // );
+          await this.$store.dispatch("updateAddresses", accounts);
           await this.$store.dispatch(
             "updateSelectedAddress",
             window.ethereum.selectedAddress
@@ -510,9 +499,14 @@ export default class App extends Vue {
           await this.$store.dispatch("updateChainId", this.web3);
 
           const balances: BalanceInterface[] = this.$store.state.balances;
-          // await this.$store.dispatch("updateReverseBalance");
-          for (const balance of balances) {
-            await this.$store.dispatch("updateCoinBalance", balance);
+
+          for (const coin of balances) {
+            for (const address of accounts) {
+              await this.$store.dispatch("updateCoinBalance", {
+                coin,
+                address,
+              });
+            }
           }
           this.$store.state.isLogin = true;
         } catch (e) {

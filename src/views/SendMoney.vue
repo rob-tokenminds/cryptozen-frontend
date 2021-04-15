@@ -101,18 +101,16 @@
                     <v-list-item-content>
                       <v-list-item-title
                         class="primary--text text-subtitle-1"
-                        >{{
-                          coin.currency ? coin.currency.balance : 0
-                        }}</v-list-item-title
+                        >{{ getCoinCurrency(coin).balance }}</v-list-item-title
                       >
                       <v-list-item-subtitle class="">{{
                         coin.name
                       }}</v-list-item-subtitle>
                     </v-list-item-content>
 
-                    <v-spacer></v-spacer>
+                    <v-spacer v-if="!isMobile"></v-spacer>
                     <v-list-item-content>
-                      <v-icon v-if="coin.currency.allowance"
+                      <v-icon v-if="getCoinCurrency(coin).allowance"
                         >mdi-chevron-right</v-icon
                       >
 
@@ -123,8 +121,10 @@
                         small
                         @click="approve(coin)"
                         >{{
-                          coin.currency.allowancePending
+                          getCoinCurrency(coin).allowancePending
                             ? "Pending"
+                            : isMobile
+                            ? "Approve"
                             : "Approve Contract"
                         }}</v-btn
                       >
@@ -343,7 +343,7 @@
                       class="text-h5 rounded-0"
                       color="primary"
                       outlined
-                      :max="selectedCurrency.currency.balance"
+                      :max="getCoinCurrency(selectedCurrency).balance"
                       v-model="swapAmount"
                       :hint="hint"
                       persistent-hint
@@ -377,14 +377,15 @@
                       </template>
 
                       <template v-slot:message="{ message }">
-                        <p v-if="selectedCurrency.currency">
+                        <p v-if="getCoinCurrency(selectedCurrency)">
                           You have
                           <a
                             class="primary--text font-weight-bold"
                             @click="
-                              swapAmount = selectedCurrency.currency.balance
+                              swapAmount = getCoinCurrency(selectedCurrency)
+                                .balance
                             "
-                            >{{ selectedCurrency.currency.balance }}</a
+                            >{{ getCoinCurrency(selectedCurrency).balance }}</a
                           >
                         </p>
                         <p v-else>{{ message }}</p>
@@ -513,7 +514,7 @@
                       </v-list-item-content>
                     </v-list-item>
                     <v-row no-gutters>
-                      <v-col cols="8">
+                      <v-col :cols="isMobile ? 6 : 8">
                         <v-text-field
                           :key="componentKey"
                           class="text-h5 rounded-0"
@@ -538,7 +539,7 @@
                         </v-text-field>
                       </v-col>
 
-                      <v-col cols="4">
+                      <v-col :cols="isMobile ? 6 : 4">
                         <v-select
                           color="primary"
                           :items="coins"
@@ -629,7 +630,7 @@
                     class="text-h5 rounded-0"
                     color="primary"
                     outlined
-                    :max="selectedCurrency.currency.balance"
+                    :max="getCoinCurrency(selectedCurrency).balance"
                     v-model="swapAmount"
                     :hint="hint"
                     persistent-hint
@@ -668,9 +669,10 @@
                         <a
                           class="primary--text font-weight-bold"
                           @click="
-                            swapAmount = selectedCurrency.currency.balance
+                            swapAmount = getCoinCurrency(selectedCurrency)
+                              .balance
                           "
-                          >{{ selectedCurrency.currency.balance }}</a
+                          >{{ getCoinCurrency(selectedCurrency).balance }}</a
                         >
                       </p>
                       <p v-else>{{ message }}</p>
@@ -796,7 +798,7 @@
                     </v-list-item-content>
                   </v-list-item>
                   <v-row no-gutters>
-                    <v-col cols="8">
+                    <v-col :cols="isMobile ? 6 : 8">
                       <v-text-field
                         :key="componentKey"
                         class="text-h5 rounded-0"
@@ -821,7 +823,7 @@
                       </v-text-field>
                     </v-col>
 
-                    <v-col cols="4">
+                    <v-col :cols="isMobile ? 6 : 4">
                       <v-select
                         color="primary"
                         :items="coins"
@@ -961,7 +963,7 @@
           </p>
 
           <v-card v-if="transaction" flat class="d-flex justify-center">
-            <v-card class="mb-2" max-width="1100">
+            <v-card class="mb-2" :max-width="isMobile ? '100%' : 1100">
               <v-card-subtitle>Pending</v-card-subtitle>
               <v-divider></v-divider>
 
@@ -1148,7 +1150,10 @@
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ProfileMenu from "./shared/ProfileMenu.vue";
 import SelectAmount from "./shared/SelectAmount.vue";
-import Balances from "../static/balance";
+import Balances, {
+  CRYPTOZEN_CONTRACTS,
+  NETWORKS_LIST,
+} from "../static/balance";
 import balances, { BalanceInterface, CoinList } from "../static/balance";
 import {
   AddressBookInterface,
@@ -1162,7 +1167,7 @@ import { EventSourcePolyfill, NativeEventSource } from "event-source-polyfill";
 import Bignumber from "bignumber.js";
 import BigNumber from "bignumber.js";
 import { shleemy } from "shleemy";
-import cryptozen_contract from "../static/cryptozen_contract";
+// import cryptozen_contract from "../static/cryptozen_contract";
 // import erc20abi from "../../static/erc20abi";
 import fromExponential from "from-exponential";
 import cryptozenabi from "../static/cryptozenabi";
@@ -1179,6 +1184,7 @@ import {
 // import CryptozenSdk from "../library/cryptozen-sdk";
 import { providers } from "ethers";
 import axios from "axios";
+import CurrencyModel from "@/models/CurrencyModel";
 
 const EventSource = NativeEventSource || EventSourcePolyfill;
 // OR: may also need to set as global property
@@ -1246,9 +1252,7 @@ export default class SendMoney extends Vue {
   // swapAmount = 0;
   label = "You send";
   hint = `you have ${
-    this.selectedCurrency && this.selectedCurrency.currency
-      ? this.selectedCurrency?.currency?.balance
-      : "0"
+    this.getBalanceCurrency ? this.getBalanceCurrency.balance : "0"
   }`;
 
   ethereumPrice: CoingeckoInterface | "" = "";
@@ -1258,15 +1262,28 @@ export default class SendMoney extends Vue {
   pageLoading = true;
   addressByEmail = false;
 
+  get getBalanceCurrency(): CurrencyModel | undefined {
+    if (this.selectedCurrency && this.selectedCurrency.currency) {
+      console.log(
+        "this.$store.state.networkName",
+        this.$store.state.networkName
+      );
+      return this.selectedCurrency.currency.find(
+        (c) =>
+          c.network.toLowerCase() ===
+            this.$store.state.networkName.toLowerCase() &&
+          c.address.toLowerCase() ===
+            this.$store.state.selectedAddress.toLowerCase()
+      );
+    }
+    return undefined;
+  }
+
   get balances(): BalanceInterface[] {
     const balances = this.$store.state.balances as BalanceInterface[];
-    const realBalances = [];
-    for (const balance of balances) {
-      if (!this.isReversed(balance)) {
-        realBalances.push(balance);
-      }
-    }
-    return realBalances;
+    return balances.filter((b) =>
+      b.network ? b.network === this.$store.state.networkName : true
+    );
   }
 
   get isMobile(): boolean {
@@ -1328,11 +1345,12 @@ export default class SendMoney extends Vue {
       if (!this.updatingAmount && this.selectedCurrency) {
         console.log("value", value);
         this.updatingAmount = true;
-        if (value <= Number(this.selectedCurrency?.currency?.balance)) {
+        console.log("this.getBalanceCurrency", this.getBalanceCurrency);
+        if (value <= Number(this.getBalanceCurrency?.balance)) {
           await this.UpdateRecipientGetsAmount(value);
         } else {
           alert(`Value input is higher than your balance`);
-          this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+          this.swapAmount = Number(this.getBalanceCurrency?.balance);
         }
 
         this.updatingAmount = false;
@@ -1350,13 +1368,11 @@ export default class SendMoney extends Vue {
     if (!this.processWatchRecipietGets) {
       if (!this.updatingAmount && this.selectedCurrency) {
         this.updatingAmount = true;
-        if (value <= Number(this.selectedCurrency?.currency?.balance)) {
+        if (value <= Number(this.getBalanceCurrency?.balance)) {
           await this.UpdateSwapAmount(value);
-          if (
-            this.swapAmount >= Number(this.selectedCurrency?.currency?.balance)
-          ) {
+          if (this.swapAmount >= Number(this.getBalanceCurrency?.balance)) {
             alert(`Value input is higher than your balance`);
-            this.swapAmount = Number(this.selectedCurrency?.currency?.balance);
+            this.swapAmount = Number(this.getBalanceCurrency?.balance);
           }
         } else {
           alert(`Value input is higher than your balance`);
@@ -1464,6 +1480,16 @@ export default class SendMoney extends Vue {
     return main;
   }
 
+  getCoinCurrency(coin: BalanceInterface): CurrencyModel | undefined {
+    return coin.currency?.find(
+      (c) =>
+        c.network.toUpperCase() ===
+          this.$store.state.networkName.toUpperCase() &&
+        c.address.toLowerCase() ===
+          this.$store.state.selectedAddress.toLowerCase()
+    );
+  }
+
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
       if (this.currentSelected) this.selectedCurrency = this.currentSelected;
@@ -1512,7 +1538,7 @@ export default class SendMoney extends Vue {
   }
 
   async nextSendFrom(coin: BalanceInterface): Promise<void> {
-    if (coin.currency?.allowance) {
+    if (this.getCoinCurrency(coin)?.allowance) {
       this.selectedCurrency = coin;
       this.e1 = 2;
     } else {
@@ -1528,14 +1554,31 @@ export default class SendMoney extends Vue {
 
   async approve(coin: BalanceInterface): Promise<void> {
     try {
-      if (!coin.currency?.allowancePending) {
+      const mainCurrencyBalance = balances.find(
+        (b) => b.value === this.mainCurrency.toLowerCase()
+      );
+      const mainCurrency = mainCurrencyBalance?.currency?.find(
+        (c) =>
+          c.coin.toLowerCase() ===
+            this.$store.state.networkName.toLowerCase() &&
+          c.address === this.$store.state.selectedAddress
+      );
+      if (!mainCurrency?.balance) {
+        throw new Error(
+          `Your ${this.mainCurrency} balance is 0, you need some amount to approve the token`
+        );
+      }
+      if (!this.getBalanceCurrency?.allowancePending) {
         this.approveLoadingStatus = true;
         this.currentlyApproved = coin;
         await this.$store.dispatch("approve", coin);
         await this.$store.dispatch("updateCoinBalance", coin);
         this.approveLoadingStatus = false;
+      } else {
+        throw new Error("Something went wrong");
       }
     } catch (e) {
+      alert(e.message);
       this.approveLoadingStatus = false;
     }
   }
@@ -2053,9 +2096,10 @@ export default class SendMoney extends Vue {
           if (this.addressByEmail) {
             recipientAddress = window.ethereum.selectedAddress;
           }
-          const CRYPTOZEN_CONTRACT = cryptozen_contract(
-            this.$store.state.chainId
-          );
+          const state = this.$store.state;
+          const networkName = `${state.networkName.toUpperCase()}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
+
+          const CRYPTOZEN_CONTRACT = CRYPTOZEN_CONTRACTS[networkName];
           console.log("CRYPTOZEN_CONTRACT", CRYPTOZEN_CONTRACT);
           const contract = new web3.eth.Contract(
             cryptozenabi,
@@ -2069,24 +2113,11 @@ export default class SendMoney extends Vue {
               this.selectedCurrency.decimal &&
               this.selectedCurrency.contractAddress
             ) {
-              let contractAddress = this.selectedCurrency.contractAddress
-                ?.MAINNET;
-              let decimal = this.selectedCurrency.decimal;
+              let contractAddress = this.selectedCurrency.contractAddress[
+                networkName
+              ];
+              let decimal = this.selectedCurrency.decimal[networkName];
 
-              if (chainId === 3) {
-                contractAddress = this.selectedCurrency.contractAddress
-                  ?.ROPSTEN;
-              }
-              if (chainId === 97) {
-                contractAddress = this.selectedCurrency.contractAddress
-                  ?.BSC_TESTNET;
-                decimal = 18;
-              }
-              if (chainId === 56) {
-                contractAddress = this.selectedCurrency.contractAddress
-                  ?.BSC_MAINNET;
-                decimal = 18;
-              }
               amount = fromExponential(
                 Number(inputAmount * 10 ** decimal).toString()
               );
@@ -2123,10 +2154,8 @@ export default class SendMoney extends Vue {
           console.log("tier[1]", tier[1]);
           if (transferFee) {
             if (this.selectedCurrency?.decimal) {
-              const decimal =
-                chainId === 3 || chainId === 1
-                  ? this.selectedCurrency.decimal
-                  : 18;
+              const decimal = this.selectedCurrency.decimal[networkName];
+
               this.transferFee = Number(transferFee / 10 ** decimal).toFixed(4);
               this.transferFeeOnUsd = await this.checktransferFeeOnUsd(
                 this.transferFee
@@ -2193,31 +2222,27 @@ export default class SendMoney extends Vue {
   }
 
   async ninjaToWeth(amount: string): Promise<string> {
-    let network = "eth";
-    const chainId = this.$store.state.chainId as number;
-    if (chainId === 97 || chainId === 56) {
-      network = "bsc";
-    }
+    const state = this.$store.state;
+    const networkName = `ETH_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
     let ethProvider: any = new providers.Web3Provider(window.ethereum);
     const ninjaBalance = balances.find((b) => b.value === "ninja");
-    if (ninjaBalance) {
-      let NinjaContract = ninjaBalance.contractAddress?.MAINNET;
-      if (chainId === 3) {
-        NinjaContract = ninjaBalance.contractAddress?.ROPSTEN;
+    if (ninjaBalance && ninjaBalance.contractAddress) {
+      const chainId = state.chainId;
+      let NinjaContract = ninjaBalance.contractAddress[networkName];
+      let Ninja = new Token(chainId, NinjaContract as string, 18);
+      if (state.networkName !== "ETH") {
+        if (state.networkType === "TESTNET") {
+          ethProvider = new providers.JsonRpcProvider(
+            process.env.VUE_APP_ROPSTEN_NODE_URL as string
+          );
+          Ninja = new Token(3, NinjaContract as string, 18);
+        } else {
+          ethProvider = new providers.JsonRpcProvider(
+            process.env.VUE_APP_MAINNET_NODE_URL as string
+          );
+          Ninja = new Token(1, NinjaContract as string, 18);
+        }
       }
-      if (chainId === 97) {
-        ethProvider = new providers.JsonRpcProvider(
-          process.env.VUE_APP_ROPSTEN_NODE_URL as string
-        );
-        NinjaContract = ninjaBalance.contractAddress?.BSC_TESTNET;
-      }
-      if (chainId === 56) {
-        ethProvider = new providers.JsonRpcProvider(
-          process.env.VUE_APP_MAINNET_NODE_URL as string
-        );
-        NinjaContract = ninjaBalance.contractAddress?.BSC_MAINNET;
-      }
-      const Ninja = new Token(chainId, NinjaContract as string, 18);
 
       const NinjaWETHPair = await UniswapFetcher.fetchPairData(
         WETH[Ninja.chainId],
@@ -2250,52 +2275,28 @@ export default class SendMoney extends Vue {
     isToken: boolean,
     TRADETOKENContract?: BalanceInterface
   ): Promise<void> {
-    let network = "eth";
-    const chainId = this.$store.state.chainId as number;
-    let ninjaBalance = balances.find((b) => b.value === "ninja");
-    if (chainId === 97 || chainId === 56) {
-      network = "bsc";
-      ninjaBalance = {
-        value: CoinList.ninja,
-        name: "Ninja Token",
-        contractAddress: {
-          ROPSTEN: "0x47d88fff2978a25787d618d22dc090a65651cdf9",
-          MAINNET: "",
-          BSC_TESTNET: "",
-          // BSC_TESTNET: "0x289856272f27185433b9f9403516a254d2e2959e",
-          BSC_MAINNET: "",
-        },
-        decimal: 18,
-        chainIds: [1, 3],
-      };
-    }
-
-    if (ninjaBalance) {
+    const state = this.$store.state;
+    const networkName = `ETH_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
+    const chainId = state.chainId as number;
+    const ninjaBalance = balances.find((b) => b.value === "ninja");
+    if (ninjaBalance && ninjaBalance.contractAddress) {
       let ethProvider: any = new providers.Web3Provider(window.ethereum);
-      let NinjaContract = ninjaBalance.contractAddress?.MAINNET;
-      let Ninja;
-      if (chainId === 1) {
-        NinjaContract = ninjaBalance.contractAddress?.MAINNET;
-        Ninja = new Token(chainId, NinjaContract as string, 18);
+      let NinjaContract = ninjaBalance.contractAddress[networkName];
+      let Ninja = new Token(chainId, NinjaContract as string, 18);
+      if (state.networkName !== "ETH") {
+        if (state.networkType === "TESTNET") {
+          ethProvider = new providers.JsonRpcProvider(
+            process.env.VUE_APP_ROPSTEN_NODE_URL as string
+          );
+          Ninja = new Token(3, NinjaContract as string, 18);
+        } else {
+          ethProvider = new providers.JsonRpcProvider(
+            process.env.VUE_APP_MAINNET_NODE_URL as string
+          );
+          Ninja = new Token(1, NinjaContract as string, 18);
+        }
       }
-      if (chainId === 3) {
-        NinjaContract = ninjaBalance.contractAddress?.ROPSTEN;
-        Ninja = new Token(chainId, NinjaContract as string, 18);
-      }
-      if (chainId === 97) {
-        ethProvider = new providers.JsonRpcProvider(
-          process.env.VUE_APP_ROPSTEN_NODE_URL as string
-        );
-        NinjaContract = ninjaBalance.contractAddress?.ROPSTEN;
-        Ninja = new Token(3, NinjaContract as string, 18);
-      }
-      if (chainId === 56) {
-        ethProvider = new providers.JsonRpcProvider(
-          process.env.VUE_APP_MAINNET_NODE_URL as string
-        );
-        NinjaContract = ninjaBalance.contractAddress?.MAINNET;
-        Ninja = new Token(1, NinjaContract as string, 18);
-      }
+
       console.log("NinjaContract", NinjaContract);
       if (Ninja) {
         console.log("Ninja", Ninja);
@@ -2312,17 +2313,9 @@ export default class SendMoney extends Vue {
             TRADETOKENContract.contractAddress &&
             TRADETOKENContract.decimal
           ) {
-            let contractAddress = TRADETOKENContract.contractAddress.MAINNET;
-            let decimal = TRADETOKENContract.decimal;
-            if (chainId === 3) {
-              contractAddress = TRADETOKENContract.contractAddress?.ROPSTEN;
-            }
-            if (chainId === 97) {
-              contractAddress = TRADETOKENContract.contractAddress?.ROPSTEN;
-            }
-            if (chainId === 56) {
-              contractAddress = TRADETOKENContract.contractAddress?.MAINNET;
-            }
+            const contractAddress =
+              TRADETOKENContract.contractAddress[networkName];
+            const decimal = TRADETOKENContract.decimal[networkName];
 
             const TRADETOKEN = new Token(
               Ninja.chainId,

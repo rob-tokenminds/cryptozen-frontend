@@ -120,7 +120,7 @@
             <v-list-item @click="editYourEmail = true">
               <v-list-item-content>
                 <v-list-item-title class="primary--text"
-                  >Edit Your profile</v-list-item-title
+                  >Update Your E-mail</v-list-item-title
                 >
               </v-list-item-content>
             </v-list-item>
@@ -331,19 +331,13 @@ export default class ProfileMenu extends Vue {
   tier = -1;
   async checkTier(): Promise<void> {
     const tokenBalance = this.$store.state.balances as BalanceInterface[];
-    const balance = tokenBalance.find((t) => t.value === "ninja");
-    if (
-      balance &&
-      balance.value &&
-      balance.decimal &&
-      balance?.currency?.balance
-    ) {
+    if (this.$store.state.selectedAddress) {
       await this.$store.dispatch("getTier");
       const tier = this.$store.state.tier;
       this.tier = tier[2];
     } else {
       await sleep(1000);
-      this.checkTier();
+      await this.checkTier();
     }
   }
 
@@ -385,7 +379,12 @@ export default class ProfileMenu extends Vue {
     const balances = this.$store.state.balances as BalanceInterface[];
     const balance = balances.find((b) => b.value === "ninja");
     if (balance && balance.currency) {
-      return balance?.currency?.balance;
+      const currency = balance.currency.find(
+        (c) =>
+          c.network.toLowerCase() === this.$store.state.networkName &&
+          c.address === this.$store.state.selectedAddress
+      );
+      if (currency) return currency.balance;
     }
     return "0";
   }

@@ -80,6 +80,7 @@ import Balances, { BalanceInterface } from "../static/balance";
 import SendMoney from "./SendMoney.vue";
 import SwapMoney from "./SwapMoney.vue";
 import Web3 from "web3";
+import CurrencyModel from "@/models/CurrencyModel";
 @Component({
   name: "Balance",
   components: { TransactionHistory, SendMoney, SwapMoney },
@@ -115,7 +116,8 @@ export default class Balance extends Vue {
   watchLoading(value: boolean): void {
     if (value === true) {
       this.label = "Approval Pending...";
-      this.checkApproval(this.getBalance.currency?.hash as string);
+      if (this.getBalanceCurrency)
+        this.checkApproval(this.getBalanceCurrency.hash as string);
     }
   }
 
@@ -155,6 +157,17 @@ export default class Balance extends Vue {
     }
   }
 
+  get getBalanceCurrency(): CurrencyModel | undefined {
+    if (this.getBalance.currency) {
+      return this.getBalance.currency.find(
+        (c) =>
+          c.network.toLowerCase() === this.$store.state.networkName &&
+          c.address === this.$store.state.selectedAddress
+      );
+    }
+    return undefined;
+  }
+
   get getBalance(): BalanceInterface {
     let balance = this.$store.state.balances.find(
       (b: BalanceInterface) => b.value === this.$route.params.coin
@@ -163,9 +176,9 @@ export default class Balance extends Vue {
   }
 
   get allowance(): boolean {
-    const balance = this.getBalance;
-    if (balance.currency) {
-      return balance.currency.allowance;
+    const currency = this.getBalanceCurrency;
+    if (currency) {
+      return currency.allowance;
     }
     return true;
   }
@@ -181,9 +194,9 @@ export default class Balance extends Vue {
   }
 
   get allowancePending(): boolean {
-    const balance = this.getBalance;
-    if (balance.currency) {
-      return balance.currency.allowancePending;
+    const currency = this.getBalanceCurrency;
+    if (currency) {
+      return currency.allowancePending;
     }
     return false;
   }

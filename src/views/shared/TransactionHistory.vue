@@ -29,7 +29,7 @@
           >{{ toHumanDate(transaction.created_at) }}
         </v-card-subtitle>
         <v-spacer></v-spacer>
-        <v-avatar class="mr-2" size="40">
+        <v-avatar :class="!isMobile ? `mr-2` : `mr-2`" size="40">
           <v-img
             :src="
               require(`../../assets/${currencyByChainId(
@@ -325,18 +325,22 @@ export default class TransactionHistory extends Vue {
     if (transaction.isClaimReward) {
       return { name: "Claim Reward", color: "success" };
     }
+    let tx = "Transaction";
+    if (this.isMobile) {
+      tx = "Tx";
+    }
     if (transaction.isOnHold) {
       const status = this.statusAddress(transaction);
       if (status) {
-        return { name: "Waiting Transaction", color: "success" };
+        return { name: `Waiting ${tx}`, color: "success" };
       } else {
-        return { name: "Pending Transaction", color: "warning" };
+        return { name: `Pending ${tx}`, color: "warning" };
       }
     } else {
       if (transaction.fee) {
-        return { name: "Cryptozen Transaction", color: "primary" };
+        return { name: `Cryptozen ${tx}`, color: "primary" };
       } else {
-        return { name: "External Transaction", color: "secondary" };
+        return { name: `External ${tx}`, color: "secondary" };
       }
     }
   }
@@ -417,7 +421,7 @@ export default class TransactionHistory extends Vue {
       if (toString) {
         value = value.toString();
       } else {
-        value = value.toFixed(4);
+        value = Number(value.toFixed(4));
       }
       return `${value.toString()} ${transaction.tokenName?.toUpperCase()}`;
     } else {
