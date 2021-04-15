@@ -1563,11 +1563,11 @@ export default class SendMoney extends Vue {
             this.$store.state.networkName.toLowerCase() &&
           c.address === this.$store.state.selectedAddress
       );
-      if (!mainCurrency?.balance) {
-        throw new Error(
-          `Your ${this.mainCurrency} balance is 0, you need some amount to approve the token`
-        );
-      }
+      // if (!mainCurrency?.balance) {
+      //   throw new Error(
+      //     `Your ${this.mainCurrency} balance is 0, you need some amount to approve the token`
+      //   );
+      // }
       if (!this.getBalanceCurrency?.allowancePending) {
         this.approveLoadingStatus = true;
         this.currentlyApproved = coin;
