@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { UserNotification } from ".";
+import { BalanceInterface } from "@/static/balance";
 
 const BACKEND_URL = process.env.VUE_APP_BACKEND_URL;
 export class Fetcher {
@@ -397,6 +398,28 @@ export class Fetcher {
         chainId,
         amount,
       },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return fetch.data;
+  }
+
+  static async getCachedTokenList(token: string): Promise<BalanceInterface[]> {
+    const fetch = await Fetcher.get(`/user/token-list/cached`);
+    return fetch.data;
+  }
+
+  static async getDefaultTokenList(token: string): Promise<BalanceInterface[]> {
+    const fetch = await Fetcher.get(`/user/token-list/default`);
+    return fetch.data;
+  }
+
+  static async addAsset(
+    token: string,
+    value: string
+  ): Promise<BalanceInterface> {
+    const fetch = await Fetcher.post(
+      `/user/asset/add/${value}`,
+      {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
     return fetch.data;

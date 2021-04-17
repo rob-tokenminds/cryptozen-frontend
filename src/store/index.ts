@@ -19,11 +19,7 @@ import {
   TransactionInterface,
 } from "./fetcher";
 import cryptozenabi from "@/static/cryptozenabi";
-// import bignumber from "bignumber.js";
 import fromExponential from "from-exponential";
-// import cryptozen_contract from "@/static/cryptozen_contract";
-// import VuexPersistence from "vuex-persist";
-const StaticBalances = Balances;
 export interface updateCoinBalanceParams {
   web3: Web3;
   coin: BalanceInterface;
@@ -51,6 +47,7 @@ export interface storeInterface {
   tier: [];
   rewards: RewardInterface[];
   claimableReward: number;
+  tokenList: BalanceInterface[];
 }
 // const vuexLocal = new VuexPersistence<storeInterface>({
 //   storage: window.localStorage,
@@ -108,6 +105,7 @@ const store: StoreOptions<storeInterface> = {
     tier: [],
     rewards: [],
     claimableReward: 0,
+    tokenList: [],
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -697,6 +695,23 @@ const store: StoreOptions<storeInterface> = {
           state.transactions.push(tx);
         }
       }
+    },
+    async getTokenList({ state }) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const tokenList = await Fetcher.getCachedTokenList(token);
+      console.log("tokenList", tokenList);
+      state.tokenList = tokenList;
+    },
+    async getDefaultTokenList({ state }) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const tokenList = await Fetcher.getDefaultTokenList(token);
+      console.log("tokenList", tokenList);
+      state.balances = tokenList;
+    },
+    async addAsset({ state }, value: string) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const asset = await Fetcher.addAsset(token, value);
+      console.log("asset", asset);
     },
   },
   getters: {

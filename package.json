@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve --mode development",
     "build": "vue-cli-service build --mode production",
     "lint": "vue-cli-service lint",
-    "test:bot": "ts-node --project tsconfig-test.json test.ts"
+    "test:bot": "ts-node --project tsconfig-test.json src/test/test.ts"
   },
   "dependencies": {
     "@ethersproject/contracts": "^5.1.0",

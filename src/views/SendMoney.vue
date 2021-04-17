@@ -1514,7 +1514,7 @@ export default class SendMoney extends Vue {
         ) as CoingeckoInterface;
       } else {
         axiosGet = await axios.get(
-          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=binancecoin`
+          `4. Create ‘Performance’ view where all the assets of the user are show (both ETH and BSC), with a combined performance graph (of all assets on both blockchains) and individual performance per asset.markets?vs_currency=usd&ids=binancecoin`
         );
         const data = axiosGet.data as CoingeckoInterface[];
         this.ethereumPrice = data.find(

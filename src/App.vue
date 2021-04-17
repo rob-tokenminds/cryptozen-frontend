@@ -75,7 +75,18 @@
             >
           </v-list-item-content>
         </v-list-item>
-
+        <v-list-item>
+          <v-btn
+            outlined
+            class="mt-2 mb-2"
+            large
+            color="white"
+            block
+            @click="addNewAsset = true"
+          >
+            <v-icon left> mdi-plus </v-icon> Add Asset</v-btn
+          >
+        </v-list-item>
         <v-list-item
           dense
           v-for="balance in balances"
@@ -84,7 +95,11 @@
           class=""
         >
           <v-list-item-avatar tile>
-            <v-img :src="require(`./assets/${balance.value}.svg`)"></v-img>
+            <v-img
+              v-if="!balance.logo"
+              :src="require(`./assets/${balance.value}.svg`)"
+            ></v-img>
+            <v-img v-else :src="balance.logo"></v-img>
           </v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title class="white--text text-subtitle-1"
@@ -145,6 +160,10 @@
       <!--        </v-list-item>-->
       <!--      </v-list>-->
     </v-navigation-drawer>
+
+    <v-dialog v-model="addNewAsset" transition="dialog-bottom-transition">
+      <NewAsset></NewAsset>
+    </v-dialog>
 
     <v-dialog
       v-model="sendMoneyDialog"
@@ -229,6 +248,7 @@ import Web3 from "web3";
 import { AbstractProvider } from "web3-core";
 import CurrencyModel from "./models/CurrencyModel";
 import HRNumber from "human-readable-numbers";
+import NewAsset from "./views/NewAsset.vue";
 // import { Signer } from "ethers";
 interface Window {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -239,7 +259,7 @@ declare const window: Window;
 
 const chainIDS = [3, 97, 56];
 
-@Component({ name: "App", components: { SendMoney, ProfileMenu } })
+@Component({ name: "App", components: { SendMoney, ProfileMenu, NewAsset } })
 export default class App extends Vue {
   icons = {
     mdiHomeOutline,
@@ -249,7 +269,7 @@ export default class App extends Vue {
     mdiDotsVertical,
   };
   drawer = true;
-
+  addNewAsset = false;
   sendMoneyDialog = false;
   web3!: Web3;
 
@@ -528,6 +548,7 @@ export default class App extends Vue {
   }
 
   async mounted(): Promise<void> {
+    await this.$store.dispatch("getDefaultTokenList");
     this.$nextTick(async () => {
       if (window.ethereum == undefined) {
         if (this.isMobile) {
