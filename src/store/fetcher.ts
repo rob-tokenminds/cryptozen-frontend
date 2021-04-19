@@ -416,12 +416,19 @@ export class Fetcher {
   static async addAsset(
     token: string,
     value: string
-  ): Promise<BalanceInterface> {
+  ): Promise<BalanceInterface[]> {
     const fetch = await Fetcher.post(
       `/user/asset/add/${value}`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
+    return fetch.data;
+  }
+
+  static async userAssetList(token: string): Promise<BalanceInterface[]> {
+    const fetch = await Fetcher.get(`/user/asset/list`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return fetch.data;
   }
 }

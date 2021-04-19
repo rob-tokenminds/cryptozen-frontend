@@ -18,6 +18,12 @@ export interface BalanceInterface {
   chainIds: number[];
   logo?: string;
   mainAsset: boolean;
+  balanceTotal?(
+    chainId: string | undefined,
+    address: string | undefined,
+    hr: boolean
+  ): string;
+  realBalanceTotal?(): number;
 }
 
 export const CRYPTOZEN_CONTRACTS: { [key in NETWORKS_LIST]: string } = {

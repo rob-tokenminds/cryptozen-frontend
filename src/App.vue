@@ -3,7 +3,7 @@
     style="background: #e5e5e5"
     v-if="$route.path !== `/create-address-book` && isLogin"
   >
-    <v-navigation-drawer v-model="drawer" app color="primary">
+    <v-navigation-drawer v-model="drawer" app color="primary" width="320">
       <v-list>
         <v-list-item>
           <v-img
@@ -71,15 +71,24 @@
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="white--text"
-              ><h3>Balances</h3></v-list-item-title
+              ><h3>Balances</h3>
+            </v-list-item-title>
+            <v-checkbox
+              style="color: white !important"
+              class="ml-3 white--text"
+              color="white"
+              v-model="zeroBalance"
             >
+              <template v-slot:label>
+                <div class="white--text">Show Zero Balance</div>
+              </template>
+            </v-checkbox>
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-btn
             outlined
             class="mt-2 mb-2"
-            large
             color="white"
             block
             @click="addNewAsset = true"
@@ -87,47 +96,73 @@
             <v-icon left> mdi-plus </v-icon> Add Asset</v-btn
           >
         </v-list-item>
-        <v-list-item
-          dense
-          v-for="balance in balances"
-          :key="balance.value"
-          :to="`/balance/${balance.value}`"
-          class=""
-        >
-          <v-list-item-avatar tile>
-            <v-img
-              v-if="!balance.logo"
-              :src="require(`./assets/${balance.value}.svg`)"
-            ></v-img>
-            <v-img v-else :src="balance.logo"></v-img>
-          </v-list-item-avatar>
-          <v-list-item-content>
-            <v-list-item-title class="white--text text-subtitle-1"
-              >{{ getBalanceTotal(balance) }}
-              {{ getBalanceName(balance) }}</v-list-item-title
-            >
+        <!--        <v-list-item>-->
+        <!--          <v-btn-->
+        <!--            outlined-->
+        <!--            class="mt-2 mb-2"-->
+        <!--            color="white"-->
+        <!--            block-->
+        <!--            @click="addWallet()"-->
+        <!--          >-->
+        <!--            <v-icon left> mdi-plus </v-icon> Add Wallet</v-btn-->
+        <!--          >-->
+        <!--        </v-list-item>-->
+        <v-list-group dense v-for="balance in balances" :key="balance.value">
+          <template v-slot:prependIcon>
+            <v-avatar size="35" tile>
+              <v-img
+                v-if="!balance.logo"
+                :src="require(`./assets/${balance.value}.svg`)"
+              ></v-img>
+              <v-img v-else :src="balance.logo"></v-img>
+            </v-avatar>
+          </template>
 
-            <v-list-item-content>
-              <v-list-item
-                dense
-                v-for="(currency, index) in balance.currency"
-                :to="`/balance/${balance.value}/${currency.chainId}/${currency.address}`"
-                :key="index"
+          <template v-slot:appendIcon>
+            <v-icon color="white"> mdi-menu-down </v-icon>
+          </template>
+
+          <template v-slot:activator>
+            <v-list-item dense :to="`/balance/${balance.value}`" class="">
+              <v-list-item-title class="white--text text-subtitle-1"
+                >{{
+                  typeof balance.balanceTotal === "function"
+                    ? getHrNumber(balance.realBalanceTotal())
+                    : "0"
+                }}
+                {{ getBalanceName(balance) }}</v-list-item-title
               >
-                <v-list-item-subtitle class="white--text">
-                  <v-avatar size="20">
-                    <v-img
-                      :src="
-                        require(`./assets/${currency.network.toLowerCase()}.svg`)
-                      "
-                    ></v-img
-                  ></v-avatar>
-                  {{ shortAddress(currency.address) }}</v-list-item-subtitle
-                >
-              </v-list-item>
-            </v-list-item-content>
+            </v-list-item>
+          </template>
+
+          <v-list-item-content class="mt-n5 ml-9" v-if="balance.currency">
+            <v-list-item
+              dense
+              v-for="(currency, index) in balance.currency.sort((c) => {
+                c.network.toLowerCase() ===
+                $store.state.networkName.toLowerCase()
+                  ? -1
+                  : 1;
+                return 1;
+              })"
+              :to="`/balance/${balance.value}/${currency.chainId}/${currency.address}`"
+              :key="index"
+            >
+              <v-list-item-subtitle class="white--text">
+                <v-avatar size="20">
+                  <v-img
+                    :src="
+                      require(`./assets/${currency.network.toLowerCase()}.svg`)
+                    "
+                  ></v-img
+                ></v-avatar>
+                {{ shortAddress(currency.address) }} ~
+                {{ getHrNumber(Number(currency.balance)) }}
+                {{ getBalanceName(balance) }}</v-list-item-subtitle
+              >
+            </v-list-item>
           </v-list-item-content>
-        </v-list-item>
+        </v-list-group>
       </v-list>
 
       <!--      <v-list>-->
@@ -241,6 +276,7 @@ import {
   mdiBookOpenBlankVariant,
   mdiBellOutline,
   mdiDotsVertical,
+  mdiMenuRight,
 } from "@mdi/js";
 import SendMoney from "./views/SendMoney.vue";
 import ProfileMenu from "./views/shared/ProfileMenu.vue";
@@ -267,37 +303,55 @@ export default class App extends Vue {
     mdiBookOpenBlankVariant,
     mdiBellOutline,
     mdiDotsVertical,
+    mdiMenuRight,
   };
   drawer = true;
   addNewAsset = false;
   sendMoneyDialog = false;
   web3!: Web3;
-
-  getBalanceTotal(balance: BalanceInterface): string {
-    // console.log("balance", balance);
-    // if (balance.currency?.balanceReverse) {
-    //   // console.log("this.$route.params.chain_id", this.$route.params.chain_id);
-    if (
-      this.$route.params.chain_id &&
-      this.$route.params.address &&
-      balance.currency
-    ) {
-      const currency = balance.currency.find(
-        (c) =>
-          c.chainId === Number(this.$route.params.chain_id) &&
-          c.address === this.$route.params.address
-      );
-      if (currency) {
-        return this.getHrNumber(Number(currency.balance));
-      }
-      return "0";
-    }
-    let total = 0;
-    for (const currency of balance.currency ? balance.currency : []) {
-      total += Number(currency.balance);
-    }
-    return this.getHrNumber(total);
+  zeroBalance = true;
+  console(a: string, b: string) {
+    console.log(a, b);
   }
+
+  async addWallet(): Promise<void> {
+    // const web3 = this.$store.getters["getWeb3"] as Web3;
+    // console.log("web3", web3);
+    // const accounts = await web3.eth.requestAccounts();
+    // console.log("accounts", accounts);
+    // await this.$store.dispatch("updateAddresses", accounts);
+
+    const web3 = new Web3(window.ethereum);
+    const accounts = await web3.eth.getAccounts();
+    console.log("accounts", accounts);
+  }
+
+  // getBalanceTotal(balance: BalanceInterface): string {
+  //   // console.log("balance", balance);
+  //   // if (balance.currency?.balanceReverse) {
+  //   //   // console.log("this.$route.params.chain_id", this.$route.params.chain_id);
+  //   if (
+  //     this.$route.params.chain_id &&
+  //     this.$route.params.address &&
+  //     balance.currency
+  //   ) {
+  //     const currency = balance.currency.find(
+  //       (c) =>
+  //         c.chainId === Number(this.$route.params.chain_id) &&
+  //         c.address.toLowerCase() === this.$route.params.address.toLowerCase()
+  //     );
+  //     if (currency) {
+  //       console.log("currency", currency);
+  //       return this.getHrNumber(Number(currency.balance));
+  //     }
+  //     return "0";
+  //   }
+  //   let total = 0;
+  //   for (const currency of balance.currency ? balance.currency : []) {
+  //     total += Number(currency.balance);
+  //   }
+  //   return this.getHrNumber(total);
+  // }
 
   get isReversed(): boolean {
     return (
@@ -306,7 +360,31 @@ export default class App extends Vue {
   }
 
   get balances(): BalanceInterface[] {
-    return this.$store.state.balances as BalanceInterface[];
+    let balances = this.$store.state.balances as BalanceInterface[];
+    balances = balances.sort((b, c) => {
+      if (b.value === "ninja") {
+        return 1;
+      } else {
+        if (
+          typeof b.realBalanceTotal === "function" &&
+          typeof c.realBalanceTotal === "function"
+        ) {
+          return Number(c.realBalanceTotal()) - Number(b.realBalanceTotal());
+        } else {
+          return 1;
+        }
+      }
+    });
+    if (!this.zeroBalance) {
+      balances = balances.filter((b) => {
+        if (typeof b.realBalanceTotal === "function") {
+          return !(Number(b.realBalanceTotal()) === 0);
+        } else {
+          return false;
+        }
+      });
+    }
+    return balances;
   }
 
   get selectedAddress(): string {
@@ -425,7 +503,7 @@ export default class App extends Vue {
 
   shortAddress(address: string): string {
     if (address)
-      return `${address.substring(0, 6)}....${address.substring(
+      return `${address.substring(0, 8)}....${address.substring(
         address.length - 4,
         address.length
       )}`;
@@ -504,6 +582,7 @@ export default class App extends Vue {
           if (!profile) {
             throw new Error(`Token is expired, will re-login`);
           }
+          await this.$store.dispatch("assetList");
 
           // this.$socket.send(
           //   JSON.stringify({
@@ -521,7 +600,7 @@ export default class App extends Vue {
           const balances: BalanceInterface[] = this.$store.state.balances;
 
           for (const coin of balances) {
-            for (const address of accounts) {
+            for (const address of this.$store.state.userAddresses) {
               await this.$store.dispatch("updateCoinBalance", {
                 coin,
                 address,

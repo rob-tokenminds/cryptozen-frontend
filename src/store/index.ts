@@ -20,6 +20,7 @@ import {
 } from "./fetcher";
 import cryptozenabi from "@/static/cryptozenabi";
 import fromExponential from "from-exponential";
+import HRNumber from "human-readable-numbers";
 export interface updateCoinBalanceParams {
   web3: Web3;
   coin: BalanceInterface;
@@ -48,6 +49,7 @@ export interface storeInterface {
   rewards: RewardInterface[];
   claimableReward: number;
   tokenList: BalanceInterface[];
+  userAddresses: string[];
 }
 // const vuexLocal = new VuexPersistence<storeInterface>({
 //   storage: window.localStorage,
@@ -106,6 +108,7 @@ const store: StoreOptions<storeInterface> = {
     rewards: [],
     claimableReward: 0,
     tokenList: [],
+    userAddresses: [],
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -147,24 +150,22 @@ const store: StoreOptions<storeInterface> = {
           if (web3) {
             let newBalance;
             if (coin.mainCurrency) {
-              await web3.eth
-                .getBalance(state.selectedAddress)
-                .then(async (balanceInWei) => {
-                  if (web3) {
-                    newBalance = new CurrencyModel(
-                      address,
-                      web3.utils.fromWei(balanceInWei, "ether"),
-                      coin.value,
-                      true,
-                      false,
-                      "",
-                      NETWORK as NETWORKS,
-                      CHAIN_IDS[
-                        `${NETWORK}_${state.networkType.toUpperCase()}` as "ETH_TESTNET"
-                      ]
-                    );
-                  }
-                });
+              await web3.eth.getBalance(address).then(async (balanceInWei) => {
+                if (web3) {
+                  newBalance = new CurrencyModel(
+                    address,
+                    web3.utils.fromWei(balanceInWei, "ether"),
+                    coin.value,
+                    true,
+                    false,
+                    "",
+                    NETWORK as NETWORKS,
+                    CHAIN_IDS[
+                      `${NETWORK}_${state.networkType.toUpperCase()}` as "ETH_TESTNET"
+                    ]
+                  );
+                }
+              });
             } else {
               if (coin.decimal && coin.contractAddress) {
                 const contractAddress = coin.contractAddress[networkName];
@@ -175,7 +176,7 @@ const store: StoreOptions<storeInterface> = {
                     contractAddress
                   );
                   await contract.methods
-                    .balanceOf(state.selectedAddress)
+                    .balanceOf(address)
                     .call({ from: state.selectedAddress })
                     .then(async (unscaledBalance: number) => {
                       if (decimal && web3) {
@@ -187,20 +188,17 @@ const store: StoreOptions<storeInterface> = {
                           CRYPTOZEN_CONTRACTS[networkName];
 
                         const allowance = await contract.methods
-                          .allowance(
-                            window.ethereum.selectedAddress,
-                            CRYPTOZEN_CONTRACT
-                          )
+                          .allowance(address, CRYPTOZEN_CONTRACT)
                           .call();
                         let isApproved = false;
                         let hash = "";
-                        console.log("allowance", allowance);
+
                         if (unscaledBalance > 0) {
                           if (allowance === 0 || allowance === "0") {
                             const token = Vue.$cookies.get("cryptozen_token");
                             hash = await Fetcher.getApproval(
                               token,
-                              window.ethereum.selectedAddress,
+                              address,
                               contractAddress,
                               state.chainId
                             );
@@ -222,7 +220,6 @@ const store: StoreOptions<storeInterface> = {
                           isApproved = true;
                         }
 
-                        console.log("isApproved", isApproved);
                         const BN = web3.utils
                           .toBN(unscaledBalance)
                           .div(web3.utils.toBN(10 ** decimal));
@@ -243,6 +240,7 @@ const store: StoreOptions<storeInterface> = {
                 }
               }
             }
+            console.log("newBalance", newBalance);
             if (newBalance) {
               const index = state.balances.findIndex(
                 (b) => b.value === coin.value
@@ -273,9 +271,30 @@ const store: StoreOptions<storeInterface> = {
     },
     async updateAddresses({ state }, addresses: string[]) {
       const balances = [];
+
+      const addressesLocal = localStorage.getItem("watchAddresses");
+      let addressesData: string[] = [];
+      if (addressesLocal) {
+        addressesData = JSON.parse(addressesLocal);
+      } else {
+        addressesData = addresses;
+        localStorage.setItem("watchAddresses", JSON.stringify(addressesData));
+      }
+
+      for (const address of addresses) {
+        if (
+          !addressesData.find((a) => a.toLowerCase() === address.toLowerCase())
+        )
+          addressesData.push(address);
+      }
+      state.userAddresses = addressesData;
+      localStorage.setItem(
+        "watchAddresses",
+        JSON.stringify(state.userAddresses)
+      );
       for (const balance of state.balances) {
         const currencies = [];
-        for (const address of addresses) {
+        for (const address of state.userAddresses) {
           for (const network of Object.keys(NETWORKS)) {
             let skip = false;
             if (
@@ -705,13 +724,106 @@ const store: StoreOptions<storeInterface> = {
     async getDefaultTokenList({ state }) {
       const token = Vue.$cookies.get("cryptozen_token");
       const tokenList = await Fetcher.getDefaultTokenList(token);
+      const finalTokenList = [];
+      for (const token of tokenList) {
+        token.realBalanceTotal = function () {
+          let total = 0;
+          for (const currency of this.currency ? this.currency : []) {
+            total += Number(currency.balance);
+          }
+          return total;
+        };
+        token.balanceTotal = function (
+          chainIda: string | undefined,
+          address: string | undefined,
+          hr = true
+        ) {
+          function getHrNumber(number: number): string {
+            if (number > 99999) {
+              return HRNumber.toHumanString(number);
+            } else {
+              return number.toFixed(2);
+            }
+          }
+
+          const chainId = Number(chainIda);
+          if (chainId && address && this.currency) {
+            const currency = this.currency.find(
+              (c) =>
+                c.chainId === chainId &&
+                c.address.toLowerCase() === address.toLowerCase()
+            );
+            if (currency) {
+              console.log("currency", this.currency);
+              if (hr) return getHrNumber(Number(currency.balance));
+              else return currency.balance;
+            }
+            return "0";
+          }
+          let total = 0;
+          for (const currency of this.currency ? this.currency : []) {
+            total += Number(currency.balance);
+          }
+          if (hr) return getHrNumber(total);
+          else return total.toString();
+        };
+        finalTokenList.push(token);
+      }
       console.log("tokenList", tokenList);
       state.balances = tokenList;
     },
-    async addAsset({ state }, value: string) {
+    async addAsset({ state, dispatch }, value: string) {
       const token = Vue.$cookies.get("cryptozen_token");
-      const asset = await Fetcher.addAsset(token, value);
-      console.log("asset", asset);
+      const assets = await Fetcher.addAsset(token, value);
+      let asset = assets[0];
+      const currencies: CurrencyModel[] = [];
+      for (const address of state.userAddresses) {
+        for (const network of Object.keys(NETWORKS)) {
+          let skip = false;
+          if (
+            asset.network &&
+            asset.network?.toLowerCase() !== network.toLowerCase()
+          ) {
+            skip = true;
+          }
+          if (!skip)
+            currencies.push(
+              new CurrencyModel(
+                address,
+                "0",
+                asset.value,
+                false,
+                false,
+                "",
+                network as NETWORKS,
+                CHAIN_IDS[
+                  `${network}_${state.networkType.toUpperCase()}` as "ETH_TESTNET"
+                ]
+              )
+            );
+        }
+      }
+      asset = Object.assign(asset, {
+        currency: currencies.sort((a, b) => {
+          if (a.network.toLowerCase() === state.networkName.toString()) {
+            return 1;
+          } else {
+            return 1;
+          }
+        }),
+      });
+      state.balances.push(asset);
+      for (const address of state.userAddresses) {
+        await dispatch("updateCoinBalance", { coin: asset, address });
+      }
+    },
+
+    async assetList({ state }) {
+      const token = Vue.$cookies.get("cryptozen_token");
+      const assets = await Fetcher.userAssetList(token);
+      for (const asset of assets) {
+        state.balances.push(asset);
+      }
     },
   },
   getters: {
