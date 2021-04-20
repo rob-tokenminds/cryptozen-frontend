@@ -1163,7 +1163,7 @@ import {
 import Web3 from "web3";
 import { AbstractProvider, TransactionConfig } from "web3-core";
 import CryptoJS from "crypto-js";
-import { EventSourcePolyfill, NativeEventSource } from "event-source-polyfill";
+// import { EventSourcePolyfill, NativeEventSource } from "event-source-polyfill";
 import Bignumber from "bignumber.js";
 import BigNumber from "bignumber.js";
 import { shleemy } from "shleemy";
@@ -1185,10 +1185,10 @@ import {
 import { providers } from "ethers";
 import axios from "axios";
 import CurrencyModel from "@/models/CurrencyModel";
-
-const EventSource = NativeEventSource || EventSourcePolyfill;
-// OR: may also need to set as global property
-global.EventSource = NativeEventSource || EventSourcePolyfill;
+import { CoingeckoInterface } from "../interfaces";
+// const EventSource = NativeEventSource || EventSourcePolyfill;
+// // OR: may also need to set as global property
+// global.EventSource = NativeEventSource || EventSourcePolyfill;
 @Component({ name: "SendMoney", components: { ProfileMenu, SelectAmount } })
 export default class SendMoney extends Vue {
   @Prop({ type: Number }) readonly step!: number;
@@ -2496,35 +2496,6 @@ export interface Roi {
   times: number;
   currency: string;
   percentage: number;
-}
-
-export interface CoingeckoInterface {
-  id: string;
-  symbol: string;
-  name: string;
-  image: string;
-  current_price: number;
-  market_cap: number;
-  market_cap_rank: number;
-  fully_diluted_valuation?: any;
-  total_volume: number;
-  high_24h: number;
-  low_24h: number;
-  price_change_24h: number;
-  price_change_percentage_24h: number;
-  market_cap_change_24h: number;
-  market_cap_change_percentage_24h: number;
-  circulating_supply: number;
-  total_supply?: any;
-  max_supply?: any;
-  ath: number;
-  ath_change_percentage: number;
-  ath_date: Date;
-  atl: number;
-  atl_change_percentage: number;
-  atl_date: Date;
-  roi: Roi;
-  last_updated: Date;
 }
 
 function sleep(ms: number): Promise<unknown> {

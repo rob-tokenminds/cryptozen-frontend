@@ -176,7 +176,7 @@ import { Fetcher } from "../../store/fetcher";
 import { Vue, Component, Prop, PropSync, Watch } from "vue-property-decorator";
 import { UserNotification } from "@/store";
 import { mdiBellAlertOutline } from "@mdi/js";
-import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
+// import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
 import { BalanceInterface } from "@/static/balance";
 import ChainIds from "../../static/chain_ids";
 import { AbstractProvider } from "web3-core";
@@ -185,9 +185,9 @@ import Web3 from "web3";
 // import cryptozenabi from "../../static/cryptozenabi";
 // import Bignumber from "bignumber.js";
 
-const EventSource = NativeEventSource || EventSourcePolyfill;
-// OR: may also need to set as global property
-global.EventSource = NativeEventSource || EventSourcePolyfill;
+// const EventSource = NativeEventSource || EventSourcePolyfill;
+// // OR: may also need to set as global property
+// global.EventSource = NativeEventSource || EventSourcePolyfill;
 @Component({ name: "ProfileMenu", components: {} })
 export default class ProfileMenu extends Vue {
   @Prop(Boolean) readonly isMobile!: boolean;

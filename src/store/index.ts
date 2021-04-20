@@ -21,6 +21,7 @@ import {
 import cryptozenabi from "@/static/cryptozenabi";
 import fromExponential from "from-exponential";
 import HRNumber from "human-readable-numbers";
+import { CoingeckoInterface } from "../interfaces";
 export interface updateCoinBalanceParams {
   web3: Web3;
   coin: BalanceInterface;
@@ -50,6 +51,7 @@ export interface storeInterface {
   claimableReward: number;
   tokenList: BalanceInterface[];
   userAddresses: string[];
+  coinGeckoPrices: CoingeckoInterface[];
 }
 // const vuexLocal = new VuexPersistence<storeInterface>({
 //   storage: window.localStorage,
@@ -109,6 +111,7 @@ const store: StoreOptions<storeInterface> = {
     claimableReward: 0,
     tokenList: [],
     userAddresses: [],
+    coinGeckoPrices: [],
   },
   mutations: {
     pushCurrencyBalances(state, ethereumBalanceModel: CurrencyModel) {
@@ -120,19 +123,6 @@ const store: StoreOptions<storeInterface> = {
       );
       state.balances.splice(findIndex, 1, balance);
     },
-    // SOCKET_ONMESSAGE(state, message) {
-    //   state.socket.message = message;
-    // },
-    // SOCKET_ONOPEN(state, event) {
-    //   Vue.prototype.$socket = event.currentTarget;
-    //   state.socket.isConnected = true;
-    // },
-    // SOCKET_ONCLOSE(state, event) {
-    //   state.socket.isConnected = false;
-    // },
-    // SOCKET_ONERROR(state, event) {
-    //   console.error(state, event);
-    // },
   },
   actions: {
     async updateCoinBalance(
@@ -240,7 +230,7 @@ const store: StoreOptions<storeInterface> = {
                 }
               }
             }
-            console.log("newBalance", newBalance);
+
             if (newBalance) {
               const index = state.balances.findIndex(
                 (b) => b.value === coin.value
@@ -258,7 +248,7 @@ const store: StoreOptions<storeInterface> = {
                     const result = Object.assign(state.balances[index], {
                       currency: currencies,
                     });
-                    console.log("result", result);
+
                     currencies.splice(currencyIndex, 1, newBalance);
                     state.balances.splice(index, 1, result);
                   }
@@ -294,8 +284,9 @@ const store: StoreOptions<storeInterface> = {
       );
       for (const balance of state.balances) {
         const currencies = [];
-        for (const address of state.userAddresses) {
-          for (const network of Object.keys(NETWORKS)) {
+
+        for (const network of Object.keys(NETWORKS)) {
+          for (const address of state.userAddresses) {
             let skip = false;
             if (
               balance.network &&
@@ -824,6 +815,9 @@ const store: StoreOptions<storeInterface> = {
       for (const asset of assets) {
         state.balances.push(asset);
       }
+    },
+    updateCoinGeckoPrices({ state }, price: CoingeckoInterface[]) {
+      state.coinGeckoPrices = price;
     },
   },
   getters: {

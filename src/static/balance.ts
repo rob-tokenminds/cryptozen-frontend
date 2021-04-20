@@ -24,6 +24,7 @@ export interface BalanceInterface {
     hr: boolean
   ): string;
   realBalanceTotal?(): number;
+  coinGeckoId?: string;
 }
 
 export const CRYPTOZEN_CONTRACTS: { [key in NETWORKS_LIST]: string } = {
