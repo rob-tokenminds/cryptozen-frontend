@@ -6,7 +6,6 @@ declare module "vuetify/lib" {
 declare module "console-subscriber";
 
 declare module "abi-decoder";
-declare module "vue-native-notification";
 declare module "event-source-polyfill";
 declare module "human-readable-numbers" {
   function toHumanString(number: number): string;

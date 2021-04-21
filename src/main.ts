@@ -9,7 +9,6 @@ import vuetify from "./plugins/vuetify";
 // import "roboto-fontface/css/roboto/roboto-fontface.css";
 import "@mdi/font/css/materialdesignicons.css";
 import "./styles/main.scss";
-import VueNativeNotification from "vue-native-notification";
 import VueCookies from "vue-cookies";
 // import VueNativeSock from "vue-native-websocket";
 // import VueSocketIO from "vue-socket.io";
@@ -29,11 +28,11 @@ import VueCookies from "vue-cookies";
 Vue.use(VueCookies);
 Vue.$cookies.config("1d");
 Vue.config.productionTip = false;
-Vue.use(VueNativeNotification, {
-  // Automatic permission request before
-  // showing notification (default: true)
-  requestOnNotify: true,
-});
+// Vue.use(VueNativeNotification, {
+//   // Automatic permission request before
+//   // showing notification (default: true)
+//   requestOnNotify: true,
+// });
 // Vue.use(VueNativeSock, process.env.VUE_APP_WEBSOCKET_URL, { store });
 new Vue({
   vuetify,
