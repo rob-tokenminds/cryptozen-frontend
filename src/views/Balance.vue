@@ -14,7 +14,10 @@
       <v-tooltip
         bottom
         v-else-if="
-          address.toLowerCase() !== $store.state.selectedAddress.toLowerCase()
+          address
+            ? address.toLowerCase() !==
+              $store.state.selectedAddress.toLowerCase()
+            : false
         "
       >
         <template v-slot:activator="{ on, attrs }">
