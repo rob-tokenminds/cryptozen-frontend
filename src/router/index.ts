@@ -7,6 +7,7 @@ import Balance from "../views/Balance.vue";
 import ReferralRewards from "../views/ReferralRewards.vue";
 import EmailVerification from "../views/EmailVerification.vue";
 import CreateAddressBook from "../views/CreateAddressBook.vue";
+import AddWallet from "@/views/AddWallet.vue";
 
 Vue.use(VueRouter);
 
@@ -46,6 +47,11 @@ const routes: Array<RouteConfig> = [
     name: "Create Address Book",
     component: CreateAddressBook,
   },
+  // {
+  //   path: "/add-wallet",
+  //   name: "Add Wallet",
+  //   component: AddWallet,
+  // },
 ];
 
 const router = new VueRouter({

@@ -11,6 +11,19 @@
           >Please switch the network to {{ chainNameReverse }} on Metamask</span
         >
       </v-tooltip>
+      <v-tooltip
+        bottom
+        v-else-if="
+          address.toLowerCase() !== $store.state.selectedAddress.toLowerCase()
+        "
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn class="ma-1" color="grey" v-bind="attrs" v-on="on"
+            >Send {{ getBalance.name }}</v-btn
+          >
+        </template>
+        <span>Please change the address on Metamask</span>
+      </v-tooltip>
       <v-btn
         v-else
         class="ma-1"
@@ -66,6 +79,39 @@
         ></SwapMoney>
       </v-card>
     </v-dialog>
+    <v-container>
+      <v-card flat :max-width="isMobile ? `100%` : `65%`">
+        <v-row dense>
+          <v-col
+            cols="6"
+            v-for="(currency, index) in getCurrency(balance.currency)"
+            :key="index"
+          >
+            <v-list-item dense>
+              <v-list-item-title>
+                <v-avatar size="30" class="mr-2">
+                  <v-img
+                    :src="
+                      require(`../assets/${currency.network.toLowerCase()}.svg`)
+                    "
+                  ></v-img
+                ></v-avatar>
+                {{ currency.address }} ~
+                {{ getHrNumber(Number(currency.balance)) }}
+                {{ balance.value.toUpperCase() }} (${{
+                  getHrNumber(
+                    getUsdPriceByAmount(
+                      Number(currency.balance),
+                      balance.coinGeckoId
+                    )
+                  )
+                }})</v-list-item-title
+              >
+            </v-list-item>
+          </v-col>
+        </v-row>
+      </v-card>
+    </v-container>
 
     <TransactionHistory
       :label="`Activity on ${balanceTitle}`"
@@ -81,6 +127,8 @@ import SendMoney from "./SendMoney.vue";
 import SwapMoney from "./SwapMoney.vue";
 import Web3 from "web3";
 import CurrencyModel from "@/models/CurrencyModel";
+import HRNumber from "human-readable-numbers";
+import { CoingeckoInterface } from "@/interfaces";
 @Component({
   name: "Balance",
   components: { TransactionHistory, SendMoney, SwapMoney },
@@ -91,6 +139,78 @@ export default class Balance extends Vue {
   swapMoneyDialog = false;
   loadingApprove = false;
   label = "Approve contract address";
+
+  get coinGeckoPrices(): CoingeckoInterface[] {
+    return this.$store.state.coinGeckoPrices;
+  }
+
+  getUsdPriceByAmount(amount: number, coinGeckoId: string): number {
+    if (coinGeckoId && amount) {
+      const coinGeckoPrice = this.coinGeckoPrices.find(
+        (c) => c.id === coinGeckoId
+      );
+      if (coinGeckoPrice) {
+        return amount * coinGeckoPrice.current_price;
+      }
+    }
+
+    return 0;
+  }
+
+  getHrNumber(number: number): string {
+    if (number > 999) {
+      return HRNumber.toHumanString(number);
+    } else {
+      return Number(number.toFixed(4)).toString();
+    }
+  }
+
+  get address(): string {
+    return this.$route.params.address;
+  }
+
+  get coin(): string {
+    return this.$route.params.coin;
+  }
+
+  get chain_id(): string {
+    return this.$route.params.chain_id;
+  }
+
+  get network(): string {
+    const chainId = Number(this.chain_id);
+    switch (chainId) {
+      case 1:
+      case 3:
+        return "eth";
+
+      case 56:
+      case 97:
+        return "bsc";
+    }
+    return "";
+  }
+
+  get balance(): BalanceInterface | undefined {
+    const balances: BalanceInterface[] = this.$store.state.balances;
+
+    return balances.find(
+      (b) => b.value.toLowerCase() === this.coin.toLowerCase()
+    );
+  }
+
+  getCurrency(currency: CurrencyModel[]): CurrencyModel[] {
+    if (this.chain_id && this.address) {
+      return currency.filter((c) => {
+        console.log("this.network", this.network);
+        return (
+          c.address.toLowerCase() === this.address.toLowerCase() &&
+          c.network.toLowerCase() === this.network
+        );
+      });
+    }
+    return currency;
+  }
 
   get isMobile(): boolean {
     return this.$vuetify.breakpoint.xsOnly;

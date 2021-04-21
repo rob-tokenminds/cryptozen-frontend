@@ -6,6 +6,7 @@ import Balances, {
   BalanceInterface,
   CHAIN_IDS,
   CRYPTOZEN_CONTRACTS,
+  DefaultTokens,
   NETWORKS,
   NETWORKS_LIST,
   NODE_URLS,
@@ -22,6 +23,9 @@ import cryptozenabi from "@/static/cryptozenabi";
 import fromExponential from "from-exponential";
 import HRNumber from "human-readable-numbers";
 import { CoingeckoInterface } from "../interfaces";
+import BigNumber from "bignumber.js";
+import axios from "axios";
+import { addHours } from "date-fns";
 export interface updateCoinBalanceParams {
   web3: Web3;
   coin: BalanceInterface;
@@ -179,12 +183,13 @@ const store: StoreOptions<storeInterface> = {
 
                         const allowance = await contract.methods
                           .allowance(address, CRYPTOZEN_CONTRACT)
-                          .call();
+                          .call({ from: state.selectedAddress });
+                        console.log("allowance", allowance);
                         let isApproved = false;
                         let hash = "";
-
-                        if (unscaledBalance > 0) {
-                          if (allowance === 0 || allowance === "0") {
+                        let tx;
+                        if (Number(unscaledBalance) > 0) {
+                          if (Number(allowance) === 0) {
                             const token = Vue.$cookies.get("cryptozen_token");
                             hash = await Fetcher.getApproval(
                               token,
@@ -192,11 +197,9 @@ const store: StoreOptions<storeInterface> = {
                               contractAddress,
                               state.chainId
                             );
-                            console.log("hash", hash);
+
                             if (hash) {
-                              const tx = await web3.eth.getTransactionReceipt(
-                                hash
-                              );
+                              tx = await web3.eth.getTransactionReceipt(hash);
                               if (tx && tx.status) {
                                 isApproved = true;
                               }
@@ -206,20 +209,24 @@ const store: StoreOptions<storeInterface> = {
                           } else {
                             isApproved = true;
                           }
-                        } else {
-                          isApproved = true;
                         }
+                        const balance = new BigNumber(unscaledBalance).div(
+                          10 ** decimal
+                        );
 
-                        const BN = web3.utils
-                          .toBN(unscaledBalance)
-                          .div(web3.utils.toBN(10 ** decimal));
+                        // if (coin.value === "uni") {
+                        //   console.log("uniuniunscaledBalance", unscaledBalance);
+                        //   console.log("uniunidecimal", decimal);
+                        //   console.log("uniuni", balance.toString());
+                        // }
+
                         newBalance = new CurrencyModel(
                           address,
-                          BN.toString(),
+                          balance.toString(),
                           coin.value,
                           Number(allowance) > 0,
                           !isApproved,
-                          hash,
+                          hash ? (tx ? hash : "") : "",
                           NETWORK as NETWORKS,
                           CHAIN_IDS[
                             `${NETWORK}_${state.networkType.toUpperCase()}` as "ETH_TESTNET"
@@ -241,15 +248,14 @@ const store: StoreOptions<storeInterface> = {
                   const currencyIndex = currencies.findIndex(
                     (c) =>
                       c.coin === coin.value &&
-                      c.address === address &&
+                      c.address.toLowerCase() === address.toLowerCase() &&
                       c.network === NETWORK
                   );
                   if (currencyIndex >= 0) {
+                    currencies.splice(currencyIndex, 1, newBalance);
                     const result = Object.assign(state.balances[index], {
                       currency: currencies,
                     });
-
-                    currencies.splice(currencyIndex, 1, newBalance);
                     state.balances.splice(index, 1, result);
                   }
                 }
@@ -259,7 +265,7 @@ const store: StoreOptions<storeInterface> = {
         }
       }
     },
-    async updateAddresses({ state }, addresses: string[]) {
+    async updateAddresses({ state, dispatch }, addresses: string[]) {
       const balances = [];
 
       const addressesLocal = localStorage.getItem("watchAddresses");
@@ -290,7 +296,9 @@ const store: StoreOptions<storeInterface> = {
             let skip = false;
             if (
               balance.network &&
-              balance.network?.toLowerCase() !== network.toLowerCase()
+              !balance.network.find(
+                (n) => n.toLowerCase() === network.toLowerCase()
+              )
             ) {
               skip = true;
             }
@@ -314,6 +322,7 @@ const store: StoreOptions<storeInterface> = {
         balances.push(Object.assign(balance, { currency: currencies }));
       }
       state.balances = balances;
+      dispatch("updateBalanceFunctions");
     },
     async approve({ state }, coin: BalanceInterface) {
       const web3 = state.web3;
@@ -328,7 +337,9 @@ const store: StoreOptions<storeInterface> = {
             const approveData = await contract.methods
               .approve(
                 CRYPTOZEN_CONTRACT,
-                fromExponential(Number(90000000000 * 10 ** 18).toString())
+                fromExponential(
+                  Number(999999999 * 10 ** coin.decimal[networkName]).toString()
+                )
               )
               .encodeABI();
             const params = {
@@ -712,68 +723,28 @@ const store: StoreOptions<storeInterface> = {
       console.log("tokenList", tokenList);
       state.tokenList = tokenList;
     },
-    async getDefaultTokenList({ state }) {
+    async getDefaultTokenList({ state, dispatch }) {
       const token = Vue.$cookies.get("cryptozen_token");
       const tokenList = await Fetcher.getDefaultTokenList(token);
-      const finalTokenList = [];
-      for (const token of tokenList) {
-        token.realBalanceTotal = function () {
-          let total = 0;
-          for (const currency of this.currency ? this.currency : []) {
-            total += Number(currency.balance);
-          }
-          return total;
-        };
-        token.balanceTotal = function (
-          chainIda: string | undefined,
-          address: string | undefined,
-          hr = true
-        ) {
-          function getHrNumber(number: number): string {
-            if (number > 99999) {
-              return HRNumber.toHumanString(number);
-            } else {
-              return number.toFixed(2);
-            }
-          }
 
-          const chainId = Number(chainIda);
-          if (chainId && address && this.currency) {
-            const currency = this.currency.find(
-              (c) =>
-                c.chainId === chainId &&
-                c.address.toLowerCase() === address.toLowerCase()
-            );
-            if (currency) {
-              console.log("currency", this.currency);
-              if (hr) return getHrNumber(Number(currency.balance));
-              else return currency.balance;
-            }
-            return "0";
-          }
-          let total = 0;
-          for (const currency of this.currency ? this.currency : []) {
-            total += Number(currency.balance);
-          }
-          if (hr) return getHrNumber(total);
-          else return total.toString();
-        };
-        finalTokenList.push(token);
-      }
-      console.log("tokenList", tokenList);
+      console.log("getDefaultTokenList", tokenList);
       state.balances = tokenList;
+      dispatch("updateBalanceFunctions");
     },
-    async addAsset({ state, dispatch }, value: string) {
+    async addAsset({ state, dispatch }, symbol: string) {
       const token = Vue.$cookies.get("cryptozen_token");
-      const assets = await Fetcher.addAsset(token, value);
+      const assets = await Fetcher.addAsset(token, symbol);
+
       let asset = assets[0];
       const currencies: CurrencyModel[] = [];
-      for (const address of state.userAddresses) {
-        for (const network of Object.keys(NETWORKS)) {
+      for (const network of Object.keys(NETWORKS)) {
+        for (const address of state.userAddresses) {
           let skip = false;
           if (
             asset.network &&
-            asset.network?.toLowerCase() !== network.toLowerCase()
+            !asset.network.find(
+              (n) => n.toLowerCase() === network.toLowerCase()
+            )
           ) {
             skip = true;
           }
@@ -794,30 +765,153 @@ const store: StoreOptions<storeInterface> = {
             );
         }
       }
+      console.log("assetassetasset", asset);
       asset = Object.assign(asset, {
-        currency: currencies.sort((a, b) => {
-          if (a.network.toLowerCase() === state.networkName.toString()) {
-            return 1;
-          } else {
-            return 1;
-          }
-        }),
+        currency: currencies,
       });
       state.balances.push(asset);
+      dispatch("updateBalanceFunctions");
+      localStorage.removeItem("coin_gecko_price");
+      await dispatch("updateCoinGeckoPrice");
       for (const address of state.userAddresses) {
         await dispatch("updateCoinBalance", { coin: asset, address });
       }
     },
 
-    async assetList({ state }) {
+    async assetList({ state, dispatch }) {
       const token = Vue.$cookies.get("cryptozen_token");
       const assets = await Fetcher.userAssetList(token);
+      console.log("assets", assets);
       for (const asset of assets) {
         state.balances.push(asset);
       }
+      dispatch("updateBalanceFunctions");
     },
     updateCoinGeckoPrices({ state }, price: CoingeckoInterface[]) {
       state.coinGeckoPrices = price;
+    },
+    async syncAddressDefaultAssets({ state, dispatch }) {
+      await dispatch("getTokenList");
+      const tokens = DefaultTokens;
+      const web3 = state.web3;
+      if (web3) {
+        for (const token of tokens.filter(
+          (t) =>
+            !state.balances.find(
+              (b) => t.toLowerCase() === b.value.toLowerCase()
+            )
+        )) {
+          const coin = state.tokenList.find(
+            (t) => t.value.toLowerCase() === token.toLowerCase()
+          );
+          if (coin) {
+            const networkName = `${
+              state.networkName
+            }_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
+            if (coin.contractAddress && coin.contractAddress[networkName]) {
+              const coinContract = new web3.eth.Contract(
+                ERC20Abi,
+                coin.contractAddress[networkName]
+              );
+              const balance = await coinContract.methods
+                .balanceOf(state.selectedAddress)
+                .call({ from: state.selectedAddress });
+              // console.log("balanceeeeeeee", balance);
+              if (balance > 0) {
+                await dispatch("addAsset", coin.value);
+              }
+            }
+          }
+        }
+      }
+    },
+    async updateCoinGeckoPrice({ state, dispatch }) {
+      let coinGeckoPricesData = localStorage.getItem("coin_gecko_price");
+      const priceDateString = localStorage.getItem("coin_gecko_price_date");
+      let shouldUpdatePrice = false;
+      if (priceDateString) {
+        const priceDate = new Date(priceDateString);
+        const currentDate = new Date();
+        if (priceDate >= currentDate) {
+          shouldUpdatePrice = true;
+        }
+      }
+
+      if (!coinGeckoPricesData || shouldUpdatePrice) {
+        const assets = [];
+
+        for (const coin of state.balances) {
+          assets.push(coin.coinGeckoId);
+        }
+        const axiosGet = await axios.get(
+          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${assets.join(
+            ","
+          )}`
+        );
+        const data = axiosGet.data as CoingeckoInterface[];
+
+        localStorage.setItem("coin_gecko_price", JSON.stringify(data));
+        localStorage.setItem(
+          "coin_gecko_price_date",
+          addHours(new Date(), 1).toISOString()
+        );
+        coinGeckoPricesData = localStorage.getItem(
+          "coin_gecko_price"
+        ) as string;
+      }
+      const coinGeckoPrices = JSON.parse(
+        coinGeckoPricesData
+      ) as CoingeckoInterface[];
+      await dispatch("updateCoinGeckoPrices", coinGeckoPrices);
+      console.log("coinGeckoPrices", coinGeckoPrices);
+    },
+    updateBalanceFunctions({ state }) {
+      for (const token of state.balances) {
+        if (typeof token.realBalanceTotal !== "function") {
+          token.realBalanceTotal = function () {
+            let total = 0;
+            for (const currency of this.currency ? this.currency : []) {
+              total += Number(currency.balance);
+            }
+            return total;
+          };
+        }
+        if (typeof token.balanceTotal !== "function") {
+          token.balanceTotal = function (
+            chainIda: string | undefined,
+            address: string | undefined,
+            hr = true
+          ) {
+            function getHrNumber(number: number): string {
+              if (number > 99999) {
+                return HRNumber.toHumanString(number);
+              } else {
+                return Number(number.toFixed(4)).toString();
+              }
+            }
+
+            const chainId = Number(chainIda);
+            if (chainId && address && this.currency) {
+              const currency = this.currency.find(
+                (c) =>
+                  c.chainId === chainId &&
+                  c.address.toLowerCase() === address.toLowerCase()
+              );
+              if (currency) {
+                if (hr) return getHrNumber(Number(currency.balance));
+                else return currency.balance;
+              }
+              return "0";
+            }
+            let total = 0;
+            for (const currency of this.currency ? this.currency : []) {
+              total += Number(currency.balance);
+            }
+            if (hr) return getHrNumber(total);
+            else return total.toString();
+          };
+        }
+      }
     },
   },
   getters: {

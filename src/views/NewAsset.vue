@@ -101,8 +101,8 @@ export default class NewAsset extends Vue {
   get fullTokenList(): BalanceInterface[] {
     let tokenList = this.$store.state.tokenList as BalanceInterface[];
     if (this.network) {
-      tokenList = tokenList.filter(
-        (t) => t.network?.toLowerCase() === this.network.toLowerCase()
+      tokenList = tokenList.filter((t) =>
+        t.network.find((n) => n.toLowerCase() === this.network.toLowerCase())
       );
     }
     return tokenList;

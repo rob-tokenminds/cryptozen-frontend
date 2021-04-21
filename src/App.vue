@@ -71,7 +71,7 @@
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="white--text"
-              ><h3>Balances</h3>
+              ><h3>Balances ${{ totalBalanceInUsd }}</h3>
             </v-list-item-title>
             <v-checkbox
               class="ml-3 white--text mt-2"
@@ -84,17 +84,29 @@
             </v-checkbox>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item>
-          <v-btn
-            outlined
-            class="mt-n9"
-            color="white"
-            block
-            @click="addNewAsset = true"
-          >
-            <v-icon left> mdi-plus </v-icon> Add Asset</v-btn
-          >
+        <v-list-item class="mt-n6">
+          <v-row dense>
+            <v-col cols="6">
+              <v-btn outlined color="white" block @click="addNewAsset = true">
+                <v-icon left> mdi-plus </v-icon> Add Asset</v-btn
+              >
+            </v-col>
+            <v-col cols="6">
+              <v-btn
+                outlined
+                class=""
+                color="white"
+                block
+                @click="addWallet = true"
+              >
+                <v-icon left> mdi-plus </v-icon> Add Wallet</v-btn
+              >
+            </v-col>
+          </v-row>
         </v-list-item>
+        <!--        <v-list-item>-->
+        <!--        -->
+        <!--        </v-list-item>-->
         <!--        <v-list-item>-->
         <!--          <v-btn-->
         <!--            outlined-->
@@ -122,7 +134,7 @@
           </template>
 
           <template v-slot:activator>
-            <v-list-item dense :to="`/balance/${balance.value}`" class="">
+            <v-list-item dense :to="`/balance/${balance.value}`" class="ml-n6">
               <v-list-item-title class="white--text text-subtitle-1"
                 >{{
                   typeof balance.balanceTotal === "function"
@@ -140,18 +152,12 @@
           <v-list-item-content class="mt-n5 ml-2" v-if="balance.currency">
             <v-list-item
               dense
-              v-for="(currency, index) in balance.currency.sort((c) => {
-                c.network.toLowerCase() ===
-                $store.state.networkName.toLowerCase()
-                  ? -1
-                  : 1;
-                return 1;
-              })"
+              v-for="(currency, index) in balance.currency"
               :to="`/balance/${balance.value}/${currency.chainId}/${currency.address}`"
               :key="index"
             >
               <v-list-item-subtitle class="white--text">
-                <v-avatar size="20">
+                <v-avatar size="20" class="mr-2">
                   <v-img
                     :src="
                       require(`./assets/${currency.network.toLowerCase()}.svg`)
@@ -210,6 +216,18 @@
     </v-dialog>
 
     <v-dialog
+      v-model="addWallet"
+      transition="dialog-bottom-transition"
+      width="600"
+    >
+      <v-card flat>
+        <v-container>
+          <AddWallet></AddWallet>
+        </v-container>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog
       v-model="sendMoneyDialog"
       fullscreen
       hide-overlay
@@ -261,7 +279,13 @@
 
   <v-app v-else>
     <!-- Provides the application the proper gutter -->
-
+    <v-dialog v-if="!isLogin" width="550" v-model="personalSignDialog">
+      <v-card loading>
+        <v-card-title
+          >Please check your Metamask and sign the signature</v-card-title
+        >
+      </v-card>
+    </v-dialog>
     <v-main>
       <!-- Provides the application the proper gutter -->
 
@@ -277,14 +301,14 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { BalanceInterface } from "./static/balance";
 import {
-  mdiHomeOutline,
-  mdiClockOutline,
-  mdiBookOpenBlankVariant,
   mdiBellOutline,
+  mdiBookOpenBlankVariant,
+  mdiClockOutline,
   mdiDotsVertical,
+  mdiHomeOutline,
   mdiMenuRight,
 } from "@mdi/js";
 import SendMoney from "./views/SendMoney.vue";
@@ -297,6 +321,8 @@ import NewAsset from "./views/NewAsset.vue";
 import axios from "axios";
 import { CoingeckoInterface } from "./interfaces";
 import { addHours } from "date-fns";
+import AddWallet from "@/views/AddWallet.vue";
+
 // import { Signer } from "ethers";
 interface Window {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -308,7 +334,10 @@ declare const window: Window;
 const chainIDS = [3, 97, 56];
 const alwaysShowBalance = ["eth", "bnb", "ninja", "dai", "usdt", "usdc"];
 
-@Component({ name: "App", components: { SendMoney, ProfileMenu, NewAsset } })
+@Component({
+  name: "App",
+  components: { SendMoney, ProfileMenu, NewAsset, AddWallet },
+})
 export default class App extends Vue {
   icons = {
     mdiHomeOutline,
@@ -323,20 +352,10 @@ export default class App extends Vue {
   sendMoneyDialog = false;
   web3!: Web3;
   zeroBalance = true;
+  addWallet = false;
+  personalSignDialog = false;
   console(a: string, b: string) {
     console.log(a, b);
-  }
-
-  async addWallet(): Promise<void> {
-    // const web3 = this.$store.getters["getWeb3"] as Web3;
-    // console.log("web3", web3);
-    // const accounts = await web3.eth.requestAccounts();
-    // console.log("accounts", accounts);
-    // await this.$store.dispatch("updateAddresses", accounts);
-
-    const web3 = new Web3(window.ethereum);
-    const accounts = await web3.eth.getAccounts();
-    console.log("accounts", accounts);
   }
 
   // getBalanceTotal(balance: BalanceInterface): string {
@@ -379,28 +398,32 @@ export default class App extends Vue {
   get balances(): BalanceInterface[] {
     let balances = this.$store.state.balances as BalanceInterface[];
     balances = balances.sort((b, c) => {
-      if (b.value === "ninja") {
+      if (b.value.toLowerCase() === "ninja") {
         return 1;
       } else {
         if (
           typeof b.realBalanceTotal === "function" &&
           typeof c.realBalanceTotal === "function"
         ) {
-          return Number(c.realBalanceTotal()) - Number(b.realBalanceTotal());
+          if (Number(this.getUsdPrice(c)) < Number(this.getUsdPrice(b))) {
+            if (c.value.toLowerCase() === "ninja") {
+              return 0;
+            }
+            return -1;
+          } else return 1;
         } else {
-          return 1;
+          return 0;
         }
       }
     });
     if (this.zeroBalance) {
       balances = balances.filter((b) => {
         if (
-          b.value === "ninja" ||
           alwaysShowBalance.find(
             (a) => a.toLowerCase() === b.value.toLowerCase()
           )
         ) {
-          return 1;
+          return true;
         } else {
           if (typeof b.realBalanceTotal === "function") {
             return !(Number(b.realBalanceTotal()) === 0);
@@ -516,6 +539,14 @@ export default class App extends Vue {
     else return "";
   }
 
+  get totalBalanceInUsd(): string {
+    let total = 0;
+    for (const balance of this.balances) {
+      total += this.getUsdPrice(balance);
+    }
+    return this.getHrNumber(total);
+  }
+
   getUsdPrice(balance: BalanceInterface): number {
     if (balance.coinGeckoId && typeof balance.realBalanceTotal === "function") {
       const coinGeckoPrice = this.coinGeckoPrices.find(
@@ -580,7 +611,7 @@ export default class App extends Vue {
       (c) => c.coin.toLowerCase() === balance.value.toLowerCase()
     );
     if (currency) {
-      return Number(currency.balance).toFixed(2);
+      return Number(currency.balance).toFixed(4);
     } else return "0";
   }
 
@@ -588,7 +619,7 @@ export default class App extends Vue {
     if (number > 999) {
       return HRNumber.toHumanString(number);
     } else {
-      return number.toFixed(2);
+      return Number(number.toFixed(4)).toString();
     }
   }
 
@@ -598,11 +629,12 @@ export default class App extends Vue {
     if (currentProvider !== null && currentProvider !== undefined) {
       let accessToken = this.$cookies.get("cryptozen_token");
       const accounts = await this.web3.eth.requestAccounts();
-      console.log("accounts", accounts);
+
       if (!accessToken) {
         const message = await this.$store.dispatch("getLoginWord");
         const params = [message, window.ethereum.selectedAddress];
         const signature = await new Promise((resolve, reject) => {
+          this.personalSignDialog = true;
           (currentProvider as AbstractProvider).sendAsync(
             {
               jsonrpc: "1",
@@ -623,6 +655,7 @@ export default class App extends Vue {
             address: window.ethereum.selectedAddress,
             signature,
           });
+          localStorage.removeItem("coin_gecko_price");
           location.reload();
         }
       }
@@ -642,52 +675,20 @@ export default class App extends Vue {
           await this.$store.dispatch("updateChainId", this.web3);
 
           const balances: BalanceInterface[] = this.$store.state.balances;
-
-          let coinGeckoPricesData = localStorage.getItem("coin_gecko_price");
-          const priceDateString = localStorage.getItem("coin_gecko_price_date");
-          let shouldUpdatePrice = false;
-          if (priceDateString) {
-            const priceDate = new Date(priceDateString);
-            const currentDate = new Date();
-            if (priceDate >= currentDate) {
-              shouldUpdatePrice = true;
-            }
-          }
-
-          if (!coinGeckoPricesData || shouldUpdatePrice) {
-            const assets = [];
-
-            for (const coin of balances) {
-              assets.push(coin.coinGeckoId);
-            }
-            const axiosGet = await axios.get(
-              `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${assets.join(
-                ","
-              )}`
-            );
-            const data = axiosGet.data as CoingeckoInterface[];
-
-            localStorage.setItem("coin_gecko_price", JSON.stringify(data));
-            localStorage.setItem(
-              "coin_gecko_price_date",
-              addHours(new Date(), 1).toISOString()
-            );
-            coinGeckoPricesData = localStorage.getItem(
-              "coin_gecko_price"
-            ) as string;
-          }
-          const coinGeckoPrices = JSON.parse(
-            coinGeckoPricesData
-          ) as CoingeckoInterface[];
-          await this.$store.dispatch("updateCoinGeckoPrices", coinGeckoPrices);
-          console.log("coinGeckoPrices", coinGeckoPrices);
+          await this.$store.dispatch("updateCoinGeckoPrice");
+          this.$store
+            .dispatch("syncAddressDefaultAssets")
+            .then()
+            .catch((e) => {
+              console.error(e);
+            });
           for (const coin of balances) {
             for (const address of this.$store.state.userAddresses) {
               this.$store.dispatch("updateCoinBalance", {
                 coin,
                 address,
               });
-              await sleep(100);
+              await sleep(50);
             }
           }
           this.$store.state.isLogin = true;
@@ -730,9 +731,11 @@ export default class App extends Vue {
             if (this.$route.path !== `/create-address-book`) await this.init();
 
             window.ethereum.on("accountsChanged", () => {
+              // if (!this.addWallet) {
               Vue.$cookies.remove("cryptozen_token");
               this.$router.push("/");
               location.reload();
+              // }
             });
             window.ethereum.on("chainChanged", () => {
               this.$router.push("/");

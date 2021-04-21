@@ -95,8 +95,10 @@
                   <v-list-item>
                     <v-list-item-avatar tile>
                       <v-img
+                        v-if="!coin.logo"
                         :src="require(`../assets/${coin.value}.svg`)"
                       ></v-img>
+                      <v-img v-else :src="coin.logo"></v-img>
                     </v-list-item-avatar>
                     <v-list-item-content>
                       <v-list-item-title
@@ -110,6 +112,7 @@
 
                     <v-spacer v-if="!isMobile"></v-spacer>
                     <v-list-item-content>
+                      <!--                      {{ getCoinCurrency(coin).allowance }}-->
                       <v-icon v-if="getCoinCurrency(coin).allowance"
                         >mdi-chevron-right</v-icon
                       >
@@ -1282,7 +1285,9 @@ export default class SendMoney extends Vue {
   get balances(): BalanceInterface[] {
     const balances = this.$store.state.balances as BalanceInterface[];
     return balances.filter((b) =>
-      b.network ? b.network === this.$store.state.networkName : true
+      b.network.find(
+        (n) => n.toLowerCase() === this.$store.state.networkName.toLowerCase()
+      )
     );
   }
 

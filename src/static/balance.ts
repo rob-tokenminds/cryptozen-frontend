@@ -1,5 +1,21 @@
 import CurrencyModel from "..//models/CurrencyModel";
 
+export const DefaultTokens: string[] = [
+  "uni",
+  "link",
+  "wbtc",
+  "cro",
+  "busd",
+  "ceth",
+  "aave",
+  "okb",
+  "ftt",
+  "cusdc",
+  "ht",
+  "cdai",
+  "hot",
+];
+
 export enum NETWORKS_LIST {
   ETH_TESTNET = "ETH_TESTNET",
   ETH_MAINNET = "ETH_MAINNET",
@@ -8,9 +24,9 @@ export enum NETWORKS_LIST {
 }
 
 export interface BalanceInterface {
-  value: CoinList;
+  value: string;
   name: string;
-  network?: string;
+  network: string[];
   mainCurrency?: boolean;
   contractAddress?: { [key in NETWORKS_LIST]: string };
   decimal?: { [key in NETWORKS_LIST]: number };
@@ -80,12 +96,13 @@ const balances: BalanceInterface[] = [
       BSC_MAINNET: 18,
     },
     chainIds: [1, 3],
-    network: "ETH",
+    network: ["eth"],
     mainAsset: true,
   },
   {
     value: CoinList.usdc,
     name: "USDC",
+    network: ["eth", "bsc"],
     contractAddress: {
       ETH_TESTNET: "0x0801ad1506287ccdf6fa7016ec390ab0ceb0cb96",
       ETH_MAINNET: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -104,6 +121,7 @@ const balances: BalanceInterface[] = [
   {
     value: CoinList.usdt,
     name: "USDT",
+    network: ["eth", "bsc"],
     contractAddress: {
       ETH_TESTNET: "0x4717501931a1d39706fc655b5fcccfda2eb7f759",
       ETH_MAINNET: "0xdac17f958d2ee523a2206206994597c13d831ec7",
@@ -124,7 +142,7 @@ const balances: BalanceInterface[] = [
     name: "Ethereum",
     mainCurrency: true,
     chainIds: [1, 3],
-    network: "ETH",
+    network: ["eth"],
     mainAsset: true,
   },
   {
@@ -132,12 +150,13 @@ const balances: BalanceInterface[] = [
     name: "Binance",
     mainCurrency: true,
     chainIds: [56, 97],
-    network: "BSC",
+    network: ["bsc"],
     mainAsset: true,
   },
   {
     value: CoinList.dai,
     name: "DAI",
+    network: ["eth", "bsc"],
     contractAddress: {
       ETH_TESTNET: "0x2a318987215800e39feea5abc7eed38891485dc4",
       ETH_MAINNET: "0x6b175474e89094c44da98b954eedeac495271d0f",

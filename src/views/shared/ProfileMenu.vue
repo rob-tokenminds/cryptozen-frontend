@@ -432,6 +432,7 @@ export default class ProfileMenu extends Vue {
 
   logout(): void {
     this.$cookies.remove("cryptozen_token");
+    localStorage.removeItem("coin_gecko_price");
     this.$router.push("/");
     location.reload();
   }
