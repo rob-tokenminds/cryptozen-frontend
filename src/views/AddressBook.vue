@@ -19,10 +19,19 @@
               <v-select
                 :items="currency"
                 item-text="name"
-                item-value="value"
+                item-value="id"
                 label="Select Currency (*)"
-                v-model="addAWalletCurrency"
-              ></v-select>
+                v-model="addWalletId"
+              >
+                <template v-slot:item="{ item, on, attrs }">
+                  <div v-bind="attrs" v-on="on">
+                    <v-avatar>
+                      <v-img :src="getAddressBookIconById(item.id)"></v-img>
+                    </v-avatar>
+                    {{ item.name }}
+                  </div>
+                </template>
+              </v-select>
               <v-text-field
                 v-model="addAWalletName"
                 label="Wallet Name"
@@ -65,10 +74,19 @@
               <v-select
                 :items="currency"
                 item-text="name"
-                item-value="value"
+                item-value="id"
                 label="Select Currency (*)"
-                v-model="addARecipientCurrency"
-              ></v-select>
+                v-model="addWalletId"
+              >
+                <template v-slot:item="{ item, on, attrs }">
+                  <div v-bind="attrs" v-on="on" class="mb-3">
+                    <v-avatar size="40" class="mr-2">
+                      <v-img :src="getAddressBookIconById(item.id)"></v-img>
+                    </v-avatar>
+                    {{ item.name }} - {{ item.value.toUpperCase() }}
+                  </div>
+                </template>
+              </v-select>
               <v-text-field
                 v-model="addARecipientName"
                 label="Wallet Name"
@@ -116,7 +134,7 @@
         <v-list-item-avatar size="60">
           <v-avatar color="">
             <v-img
-              :src="require(`../assets/${addressBook.currency}.svg`)"
+              :src="getAddressBookIconById(addressBook.token_list_id)"
             ></v-img>
           </v-avatar>
         </v-list-item-avatar>
@@ -245,7 +263,7 @@
 <script lang="ts">
 import { AddressBookInterface } from "../store/fetcher";
 import { Vue, Component } from "vue-property-decorator";
-import Balance from "../static/balance";
+import Balance, { BalanceInterface } from "../static/balance";
 import Web3 from "web3";
 import { AbstractProvider } from "web3-core";
 import CryptoJS from "crypto-js";
@@ -266,8 +284,8 @@ export default class AddressBook extends Vue {
   addAWalletCurrency = "";
   addAWalletAddress = "";
   addAWalletName = "";
-
-  currency = Balance;
+  addWalletId = -1;
+  // currency = Balance;
 
   editWallet = false;
   editWalletLoading = false;
@@ -278,8 +296,34 @@ export default class AddressBook extends Vue {
 
   deleteWalletId = "";
 
+  get currency(): BalanceInterface[] {
+    return this.$store.state.balances;
+  }
+
   get isMobile(): boolean {
     return this.$vuetify.breakpoint.xsOnly;
+  }
+
+  getAddressBookIconById(id: number): string {
+    console.log("getAddressBookIconById", id);
+    const balance = this.getBalanceById(id);
+    console.log("getAddressBookIconByIdBalance", balance);
+    if (balance) {
+      if (balance.logo) {
+        return balance.logo;
+      } else {
+        return require(`../assets/${balance.value.toLowerCase()}.svg`);
+      }
+    }
+    return "";
+  }
+
+  getAddressBookIcon(addressBook: AddressBookInterface): string {
+    if (!addressBook.url) {
+      return require(`../assets/${addressBook.currency}.svg`);
+    } else {
+      return addressBook.url;
+    }
   }
 
   getChainIdIcon(addressBook: AddressBookInterface): string {
@@ -304,12 +348,19 @@ export default class AddressBook extends Vue {
   async updateWallet(): Promise<void> {
     this.editWalletLoading = true;
     try {
-      await this.$store.dispatch("updateWallet", {
-        id: this.editWalletId,
-        name: this.editAWalletName,
-        address: this.editAWalletAddress,
-        currency: this.editAWalletCurrency,
-      });
+      const balance = this.getBalanceById(this.addWalletId);
+      if (balance) {
+        await this.$store.dispatch("updateWallet", {
+          id: this.editWalletId,
+          name: this.editAWalletName,
+          address: this.editAWalletAddress,
+          currency: balance.value.toLowerCase(),
+          tokenListId: this.addWalletId,
+        });
+      } else {
+        throw new Error("Coin not found !");
+      }
+
       this.editWalletLoading = false;
       this.editWallet = false;
       this.editAWalletCurrency = "";
@@ -319,7 +370,7 @@ export default class AddressBook extends Vue {
       alert("Wallet has been successfully updated");
     } catch (e) {
       // console.log("e", e);
-      // alert(e.message);
+      alert(e.message);
 
       this.editWalletLoading = false;
     }
@@ -350,23 +401,37 @@ export default class AddressBook extends Vue {
     await this.$store.dispatch("getAddressBookList");
   }
 
+  getBalanceById(id: number): BalanceInterface | undefined {
+    const balances = this.$store.state.balances as BalanceInterface[];
+
+    return balances.find((b) => Number(b.id) === Number(id));
+  }
+
   createWalletLoading = false;
   async createWallet(): Promise<void> {
     try {
       this.createWalletLoading = true;
-      await this.$store.dispatch("createWallet", {
-        name: this.addAWalletName,
-        address: this.addAWalletAddress,
-        currency: this.addAWalletCurrency.toLowerCase(),
-        email: null,
-        sendEmail: false,
-        type: "wallet",
-      });
+      const balance = this.getBalanceById(this.addWalletId);
+      if (balance) {
+        await this.$store.dispatch("createWallet", {
+          name: this.addAWalletName,
+          address: this.addAWalletAddress,
+          currency: balance.value.toLowerCase(),
+          email: null,
+          sendEmail: false,
+          type: "wallet",
+          tokenListId: this.addWalletId,
+        });
+      } else {
+        throw new Error("Coin not found !");
+      }
+
       this.createWalletLoading = false;
       this.addAWallet = false;
       this.addAWalletName = "";
       this.addAWalletAddress = "";
       this.addAWalletCurrency = "";
+      this.addWalletId = -1;
       alert("Wallet has been successfully added");
     } catch (e) {
       // console.log("e", e);
@@ -421,12 +486,18 @@ export default class AddressBook extends Vue {
             signature as string
           ).toString();
         }
+        console.log("this.addWalletId", this.addWalletId);
+        const balance = this.getBalanceById(this.addWalletId);
+        if (!balance) {
+          throw new Error("coin not found");
+        }
         await this.$store.dispatch("createWallet", {
           name: this.addARecipientName,
+          tokenListId: this.addWalletId,
           address: this.addARecipientWalletAddress
             ? this.addARecipientWalletAddress
             : null,
-          currency: this.addARecipientCurrency.toLowerCase(),
+          currency: balance?.value.toLowerCase(),
           email,
           plainEmail: this.addARecipientEmail ? this.addARecipientEmail : null,
           sendEmail: !this.addARecipientWalletAddress,
@@ -446,10 +517,11 @@ export default class AddressBook extends Vue {
         this.addARecipientWalletAddress = "";
         this.addARecipientCurrency = "";
         this.addARecipientEmail = "";
+        this.addWalletId = -1;
       }
     } catch (e) {
       // console.log("e", e);
-      // alert(e.message);
+      alert(e.message);
       this.createWalletLoading = false;
     }
   }

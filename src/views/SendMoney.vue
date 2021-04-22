@@ -189,7 +189,9 @@
                               <v-list-item-avatar>
                                 <v-img
                                   :src="
-                                    require(`../assets/${addressBook.currency}.svg`)
+                                    getAddressBookIconById(
+                                      addressBook.token_list_id
+                                    )
                                   "
                                 ></v-img>
                               </v-list-item-avatar>
@@ -296,7 +298,9 @@
                               <v-avatar color="">
                                 <v-img
                                   :src="
-                                    require(`../assets/${newSubmittedAddressBook.currency}.svg`)
+                                    getAddressBookIconById(
+                                      newSubmittedAddressBook.token_list_id
+                                    )
                                   "
                                 ></v-img>
                               </v-avatar>
@@ -357,9 +361,7 @@
                         <v-list-item class="mt-n4">
                           <v-list-item-avatar tile>
                             <v-img
-                              :src="
-                                require(`../assets/${selectedCurrency.value}.svg`)
-                              "
+                              :src="getAddressBookIconById(selectedCurrency.id)"
                             ></v-img>
                           </v-list-item-avatar>
                           <v-list-item-content>
@@ -456,7 +458,7 @@
                                   (
                                     Number(convertToUsd(gasFee)) +
                                     Number(transferFeeOnUsd)
-                                  ).toFixed(4)
+                                  ).toFixed(5)
                                 }}
                                 USD</a
                               >
@@ -561,7 +563,7 @@
                             >
                               <v-list-item-avatar tile>
                                 <v-img
-                                  :src="require(`../assets/${item.value}.svg`)"
+                                  :src="getAddressBookIconById(item.id)"
                                 ></v-img>
                               </v-list-item-avatar>
                               <v-list-item-content>
@@ -582,7 +584,7 @@
                             <v-list-item style="padding: 0 0px !important">
                               <v-list-item-avatar tile class="">
                                 <v-img
-                                  :src="require(`../assets/${item.value}.svg`)"
+                                  :src="getAddressBookIconById(item.id)"
                                 ></v-img>
                               </v-list-item-avatar>
                               <v-list-item-content>
@@ -644,9 +646,7 @@
                       <v-list-item class="mt-n4">
                         <v-list-item-avatar tile>
                           <v-img
-                            :src="
-                              require(`../assets/${selectedCurrency.value}.svg`)
-                            "
+                            :src="getAddressBookIconById(selectedCurrency.id)"
                           ></v-img>
                         </v-list-item-avatar>
                         <v-list-item-content>
@@ -846,7 +846,7 @@
                           >
                             <v-list-item-avatar tile>
                               <v-img
-                                :src="require(`../assets/${item.value}.svg`)"
+                                :src="getAddressBookIconById(item.id)"
                               ></v-img>
                             </v-list-item-avatar>
                             <v-list-item-content>
@@ -867,7 +867,7 @@
                           <v-list-item style="padding: 0 0px !important">
                             <v-list-item-avatar tile>
                               <v-img
-                                :src="require(`../assets/${item.value}.svg`)"
+                                :src="getAddressBookIconById(item.id)"
                               ></v-img>
                             </v-list-item-avatar>
                             <v-list-item-content>
@@ -899,9 +899,7 @@
                 <v-list-item class="">
                   <v-list-item-avatar>
                     <v-img
-                      :src="
-                        require(`../assets/${selectedAddress.currency}.svg`)
-                      "
+                      :src="getAddressBookIconById(selectedCurrency.id)"
                     ></v-img>
                   </v-list-item-avatar>
                   <v-list-item-content>
@@ -1210,6 +1208,7 @@ export default class SendMoney extends Vue {
   addARecipientWalletAddress = "";
   addARecipientName = "";
   createWalletLoading = false;
+  addWalletId = -1;
   selectedAddress: AddressBookInterface | "" = "";
   newSubmittedAddressBook: AddressBookInterface | "" = "";
   newAddressBookSubmitted = false;
@@ -1225,7 +1224,7 @@ export default class SendMoney extends Vue {
   transferFee = "";
   loadingAddressBooks = false;
   detailUrl = process.env.VUE_APP_DETAIL_URL;
-  coins = Balances;
+  // coins = Balances;
   swapAmount = 0;
   amountSendUsd = "0";
   amountReceiptUsd = "0";
@@ -1264,6 +1263,10 @@ export default class SendMoney extends Vue {
   transactionRewardInEth = "0";
   pageLoading = true;
   addressByEmail = false;
+
+  get coins(): BalanceInterface[] {
+    return this.balances;
+  }
 
   get getBalanceCurrency(): CurrencyModel | undefined {
     if (this.selectedCurrency && this.selectedCurrency.currency) {
@@ -1752,12 +1755,17 @@ export default class SendMoney extends Vue {
                 signature as string
               ).toString();
             }
+            const balance = this.getBalanceById(this.selectedCurrency.id);
+            if (!balance) {
+              throw new Error("coin not found");
+            }
             const addressBookData = await this.$store.dispatch("createWallet", {
               name: this.addARecipientName,
+              tokenListId: balance.id,
               address: this.addARecipientWalletAddress
                 ? this.addARecipientWalletAddress
                 : null,
-              currency: this.selectedCurrency.value.toLowerCase(),
+              currency: balance.value.toLowerCase(),
               email,
               plainEmail: this.addARecipientEmail
                 ? this.addARecipientEmail
@@ -1889,6 +1897,25 @@ export default class SendMoney extends Vue {
     this.loadingAddressBooks = true;
     await this.$store.dispatch("getAddressBookList");
     this.loadingAddressBooks = false;
+  }
+
+  getBalanceById(id: number): BalanceInterface | undefined {
+    const balances = this.$store.state.balances as BalanceInterface[];
+
+    return balances.find((b) => Number(b.id) === Number(id));
+  }
+
+  getAddressBookIconById(id: number): string {
+    const balance = this.getBalanceById(id);
+    console.log("getAddressBookIconByIdBalance", balance);
+    if (balance) {
+      if (balance.logo) {
+        return balance.logo;
+      } else {
+        return require(`../assets/${balance.value.toLowerCase()}.svg`);
+      }
+    }
+    return "";
   }
 
   closeDialog(): void {
@@ -2076,7 +2103,7 @@ export default class SendMoney extends Vue {
       const currentPrice = this.ethereumPrice.current_price;
       console.log("currentPrice", currentPrice);
       const price = fromExponential(
-        new BigNumber(eth).times(currentPrice).toFixed(4)
+        new BigNumber(eth).times(currentPrice).toFixed(5)
       );
       console.log("priceInUsd", price);
       return price;
@@ -2165,7 +2192,7 @@ export default class SendMoney extends Vue {
             if (this.selectedCurrency?.decimal) {
               const decimal = this.selectedCurrency.decimal[networkName];
 
-              this.transferFee = Number(transferFee / 10 ** decimal).toFixed(4);
+              this.transferFee = Number(transferFee / 10 ** decimal).toFixed(5);
               this.transferFeeOnUsd = await this.checktransferFeeOnUsd(
                 this.transferFee
               );
@@ -2193,7 +2220,7 @@ export default class SendMoney extends Vue {
             web3.utils.fromWei(this.gasPrice, "ether")
           );
 
-          this.gasFee = txFee.toFixed(4);
+          this.gasFee = txFee.toFixed(5);
 
           this.loadingFee = false;
         }
@@ -2343,18 +2370,18 @@ export default class SendMoney extends Vue {
               Ninja,
               WETH[Ninja.chainId]
             );
-            // console.log("amountFee", amountFee);
+            console.log("checkRewardFeeamountFee", amountFee);
             const amount = new BigNumber(amountFee)
               .times(10 ** decimal)
               .toFixed();
             const realAmount = fromExponential(amount);
-            console.log("realAmount22", realAmount);
+            console.log("checkRewardFeerealAmount22", realAmount);
             const trade = new Trade(
               route,
               new TokenAmount(TRADETOKEN, realAmount),
               TradeType.EXACT_INPUT
             );
-            console.log("trade", trade);
+            console.log("checkRewardFeetrade", trade);
             const slippageTolerance = new Percent("50", "10000");
             const amountOutMin = trade.minimumAmountOut(slippageTolerance);
 
@@ -2376,7 +2403,7 @@ export default class SendMoney extends Vue {
             this.transactionReward = (
               Number(amountOutMin.toSignificant(6)) +
               Number(amountOutMin3.toSignificant(6))
-            ).toFixed(4);
+            ).toFixed(5);
             console.log("this.transactionReward", this.transactionReward);
             const tradeEth = new Trade(
               routeEth,
@@ -2476,7 +2503,7 @@ export default class SendMoney extends Vue {
             new TokenAmount(
               BNBToken ? BNBToken : WETH[Ninja.chainId],
               web3.utils.toWei(
-                Number(this.transactionRewardInEth).toFixed(4),
+                Number(this.transactionRewardInEth).toFixed(5),
                 "ether"
               )
             ),

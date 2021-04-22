@@ -80,6 +80,7 @@ export interface createWalletInterface {
   plainEmail: string;
   sendEmail: boolean;
   type: string;
+  tokenListId: number;
 }
 
 export interface updateWalletInterface {
@@ -87,6 +88,7 @@ export interface updateWalletInterface {
   address: string;
   currency: string;
   id: string;
+  tokenListId: number;
 }
 
 const store: StoreOptions<storeInterface> = {
@@ -464,7 +466,8 @@ const store: StoreOptions<storeInterface> = {
         params.sendEmail,
         params.plainEmail,
         params.type,
-        state.chainId
+        state.chainId,
+        params.tokenListId
       );
       state.addressBooks.push(addressBookData);
       return addressBookData;
@@ -476,7 +479,8 @@ const store: StoreOptions<storeInterface> = {
         params.id,
         params.name,
         params.address,
-        params.currency
+        params.currency,
+        params.tokenListId
       );
       const addressBookDataIndex = state.addressBooks.findIndex(
         (a) => a.id === params.id

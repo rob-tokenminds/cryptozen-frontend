@@ -24,6 +24,7 @@ export enum NETWORKS_LIST {
 }
 
 export interface BalanceInterface {
+  id: number;
   value: string;
   name: string;
   network: string[];
@@ -80,6 +81,7 @@ export const NODE_URLS: { [key in NETWORKS_LIST]: string } = {
 
 const balances: BalanceInterface[] = [
   {
+    id: 9999,
     value: CoinList.ninja,
     name: "Ninja Token",
     contractAddress: {
@@ -100,6 +102,7 @@ const balances: BalanceInterface[] = [
     mainAsset: true,
   },
   {
+    id: 9998,
     value: CoinList.usdc,
     name: "USDC",
     network: ["eth", "bsc"],
@@ -119,6 +122,7 @@ const balances: BalanceInterface[] = [
     mainAsset: true,
   },
   {
+    id: 9997,
     value: CoinList.usdt,
     name: "USDT",
     network: ["eth", "bsc"],
@@ -138,6 +142,7 @@ const balances: BalanceInterface[] = [
     mainAsset: true,
   },
   {
+    id: 9996,
     value: CoinList.eth,
     name: "Ethereum",
     mainCurrency: true,
@@ -146,6 +151,7 @@ const balances: BalanceInterface[] = [
     mainAsset: true,
   },
   {
+    id: 9995,
     value: CoinList.bnb,
     name: "Binance",
     mainCurrency: true,
@@ -154,6 +160,7 @@ const balances: BalanceInterface[] = [
     mainAsset: true,
   },
   {
+    id: 9995,
     value: CoinList.dai,
     name: "DAI",
     network: ["eth", "bsc"],

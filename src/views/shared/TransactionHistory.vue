@@ -53,11 +53,12 @@
                 <v-list-item>
                   <v-list-item-avatar size="60">
                     <v-avatar>
-                      <v-img
-                        :src="
-                          require(`../../assets/${transaction.tokenSymbol}.svg`)
-                        "
-                      ></v-img>
+                      <!--                      <v-img-->
+                      <!--                        :src="-->
+                      <!--                          require(`../../assets/${transaction.tokenSymbol}.svg`)-->
+                      <!--                        "-->
+                      <!--                      ></v-img>-->
+                      <v-img :src="getIconByTx(transaction)"></v-img>
                     </v-avatar>
                   </v-list-item-avatar>
                   <v-list-item-content>
@@ -273,10 +274,10 @@ export default class TransactionHistory extends Vue {
       }
       return `${fromExponential(
         (
-          (Number(transaction.value) - Number(transaction.fee)) /
-          10 ** Number(decimals)
+          Number(transaction.value) / 10 ** Number(decimals) -
+          Number(transaction.fee)
         ).toString()
-      )} ${transaction.tokenName}`;
+      )} ${transaction.tokenSymbol.toUpperCase()}`;
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;
       return `${
@@ -421,9 +422,9 @@ export default class TransactionHistory extends Vue {
       if (toString) {
         value = value.toString();
       } else {
-        value = Number(value.toFixed(4));
+        value = Number(value.toFixed(5));
       }
-      return `${value.toString()} ${transaction.tokenName?.toUpperCase()}`;
+      return `${value.toString()} ${transaction.tokenSymbol?.toUpperCase()}`;
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;
       let value: any = Number(transaction.value);
@@ -532,6 +533,40 @@ export default class TransactionHistory extends Vue {
       return t2.timestamp - t.timestamp;
     });
     return transactions;
+  }
+
+  getBalanceById(id: number): BalanceInterface | undefined {
+    const balances = this.$store.state.balances as BalanceInterface[];
+
+    return balances.find((b) => Number(b.id) === Number(id));
+  }
+
+  getBalanceByNameAndSymbol(
+    name: string,
+    symbol: string
+  ): BalanceInterface | undefined {
+    const balances = this.$store.state.balances as BalanceInterface[];
+
+    return balances.find(
+      (b) =>
+        b.value.toLowerCase() === symbol.toLowerCase() &&
+        b.name.toLowerCase() === name.toLowerCase()
+    );
+  }
+
+  getIconByTx(tx: TransactionInterface): string {
+    const balance = this.getBalanceByNameAndSymbol(
+      tx.tokenName,
+      tx.tokenSymbol
+    );
+    if (balance) {
+      if (balance.logo) {
+        return balance.logo;
+      } else {
+        return require(`../../assets/${balance.value.toLowerCase()}.svg`);
+      }
+    }
+    return "";
   }
 
   async mounted(): Promise<void> {

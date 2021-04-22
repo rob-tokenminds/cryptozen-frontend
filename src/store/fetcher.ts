@@ -128,7 +128,8 @@ export class Fetcher {
     sendEmail: boolean,
     plainEmail: string,
     type: string,
-    chainId: number
+    chainId: number,
+    token_list_id: number
   ): Promise<AddressBookInterface> {
     const fetch = await Fetcher.post(
       `/user/address-book/create`,
@@ -141,6 +142,7 @@ export class Fetcher {
         plainEmail,
         type,
         chainId,
+        token_list_id,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -152,7 +154,8 @@ export class Fetcher {
     id: string,
     name: string,
     address: string,
-    currency: string
+    currency: string,
+    token_list_id: number
   ): Promise<AddressBookInterface> {
     const fetch = await Fetcher.post(
       `/user/address-book/update`,
@@ -161,6 +164,7 @@ export class Fetcher {
         name,
         address,
         currency,
+        token_list_id,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -497,6 +501,8 @@ export interface AddressBookInterface {
   updated_at: Date;
   type: "wallet" | "recipient";
   chainId: number;
+  url?: string;
+  token_list_id: number;
 }
 
 export interface TransactionInterface {
@@ -511,8 +517,8 @@ export interface TransactionInterface {
   to: string;
   value: string;
   contractAddress?: string;
-  tokenName?: string;
-  tokenSymbol?: string;
+  tokenName: string;
+  tokenSymbol: string;
   tokenDecimal?: number;
   transactionIndex?: number;
   gas: number;
