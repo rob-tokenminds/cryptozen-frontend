@@ -1,4 +1,4 @@
-# uniswap-frontrunner-bot
+# Cryptozen frontend
 
 ## Project setup
 ```
