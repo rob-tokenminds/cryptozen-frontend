@@ -237,10 +237,10 @@ export class Fetcher {
 
   static async getTransactions(
     token: string,
-    address: string,
+    addresses: string,
     currency = ""
   ): Promise<TransactionInterface[]> {
-    const fetch = await Fetcher.get(`/user/transactions/${address}`, {
+    const fetch = await Fetcher.get(`/user/transactions/${addresses}`, {
       headers: { Authorization: `Bearer ${token}` },
       params: { currency },
     });

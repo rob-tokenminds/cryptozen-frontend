@@ -1,7 +1,8 @@
 <template>
-  <v-card :loading="loading" :disabled="loading" width="100%">
+  <v-card :loading="loading" :disabled="loading">
     <v-container>
       <v-data-iterator
+        class="ml-10"
         :items="tokenList"
         :items-per-page.sync="itemsPerPage"
         :page.sync="page"
@@ -10,29 +11,26 @@
         :sort-desc="sortDesc"
       >
         <template v-slot:header>
-          <v-row>
-            <v-col cols="6">
-              <v-text-field
-                v-model="search"
-                clearable
-                flat
-                prepend-inner-icon="mdi-magnify"
-                label="Search"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="6">
-              <v-select
-                v-model="network"
-                :items="networks"
-                item-text="name"
-                item-value="value"
-                clearable
-                flat
-                label="Network"
-              ></v-select>
-            </v-col>
-          </v-row>
+          <v-text-field
+            v-model="search"
+            clearable
+            flat
+            prepend-inner-icon="mdi-magnify"
+            outlined
+            label="Search"
+          ></v-text-field>
+          <v-select
+            v-model="network"
+            :items="networks"
+            item-text="name"
+            item-value="value"
+            clearable
+            multiple
+            chips
+            flat
+            outlined
+            label="Network"
+          ></v-select>
         </template>
 
         <template v-slot:default="{ items }">
@@ -40,7 +38,7 @@
             <v-col
               v-for="item of items"
               :key="item.value"
-              cols="12"
+              cols="6"
               sm="6"
               md="4"
               lg="3"
@@ -52,12 +50,12 @@
                 <v-list-item-title>
                   {{ item.value.toUpperCase() }}
                   <v-avatar
-                    v-if="!item.network || item.network === `eth`"
+                    v-if="item.network.find((n) => n.toLowerCase() === 'eth')"
                     size="40"
                     ><v-img :src="require('../assets/eth.svg')"></v-img
                   ></v-avatar>
                   <v-avatar
-                    v-if="!item.network || item.network === `bsc`"
+                    v-if="item.network.find((n) => n.toLowerCase() === 'bsc')"
                     size="30"
                     ><v-img :src="require('../assets/bsc.svg')"></v-img
                   ></v-avatar>
@@ -88,11 +86,10 @@ export default class NewAsset extends Vue {
   sortBy = "value";
   sortDesc = false;
   networks = [
-    { name: "All", value: "" },
     { name: "Binance Smart Chain", value: "bsc" },
     { name: "Ethereum", value: "eth" },
   ];
-  network = "";
+  network: string[] = [];
 
   get balances(): BalanceInterface[] {
     return this.$store.state.balances as BalanceInterface[];
@@ -100,9 +97,12 @@ export default class NewAsset extends Vue {
 
   get fullTokenList(): BalanceInterface[] {
     let tokenList = this.$store.state.tokenList as BalanceInterface[];
-    if (this.network) {
+    console.log("this.networkthis.network", tokenList);
+    if (this.network.length) {
       tokenList = tokenList.filter((t) =>
-        t.network.find((n) => n.toLowerCase() === this.network.toLowerCase())
+        this.network.find((n) =>
+          t.network.find((n2) => n.toLowerCase() === n2.toLowerCase())
+        )
       );
     }
     return tokenList;

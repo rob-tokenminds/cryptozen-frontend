@@ -211,7 +211,11 @@
       <!--      </v-list>-->
     </v-navigation-drawer>
 
-    <v-dialog v-model="addNewAsset" transition="dialog-bottom-transition">
+    <v-dialog
+      v-model="addNewAsset"
+      transition="dialog-bottom-transition"
+      width="1000"
+    >
       <NewAsset></NewAsset>
     </v-dialog>
 

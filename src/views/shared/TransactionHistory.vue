@@ -572,7 +572,7 @@ export default class TransactionHistory extends Vue {
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
       await this.getTransactions();
-      this.getSyncTransactions();
+      // this.getSyncTransactions();
     });
   }
   loadingSyncTransactions = false;
@@ -598,10 +598,11 @@ export default class TransactionHistory extends Vue {
   async getTransactions(): Promise<void> {
     try {
       this.loadingTransactions = true;
-      if (window.ethereum.selectedAddress && this.$store.state.isLogin) {
+      if (this.$store.state.userAddresses.length && this.$store.state.isLogin) {
         await this.$store.dispatch("getAddressBookList");
+
         await this.$store.dispatch("getTransactions", {
-          address: window.ethereum.selectedAddress,
+          addresses: this.$store.state.userAddresses.join(),
           // currency: this.$route.params.coin ? this.$route.params.coin : "",
           currency: "",
         });
