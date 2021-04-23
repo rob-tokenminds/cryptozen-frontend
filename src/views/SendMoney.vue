@@ -558,6 +558,11 @@
                           <template v-slot:item="{ item, on, attrs }">
                             <v-list-item
                               :disabled="selectedCurrency.value !== item.value"
+                              :to="
+                                selectedCurrency.value !== item.value
+                                  ? 'https://google.com'
+                                  : undefined
+                              "
                               v-bind="attrs"
                               v-on="on"
                             >
@@ -989,20 +994,31 @@
                   </v-list-item>
                 </v-col>
 
-                <v-col cols="12" md="6" sm="6" lg="6" xl="6">
+                <v-col
+                  v-if="!transaction.isOnHold"
+                  cols="12"
+                  md="6"
+                  sm="6"
+                  lg="6"
+                  xl="6"
+                >
                   <p
                     v-if="!transaction.isOnHold"
                     class="primary--text text-right mt-6 mr-2"
                   >
-                    Amount sent/receipt :
-                    {{ getAmount(transaction).toUpperCase() }} /
-                    {{ getAmountReceipt(transaction).toUpperCase() }}
-                    <br />
+                    Amount Sent :
+                    {{ getAmount(transaction).toUpperCase() }}
                   </p>
-                  <p v-else class="primary--text text-right mt-6 mr-2">
+                  <p class="primary--text text-right mt-6 mr-2">
+                    Amount Receipt :
+                    {{ getAmountReceipt(transaction).toUpperCase() }}
+                  </p>
+                </v-col>
+
+                <v-col v-else cols="12" md="6" sm="6" lg="6" xl="6">
+                  <p class="primary--text text-right mt-6 mr-2">
                     Amount :
                     {{ getAmount(transaction).toUpperCase() }}
-                    <br />
                   </p>
                 </v-col>
               </v-row>
@@ -1958,8 +1974,8 @@ export default class SendMoney extends Vue {
         decimals = 18;
       }
       return `${(
-        (Number(transaction.value) - Number(transaction.fee)) /
-        10 ** Number(decimals)
+        Number(transaction.value) / 10 ** Number(decimals) -
+        Number(transaction.fee)
       ).toString()} ${transaction.tokenName}`;
     } else {
       const web3 = this.$store.getters["getWeb3"] as Web3;

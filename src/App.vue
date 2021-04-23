@@ -60,11 +60,17 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item>
-          <v-btn class="mt-2" to="/rewards" large color="secondary" block>
-            Claim Rewards</v-btn
-          >
-        </v-list-item>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-list-item v-bind="attrs" v-on="on">
+              <v-btn class="mt-2" to="/rewards" large color="secondary" block>
+                Claim Rewards</v-btn
+              >
+            </v-list-item>
+          </template>
+          Claim your Ninja tokens to your Ethereum wallet address. More info
+          https://docs.cryptozen.ninja/
+        </v-tooltip>
       </v-list>
 
       <v-list>
@@ -672,6 +678,7 @@ export default class App extends Vue {
           }
           await this.$store.dispatch("assetList");
           await this.$store.dispatch("updateAddresses", accounts);
+          await this.$store.dispatch("getUserAssetList");
           await this.$store.dispatch(
             "updateSelectedAddress",
             window.ethereum.selectedAddress

@@ -2,7 +2,7 @@
   <v-card class="mb-2" flat>
     <v-card-title>Select Wallet</v-card-title>
     <v-row dense>
-      <v-col cols="6">
+      <v-col cols="12" md="6" sm="6" lg="6" xl="6">
         <v-btn
           @click="showMetamaskDialog = true"
           outlined
@@ -18,7 +18,7 @@
           Metamask</v-btn
         >
       </v-col>
-      <v-col cols="6">
+      <v-col cols="12" md="6" sm="6" lg="6" xl="6">
         <v-btn @click="showAddAddress = true" outlined block color="primary">
           <v-avatar size="35">
             <v-img class="mr-1" :src="require('../assets/eth.svg')"></v-img>

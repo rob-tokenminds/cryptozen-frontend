@@ -116,26 +116,41 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider></v-divider>
-
-            <v-list-item @click="editYourEmail = true">
-              <v-list-item-content>
-                <v-list-item-title class="primary--text"
-                  >Update Your E-mail</v-list-item-title
-                >
-              </v-list-item-content>
-            </v-list-item>
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-list-item @click="editYourEmail = true">
+                  <v-list-item-content v-bind="attrs" v-on="on">
+                    <v-list-item-title class="primary--text"
+                      >Add E-mail to Save Wallet Addresses</v-list-item-title
+                    >
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+              <p class="white--text">
+                Receive email updates about your transactions. More info
+                https://docs.cryptozen.ninja
+              </p>
+            </v-tooltip>
             <v-divider></v-divider>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title class="primary--text"
-                  >Tier {{ tier >= 0 ? tier : "-" }} |
-                  {{ ninjaBalance }} Ninja</v-list-item-title
-                >
-                <!-- <v-list-item-subtitle
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-list-item>
+                  <v-list-item-content v-bind="attrs" v-on="on">
+                    <v-list-item-title class="primary--text"
+                      >Tier {{ tier >= 0 ? tier : "-" }} |
+                      {{ ninjaBalance }} Ninja</v-list-item-title
+                    >
+                    <!-- <v-list-item-subtitle
                   >Referrals until Tier 2</v-list-item-subtitle
                 > -->
-              </v-list-item-content>
-            </v-list-item>
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+              <p class="white--text">
+                Your Ninja token balance is XXX, which puts you in Tier X. More
+                info https://docs.cryptozen.ninja/
+              </p>
+            </v-tooltip>
             <v-divider></v-divider>
             <v-list-item @click="logout()">
               <v-list-item-content>

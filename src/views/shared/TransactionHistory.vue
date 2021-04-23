@@ -48,18 +48,16 @@
       <v-expansion-panels multiple flat>
         <v-expansion-panel>
           <v-expansion-panel-header>
-            <v-row no-gutters>
+            <v-row no-gutters class="ml-n6">
               <v-col cols="12" md="6" sm="6" lg="6" xl="6">
                 <v-list-item>
-                  <v-list-item-avatar size="60">
-                    <v-avatar>
-                      <!--                      <v-img-->
-                      <!--                        :src="-->
-                      <!--                          require(`../../assets/${transaction.tokenSymbol}.svg`)-->
-                      <!--                        "-->
-                      <!--                      ></v-img>-->
-                      <v-img :src="getIconByTx(transaction)"></v-img>
-                    </v-avatar>
+                  <v-list-item-avatar :size="isMobile ? 35 : 60">
+                    <!--                      <v-img-->
+                    <!--                        :src="-->
+                    <!--                          require(`../../assets/${transaction.tokenSymbol}.svg`)-->
+                    <!--                        "-->
+                    <!--                      ></v-img>-->
+                    <v-img :src="getIconByTx(transaction)"></v-img>
                   </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title class="primary--text"

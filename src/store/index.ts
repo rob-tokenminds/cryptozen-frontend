@@ -513,6 +513,16 @@ const store: StoreOptions<storeInterface> = {
         if (!state.notifications.find((a) => notification.id === a.id))
           state.notifications.push(notification);
       }
+      if (!state.profile?.email && state.profile) {
+        state.notifications.unshift({
+          id: "string",
+          user_id: state.profile.id,
+          message: `Please add your email to save wallet addresses`,
+          url: "",
+          is_read: false,
+          created_at: new Date().toDateString(),
+        });
+      }
     },
     async setNotificationIsRead({ state }, notification: UserNotification) {
       await Fetcher.markAsRead(notification.id);
@@ -914,6 +924,17 @@ const store: StoreOptions<storeInterface> = {
             if (hr) return getHrNumber(total);
             else return total.toString();
           };
+        }
+      }
+    },
+    async getUserAssetList({ state }) {
+      if (state.profile?.email && state.profile?.email_verified) {
+        const token = Vue.$cookies.get("cryptozen_token");
+        const addresses = await Fetcher.userAddressList(token);
+        if (addresses.length) {
+          for (const address of addresses) {
+            state.userAddresses.push(address);
+          }
         }
       }
     },

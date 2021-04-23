@@ -2,7 +2,7 @@
   <v-card :loading="loading" :disabled="loading">
     <v-container>
       <v-data-iterator
-        class="ml-10"
+        class="ml-2"
         :items="tokenList"
         :items-per-page.sync="itemsPerPage"
         :page.sync="page"

@@ -435,6 +435,13 @@ export class Fetcher {
     });
     return fetch.data;
   }
+
+  static async userAddressList(token: string): Promise<string[]> {
+    const fetch = await Fetcher.get(` /address-list/get`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return fetch.data;
+  }
 }
 
 export interface RewardInterface {
