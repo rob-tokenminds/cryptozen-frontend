@@ -514,14 +514,15 @@ const store: StoreOptions<storeInterface> = {
           state.notifications.push(notification);
       }
       if (!state.profile?.email && state.profile) {
-        state.notifications.unshift({
-          id: "string",
-          user_id: state.profile.id,
-          message: `Please add your email to save wallet addresses`,
-          url: "",
-          is_read: false,
-          created_at: new Date().toDateString(),
-        });
+        if (!state.notifications.find((n) => n.id === "string"))
+          state.notifications.unshift({
+            id: "string",
+            user_id: state.profile.id,
+            message: `Please add your email to save wallet addresses`,
+            url: "",
+            is_read: false,
+            created_at: new Date().toDateString(),
+          });
       }
     },
     async setNotificationIsRead({ state }, notification: UserNotification) {
