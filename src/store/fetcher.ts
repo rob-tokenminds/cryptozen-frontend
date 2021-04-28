@@ -10,6 +10,7 @@ export class Fetcher {
     shouldAlert = true
   ): Promise<AxiosResponse> {
     try {
+      // console.log("${BACKEND_URL}${path}", `${BACKEND_URL}${path}`);
       return await axios.get(`${BACKEND_URL}${path}`, config);
     } catch (error) {
       let message: any = "";
@@ -66,7 +67,7 @@ export class Fetcher {
       if (message.message) {
         message = message.message;
       }
-      console.log("message", message);
+      console.log("fetcher error", message);
       console.log(error.config);
       alert(message);
       throw new Error(message);
@@ -437,7 +438,7 @@ export class Fetcher {
   }
 
   static async userAddressList(token: string): Promise<string[]> {
-    const fetch = await Fetcher.get(` /address-list/get`, {
+    const fetch = await Fetcher.get(`/user/address-list/get`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return fetch.data;

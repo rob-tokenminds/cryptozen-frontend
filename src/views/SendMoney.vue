@@ -259,13 +259,13 @@
                           <v-card-actions>
                             <v-spacer></v-spacer>
 
-                            <v-btn
-                              color="secondary"
-                              outlined
-                              @click="addARecipient = false"
-                            >
-                              Cancel
-                            </v-btn>
+                            <!--                            <v-btn-->
+                            <!--                              color="secondary"-->
+                            <!--                              outlined-->
+                            <!--                              @click="addARecipient = false"-->
+                            <!--                            >-->
+                            <!--                              Cancel-->
+                            <!--                            </v-btn>-->
 
                             <v-btn
                               color="secondary"

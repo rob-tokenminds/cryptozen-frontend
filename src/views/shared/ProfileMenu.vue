@@ -30,7 +30,11 @@
           <v-list>
             <div v-if="notifications.length">
               <div v-for="notification in notifications" :key="notification.id">
-                <v-list-item @click="toNotification(notification)">
+                <v-list-item
+                  @click="
+                    notification.url ? toNotification(notification) : undefined
+                  "
+                >
                   <v-list-item-title>
                     <v-avatar
                       class="mr-2"
