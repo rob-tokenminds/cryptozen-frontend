@@ -1538,7 +1538,7 @@ export default class SendMoney extends Vue {
         ) as CoingeckoInterface;
       } else {
         axiosGet = await axios.get(
-          `4. Create ‘Performance’ view where all the assets of the user are show (both ETH and BSC), with a combined performance graph (of all assets on both blockchains) and individual performance per asset.markets?vs_currency=usd&ids=binancecoin`
+          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=binancecoin,usd-coin,aave-dai,ethereum`
         );
         const data = axiosGet.data as CoingeckoInterface[];
         this.ethereumPrice = data.find(
@@ -2486,7 +2486,7 @@ export default class SendMoney extends Vue {
           if (chainId === 56) {
             BNBToken = new Token(
               Ninja.chainId,
-              "0xB8c77482e45F1F44dE1745F52C74426C631bDD52",
+              "0xf66493f8a7c25b272c6d56ae8f55f0b7668b10a7",
               18
             );
           }

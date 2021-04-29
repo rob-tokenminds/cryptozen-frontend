@@ -48,7 +48,7 @@ export const CRYPTOZEN_CONTRACTS: { [key in NETWORKS_LIST]: string } = {
   ETH_TESTNET: "0xc13588ff090dec50260eb2c9f3e405ce407a9e8b",
   ETH_MAINNET: "",
   BSC_TESTNET: "0x3ddb757a8b21e196336931289c019ac3c18f3905",
-  BSC_MAINNET: "",
+  BSC_MAINNET: "0xADA43fca550894F6C7C938bDB2fBc6CBb5C6E392",
 };
 
 export enum CoinList {
@@ -73,10 +73,10 @@ export enum CHAIN_IDS {
 }
 
 export const NODE_URLS: { [key in NETWORKS_LIST]: string } = {
-  ETH_TESTNET: process.env.VUE_APP_ROPSTEN_NODE_URL as string,
-  ETH_MAINNET: process.env.VUE_APP_MAINNET_NODE_URL as string,
-  BSC_TESTNET: process.env.VUE_APP_BNB_TESTNET_NODE_URL as string,
-  BSC_MAINNET: process.env.VUE_APP_BNB_MAINNET_NODE_URL as string,
+  ETH_TESTNET: "https://ropsten.infura.io/v3/cae0f55058ee4cda955c385804d33352",
+  ETH_MAINNET: "https://mainnet.infura.io/v3/cae0f55058ee4cda955c385804d33352",
+  BSC_TESTNET: "https://data-seed-prebsc-1-s1.binance.org:8545",
+  BSC_MAINNET: "https://bsc-dataseed.binance.org",
 };
 
 const balances: BalanceInterface[] = [
@@ -86,7 +86,7 @@ const balances: BalanceInterface[] = [
     name: "Ninja Token",
     contractAddress: {
       ETH_TESTNET: "0x47d88fff2978a25787d618d22dc090a65651cdf9",
-      ETH_MAINNET: "",
+      ETH_MAINNET: "0xf66493f8a7c25b272c6d56ae8f55f0b7668b10a7",
       BSC_TESTNET: "",
       // BSC_TESTNET: "0x289856272f27185433b9f9403516a254d2e2959e",
       BSC_MAINNET: "",

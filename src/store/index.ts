@@ -137,132 +137,142 @@ const store: StoreOptions<storeInterface> = {
     ) {
       if (state.chainId) {
         for (const NETWORK of Object.keys(NETWORKS)) {
-          let web3 = state.web3;
-          const networkName = `${NETWORK}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
-          if (NETWORK !== state.networkName.toUpperCase()) {
-            const nodeUrl = NODE_URLS[networkName];
-            web3 = new Web3(nodeUrl);
-          }
-          if (web3) {
-            let newBalance;
-            if (coin.mainCurrency) {
-              await web3.eth.getBalance(address).then(async (balanceInWei) => {
-                if (web3) {
-                  newBalance = new CurrencyModel(
-                    address,
-                    web3.utils.fromWei(balanceInWei, "ether"),
-                    coin.value,
-                    true,
-                    false,
-                    "",
-                    NETWORK as NETWORKS,
-                    CHAIN_IDS[
-                      `${NETWORK}_${state.networkType.toUpperCase()}` as "ETH_TESTNET"
-                    ]
-                  );
-                }
-              });
-            } else {
-              if (coin.decimal && coin.contractAddress) {
-                const contractAddress = coin.contractAddress[networkName];
-                if (contractAddress) {
-                  const decimal = coin.decimal[networkName];
-                  const contract = new web3.eth.Contract(
-                    ERC20Abi,
-                    contractAddress
-                  );
-                  await contract.methods
-                    .balanceOf(address)
-                    .call({ from: state.selectedAddress })
-                    .then(async (unscaledBalance: number) => {
-                      if (decimal && web3) {
-                        const contract = new web3.eth.Contract(
-                          ERC20Abi,
-                          contractAddress
-                        );
-                        const CRYPTOZEN_CONTRACT =
-                          CRYPTOZEN_CONTRACTS[networkName];
+          try {
+            let web3 = state.web3;
+            const networkName = `${NETWORK}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
 
-                        const allowance = await contract.methods
-                          .allowance(address, CRYPTOZEN_CONTRACT)
-                          .call({ from: state.selectedAddress });
-                        console.log("allowance", allowance);
-                        let isApproved = false;
-                        let hash = "";
-                        let tx;
-                        if (Number(unscaledBalance) > 0) {
-                          if (Number(allowance) === 0) {
-                            const token = Vue.$cookies.get("cryptozen_token");
-                            hash = await Fetcher.getApproval(
-                              token,
-                              address,
-                              contractAddress,
-                              state.chainId
-                            );
+            console.log("NETWORK12", state.networkName.toUpperCase());
+            if (NETWORK !== state.networkName.toUpperCase()) {
+              const nodeUrl = NODE_URLS[networkName];
+              web3 = new Web3(nodeUrl);
+            }
+            if (web3) {
+              let newBalance;
+              if (coin.mainCurrency) {
+                await web3.eth
+                  .getBalance(address)
+                  .then(async (balanceInWei) => {
+                    if (web3) {
+                      newBalance = new CurrencyModel(
+                        address,
+                        web3.utils.fromWei(balanceInWei, "ether"),
+                        coin.value,
+                        true,
+                        false,
+                        "",
+                        NETWORK as NETWORKS,
+                        CHAIN_IDS[
+                          `${NETWORK}_${state.networkType.toUpperCase()}` as "ETH_TESTNET"
+                        ]
+                      );
+                    }
+                  });
+              } else {
+                if (coin.decimal && coin.contractAddress) {
+                  console.log("networkName", networkName);
+                  const contractAddress = coin.contractAddress[networkName];
+                  console.log("networkNamecontractAddress", contractAddress);
+                  if (contractAddress) {
+                    const decimal = coin.decimal[networkName];
+                    const contract = new web3.eth.Contract(
+                      ERC20Abi,
+                      contractAddress
+                    );
+                    await contract.methods
+                      .balanceOf(address)
+                      .call({ from: state.selectedAddress })
+                      .then(async (unscaledBalance: number) => {
+                        if (decimal && web3) {
+                          const contract = new web3.eth.Contract(
+                            ERC20Abi,
+                            contractAddress
+                          );
+                          const CRYPTOZEN_CONTRACT =
+                            CRYPTOZEN_CONTRACTS[networkName];
 
-                            if (hash) {
-                              tx = await web3.eth.getTransactionReceipt(hash);
-                              if (tx && tx.status) {
+                          const allowance = await contract.methods
+                            .allowance(address, CRYPTOZEN_CONTRACT)
+                            .call({ from: state.selectedAddress });
+                          console.log("allowance", allowance);
+                          let isApproved = false;
+                          let hash = "";
+                          let tx;
+                          if (Number(unscaledBalance) > 0) {
+                            if (Number(allowance) === 0) {
+                              const token = Vue.$cookies.get("cryptozen_token");
+                              hash = await Fetcher.getApproval(
+                                token,
+                                address,
+                                contractAddress,
+                                state.chainId
+                              );
+
+                              if (hash) {
+                                tx = await web3.eth.getTransactionReceipt(hash);
+                                if (tx && tx.status) {
+                                  isApproved = true;
+                                }
+                              } else {
                                 isApproved = true;
                               }
                             } else {
                               isApproved = true;
                             }
-                          } else {
-                            isApproved = true;
                           }
+                          const balance = new BigNumber(unscaledBalance).div(
+                            10 ** decimal
+                          );
+
+                          // if (coin.value === "uni") {
+                          //   console.log("uniuniunscaledBalance", unscaledBalance);
+                          //   console.log("uniunidecimal", decimal);
+                          //   console.log("uniuni", balance.toString());
+                          // }
+
+                          newBalance = new CurrencyModel(
+                            address,
+                            balance.toString(),
+                            coin.value,
+                            Number(allowance) > 0,
+                            !isApproved,
+                            hash ? (tx ? hash : "") : "",
+                            NETWORK as NETWORKS,
+                            CHAIN_IDS[
+                              `${NETWORK}_${state.networkType.toUpperCase()}` as "ETH_TESTNET"
+                            ]
+                          );
                         }
-                        const balance = new BigNumber(unscaledBalance).div(
-                          10 ** decimal
-                        );
-
-                        // if (coin.value === "uni") {
-                        //   console.log("uniuniunscaledBalance", unscaledBalance);
-                        //   console.log("uniunidecimal", decimal);
-                        //   console.log("uniuni", balance.toString());
-                        // }
-
-                        newBalance = new CurrencyModel(
-                          address,
-                          balance.toString(),
-                          coin.value,
-                          Number(allowance) > 0,
-                          !isApproved,
-                          hash ? (tx ? hash : "") : "",
-                          NETWORK as NETWORKS,
-                          CHAIN_IDS[
-                            `${NETWORK}_${state.networkType.toUpperCase()}` as "ETH_TESTNET"
-                          ]
-                        );
-                      }
-                    });
+                      });
+                  }
                 }
               }
-            }
 
-            if (newBalance) {
-              const index = state.balances.findIndex(
-                (b) => b.value === coin.value
-              );
-              if (index >= 0) {
-                const currencies = state.balances[index].currency;
-                if (currencies) {
-                  const currencyIndex = currencies.findIndex(
-                    (c) =>
-                      c.coin === coin.value &&
-                      c.address.toLowerCase() === address.toLowerCase() &&
-                      c.network === NETWORK
-                  );
-                  if (currencyIndex >= 0) {
-                    currencies.splice(currencyIndex, 1, newBalance);
-                    const result = Object.assign(state.balances[index], {
-                      currency: currencies,
-                    });
-                    state.balances.splice(index, 1, result);
+              if (newBalance) {
+                const index = state.balances.findIndex(
+                  (b) => b.value === coin.value
+                );
+                if (index >= 0) {
+                  const currencies = state.balances[index].currency;
+                  if (currencies) {
+                    const currencyIndex = currencies.findIndex(
+                      (c) =>
+                        c.coin === coin.value &&
+                        c.address.toLowerCase() === address.toLowerCase() &&
+                        c.network === NETWORK
+                    );
+                    if (currencyIndex >= 0) {
+                      currencies.splice(currencyIndex, 1, newBalance);
+                      const result = Object.assign(state.balances[index], {
+                        currency: currencies,
+                      });
+                      state.balances.splice(index, 1, result);
+                    }
                   }
                 }
               }
             }
+          } catch (e) {
+            console.error(`errUpdateCoinBalance`, e);
           }
         }
       }
@@ -401,7 +411,7 @@ const store: StoreOptions<storeInterface> = {
         state.networkName = "ETH";
       }
       if (state.chainId === 56 || state.chainId === 97) {
-        state.networkName = "BNB";
+        state.networkName = "BSC";
       }
       if (state.chainId === 3 || state.chainId === 97) {
         state.networkType = "TESTNET";
