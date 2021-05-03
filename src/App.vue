@@ -86,7 +86,7 @@
             >
               <template v-slot:label>
                 <div class="white--text">
-                  Hide Zero Balance <small>*non-default asset</small>
+                  Hide Zero Balance <small>(non-default asset)</small>
                 </div>
               </template>
             </v-checkbox>
