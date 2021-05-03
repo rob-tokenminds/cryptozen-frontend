@@ -347,42 +347,42 @@ export class Fetcher {
     return fetch.data;
   }
 
-  static async postApproval(
-    token: string,
-    hash: string,
-    address: string,
-    contractAddress: string,
-    chainId: number
-  ): Promise<boolean> {
-    const fetch = await Fetcher.post(
-      `/user/approval/new`,
-      {
-        hash,
-        address,
-        contractAddress,
-        chainId,
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    return fetch.data;
-  }
-
-  static async getApproval(
-    token: string,
-    address: string,
-    tokenContractAddress: string,
-    chainId: number
-  ): Promise<string> {
-    const fetch = await Fetcher.get(
-      `/user/approval/get/${address}/${tokenContractAddress}`,
-      {
-        params: { chainId },
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    return fetch.data;
-  }
-
+  // static async postApproval(
+  //   token: string,
+  //   hash: string,
+  //   address: string,
+  //   contractAddress: string,
+  //   chainId: number
+  // ): Promise<boolean> {
+  //   const fetch = await Fetcher.post(
+  //     `/user/approval/new`,
+  //     {
+  //       hash,
+  //       address,
+  //       contractAddress,
+  //       chainId,
+  //     },
+  //     { headers: { Authorization: `Bearer ${token}` } }
+  //   );
+  //   return fetch.data;
+  // }
+  //
+  // static async getApproval(
+  //   token: string,
+  //   address: string,
+  //   tokenContractAddress: string,
+  //   chainId: number
+  // ): Promise<string> {
+  //   const fetch = await Fetcher.get(
+  //     `/user/approval/get/${address}/${tokenContractAddress}`,
+  //     {
+  //       params: { chainId },
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     }
+  //   );
+  //   return fetch.data;
+  // }
+  //
   static async getRewards(token: string): Promise<RewardInterface[]> {
     const fetch = await Fetcher.get(`/user/rewards`, {
       headers: { Authorization: `Bearer ${token}` },

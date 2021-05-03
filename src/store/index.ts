@@ -195,26 +195,26 @@ const store: StoreOptions<storeInterface> = {
                             .call({ from: state.selectedAddress });
                           console.log("allowance", allowance);
                           let isApproved = false;
-                          let hash = "";
+                          // let hash = "";
                           let tx;
                           if (Number(unscaledBalance) > 0) {
                             if (Number(allowance) === 0) {
                               const token = Vue.$cookies.get("cryptozen_token");
-                              hash = await Fetcher.getApproval(
-                                token,
-                                address,
-                                contractAddress,
-                                state.chainId
-                              );
+                              // hash = await Fetcher.getApproval(
+                              //   token,
+                              //   address,
+                              //   contractAddress,
+                              //   state.chainId
+                              // );
 
-                              if (hash) {
-                                tx = await web3.eth.getTransactionReceipt(hash);
-                                if (tx && tx.status) {
-                                  isApproved = true;
-                                }
-                              } else {
-                                isApproved = true;
-                              }
+                              // if (hash) {
+                              //   tx = await web3.eth.getTransactionReceipt(hash);
+                              //   if (tx && tx.status) {
+                              //     isApproved = true;
+                              //   }
+                              // } else {
+                              //   isApproved = true;
+                              // }
                             } else {
                               isApproved = true;
                             }
@@ -235,7 +235,7 @@ const store: StoreOptions<storeInterface> = {
                             coin.value,
                             Number(allowance) > 0,
                             !isApproved,
-                            hash ? (tx ? hash : "") : "",
+                            "",
                             NETWORK as NETWORKS,
                             CHAIN_IDS[
                               `${NETWORK}_${state.networkType.toUpperCase()}` as "ETH_TESTNET"
@@ -366,13 +366,17 @@ const store: StoreOptions<storeInterface> = {
                 .on("transactionHash", async (hash) => {
                   console.log("hash", hash);
                   const token = Vue.$cookies.get("cryptozen_token");
-                  await Fetcher.postApproval(
-                    token,
-                    hash,
-                    window.ethereum.selectedAddress,
-                    contractAddress as string,
-                    state.chainId
+                  localStorage.setItem(
+                    `approval:${state.selectedAddress}`,
+                    hash
                   );
+                  // await Fetcher.postApproval(
+                  //   token,
+                  //   hash,
+                  //   window.ethereum.selectedAddress,
+                  //   contractAddress as string,
+                  //   state.chainId
+                  // );
                   alert(
                     "Processing approval function, please wait until it confirmed on the blockchain. You can see the progress directly on metamask "
                   );
@@ -395,12 +399,12 @@ const store: StoreOptions<storeInterface> = {
     },
     async getHashApproval({ state }, { address, contractAddress }) {
       const token = Vue.$cookies.get("cryptozen_token");
-      return await Fetcher.getApproval(
-        token,
-        address,
-        contractAddress,
-        state.chainId
-      );
+      // return await Fetcher.getApproval(
+      //   token,
+      //   address,
+      //   contractAddress,
+      //   state.chainId
+      // );
     },
     updateSelectedAddress({ state }, address: string) {
       state.selectedAddress = address;

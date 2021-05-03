@@ -1,6 +1,10 @@
 <template>
   <div>
     <v-container>
+      <v-alert v-if="loadingApprove" color="warning"
+        >Approving token, please wait ...</v-alert
+      >
+
       <v-tooltip bottom v-if="isReversed">
         <template v-slot:activator="{ on, attrs }">
           <v-btn class="ma-1" color="grey" v-bind="attrs" v-on="on"
@@ -27,14 +31,16 @@
         </template>
         <span>Please change the address on Metamask</span>
       </v-tooltip>
+
       <v-btn
         v-else
         class="ma-1"
-        :disabled="!allowance"
+        :disabled="!allowance || loadingApprove"
         color="secondary"
         @click="sendMoneyDialog = true"
         >Send {{ getBalance.name }}</v-btn
       >
+
       <v-btn
         disabled
         color="secondary"
@@ -49,7 +55,8 @@
       <v-btn
         class="ma-1"
         v-if="!allowance && !isReversed"
-        :disabled="allowancePending"
+        :loading="loadingApprove"
+        :disabled="loadingApprove"
         @click="approve"
         color="secondary"
         >{{ label }}</v-btn
@@ -242,53 +249,59 @@ export default class Balance extends Vue {
   watchLoading(value: boolean): void {
     if (value === true) {
       this.label = "Approval Pending...";
-      if (this.getBalanceCurrency)
-        this.checkApproval(this.getBalanceCurrency.hash as string);
+      if (this.getBalanceCurrency) this.checkApproval();
     }
   }
 
   @Watch("getBalance", { deep: true })
-  watchgetBalance(value: BalanceInterface): void {
+  async watchgetBalance(value: BalanceInterface): Promise<void> {
     if (value) {
       this.loadingApprove = this.allowancePending;
       console.log("this.loadingApprove", this.loadingApprove);
+      await this.checkApproval();
     }
   }
 
-  async checkApproval(hash: string): Promise<void> {
-    const web3 = this.$store.getters["getWeb3"] as Web3;
-    if (web3) {
-      const tx = await web3.eth.getTransactionReceipt(hash);
-      if (tx && tx.status) {
-        const balanceIndex = this.$store.state.balances.findIndex(
-          (b: BalanceInterface) => b.value === this.$route.params.coin
-        );
-        const balance = this.$store.state.balances[
-          balanceIndex
-        ] as BalanceInterface;
-        (this.$store.state.balances as BalanceInterface[]).splice(
-          balanceIndex,
-          1,
-          Object.assign(balance, {
-            currency: Object.assign(balance.currency, {
-              allowancePending: false,
-              hash: "",
-            }),
-          })
-        );
-      } else {
-        await sleep(10000);
-        await this.checkApproval(hash);
-      }
-    }
+  async mounted(): Promise<void> {
+    await this.checkApproval();
   }
+
+  // async checkApproval(hash: string): Promise<void> {
+  //   const web3 = this.$store.getters["getWeb3"] as Web3;
+  //   if (web3) {
+  //     const tx = await web3.eth.getTransactionReceipt(hash);
+  //     if (tx && tx.status) {
+  //       const balanceIndex = this.$store.state.balances.findIndex(
+  //         (b: BalanceInterface) => b.value === this.$route.params.coin
+  //       );
+  //       const balance = this.$store.state.balances[
+  //         balanceIndex
+  //       ] as BalanceInterface;
+  //       (this.$store.state.balances as BalanceInterface[]).splice(
+  //         balanceIndex,
+  //         1,
+  //         Object.assign(balance, {
+  //           currency: Object.assign(balance.currency, {
+  //             allowancePending: false,
+  //             hash: "",
+  //           }),
+  //         })
+  //       );
+  //     } else {
+  //       await sleep(10000);
+  //       await this.checkApproval(hash);
+  //     }
+  //   }
+  // }
 
   get getBalanceCurrency(): CurrencyModel | undefined {
     if (this.getBalance.currency) {
       return this.getBalance.currency.find(
         (c) =>
-          c.network.toLowerCase() === this.$store.state.networkName &&
-          c.address === this.$store.state.selectedAddress
+          c.network.toLowerCase() ===
+            this.$store.state.networkName.toLowerCase() &&
+          c.address.toLowerCase() ===
+            this.$store.state.selectedAddress.toLowerCase()
       );
     }
     return undefined;
@@ -342,6 +355,46 @@ export default class Balance extends Vue {
         Number(this.$store.state.chainId)
       );
     return false;
+  }
+
+  async checkApproval(shouldSleep = false): Promise<void> {
+    if (shouldSleep) {
+      await sleep(10000);
+    }
+    const hash = localStorage.getItem(
+      `approval:${this.$store.state.selectedAddress}`
+    );
+    if (hash) {
+      const web3 = this.$store.getters["getWeb3"] as Web3;
+      const tx = await web3.eth.getTransactionReceipt(hash);
+      console.log("txtxtxtx", tx);
+      if (tx) {
+        localStorage.removeItem(
+          `approval:${this.$store.state.selectedAddress}`
+        );
+        this.loadingApprove = false;
+        alert("Approval success, site will be reloaded");
+        location.reload();
+      } else {
+        const tx2 = await web3.eth.getTransaction(hash);
+        console.log("tx2tx2tx2", tx2);
+        if (!tx2) {
+          this.loadingApprove = false;
+          localStorage.removeItem(
+            `approval:${this.$store.state.selectedAddress}`
+          );
+          alert(
+            "You have replaced, cancel, or speed up the tx directly on Metamask. We cannot detect that transaction due the limitation of Metamask. Please make sure that the approval is confirmed manually"
+          );
+          location.reload();
+        } else {
+          this.loadingApprove = true;
+          await this.checkApproval(true);
+        }
+      }
+    } else {
+      this.loadingApprove = false;
+    }
   }
 }
 

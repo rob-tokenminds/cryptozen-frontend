@@ -74,8 +74,14 @@
             class="d-flex justify-center"
           >
             <v-card flat :loading="approveLoadingStatus">
-              <p class="text-center primary--text text-h5">
+              <p class="text-center primary--text text-h5 mt-2">
                 Where do you want to send from ?
+              </p>
+              <p
+                class="text-center primary--text mt-2"
+                v-if="approveLoadingStatus"
+              >
+                Approving, please wait ...
               </p>
 
               <v-card flat>
@@ -124,10 +130,10 @@
                         small
                         @click="approve(coin)"
                         >{{
-                          getCoinCurrency(coin).allowancePending
-                            ? "Pending"
-                            : isMobile
-                            ? "Approve"
+                          getCoinCurrency(coin).allowance
+                            ? isMobile
+                              ? "Approve"
+                              : "Approve Contract"
                             : "Approve Contract"
                         }}</v-btn
                       >
@@ -144,7 +150,7 @@
         <v-stepper-content step="2">
           <v-card flat class="d-flex justify-center">
             <v-card flat>
-              <p class="text-center primary--text text-h5">
+              <p class="text-center primary--text text-h5 mt-2">
                 Who are you sending money to?
               </p>
 
@@ -1545,7 +1551,7 @@ export default class SendMoney extends Vue {
           (d) => d.id === "binancecoin"
         ) as CoingeckoInterface;
       }
-
+      await this.checkApproval();
       console.log("this.swapAmount", this.swapAmount);
       // if (this.swapAmount) {
       //   await this.UpdateRecipientGetsAmount(this.swapAmount);
@@ -1554,6 +1560,46 @@ export default class SendMoney extends Vue {
       console.log("this.selectedAddress", this.selectedAddress);
       this.pageLoading = false;
     });
+  }
+
+  async checkApproval(shouldSleep = false): Promise<void> {
+    if (shouldSleep) {
+      await sleep(10000);
+    }
+    const hash = localStorage.getItem(
+      `approval:${this.$store.state.selectedAddress}`
+    );
+    if (hash) {
+      const web3 = this.$store.getters["getWeb3"] as Web3;
+      const tx = await web3.eth.getTransactionReceipt(hash);
+      console.log("txtxtxtx", tx);
+      if (tx) {
+        localStorage.removeItem(
+          `approval:${this.$store.state.selectedAddress}`
+        );
+        this.approveLoadingStatus = false;
+        alert("Approval success, site will be reloaded");
+        location.reload();
+      } else {
+        const tx2 = await web3.eth.getTransaction(hash);
+        console.log("tx2tx2tx2", tx2);
+        if (!tx2) {
+          this.approveLoadingStatus = false;
+          localStorage.removeItem(
+            `approval:${this.$store.state.selectedAddress}`
+          );
+          alert(
+            "You have replaced, cancel, or speed up the tx directly on Metamask. We cannot detect that transaction due the limitation of Metamask. Please make sure that the approval is confirmed manually"
+          );
+          location.reload();
+        } else {
+          this.approveLoadingStatus = true;
+          this.checkApproval(true);
+        }
+      }
+    } else {
+      this.approveLoadingStatus = false;
+    }
   }
 
   goToHome(): void {
