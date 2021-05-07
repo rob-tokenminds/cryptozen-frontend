@@ -55,10 +55,10 @@ var _SOLIDITY_TYPE_MAXIMA;
 })(exports.Rounding || (exports.Rounding = {}));
 
 //var FACTORY_ADDRESS = "0xBCfCcbde45cE874adCB698cC183deBcF17952812";
-var FACTORY_ADDRESS = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
+var FACTORY_ADDRESS = "0x152349604d49c2af10adee94b918b051104a143e";
 
 var INIT_CODE_HASH =
-  "0x00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5";
+  "0xf4ccce374816856d11f00e4069e7cada164065686fbef53c6167a63ec2fd8c5b";
 var MINIMUM_LIQUIDITY = /*#__PURE__*/ JSBI.BigInt(1000); // exports for internal consumption
 
 var ZERO = /*#__PURE__*/ JSBI.BigInt(0);
@@ -68,10 +68,8 @@ var THREE = /*#__PURE__*/ JSBI.BigInt(3);
 var FIVE = /*#__PURE__*/ JSBI.BigInt(5);
 var TEN = /*#__PURE__*/ JSBI.BigInt(10);
 var _100 = /*#__PURE__*/ JSBI.BigInt(100);
-var _997 = /*#__PURE__*/ JSBI.BigInt(9975);
+var _997 = /*#__PURE__*/ JSBI.BigInt(997);
 var _1000 = /*#__PURE__*/ JSBI.BigInt(1000);
-var FEES_NUMERATOR = JSBI.BigInt(9975);
-var FEES_DENOMINATOR = JSBI.BigInt(10000);
 var SolidityType;
 
 (function (SolidityType) {
@@ -1101,10 +1099,10 @@ var Pair = /*#__PURE__*/ (function () {
     var outputReserve = this.reserveOf(
       inputAmount.token.equals(this.token0) ? this.token1 : this.token0
     );
-    var inputAmountWithFee = JSBI.multiply(inputAmount.raw, FEES_NUMERATOR);
+    var inputAmountWithFee = JSBI.multiply(inputAmount.raw, _997);
     var numerator = JSBI.multiply(inputAmountWithFee, outputReserve.raw);
     var denominator = JSBI.add(
-      JSBI.multiply(inputReserve.raw, FEES_DENOMINATOR),
+      JSBI.multiply(inputReserve.raw, _1000),
       inputAmountWithFee
     );
     var outputAmount = new TokenAmount(
@@ -1147,11 +1145,11 @@ var Pair = /*#__PURE__*/ (function () {
     );
     var numerator = JSBI.multiply(
       JSBI.multiply(inputReserve.raw, outputAmount.raw),
-      FEES_DENOMINATOR
+      _1000
     );
     var denominator = JSBI.multiply(
       JSBI.subtract(outputReserve.raw, outputAmount.raw),
-      FEES_NUMERATOR
+      _997
     );
     var inputAmount = new TokenAmount(
       outputAmount.token.equals(this.token0) ? this.token1 : this.token0,

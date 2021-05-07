@@ -11,10 +11,10 @@ declare module "human-readable-numbers" {
   function toHumanString(number: number): string;
 }
 
-declare module "from-exponential" {
-  function fromExponential(string: string): string;
-  export = fromExponential;
-}
+// declare module "from-exponential" {
+//   function fromExponential(string: string): string;
+//   export = fromExponential;
+// }
 
 declare module "vue-native-websocket";
 

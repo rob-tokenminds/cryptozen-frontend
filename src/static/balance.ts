@@ -45,9 +45,10 @@ export interface BalanceInterface {
 }
 
 export const CRYPTOZEN_CONTRACTS: { [key in NETWORKS_LIST]: string } = {
-  ETH_TESTNET: "0xc13588ff090dec50260eb2c9f3e405ce407a9e8b",
+  // ETH_TESTNET: "0x53BB043B01a8F1f23B5D7B1bc50cDa0eedd13a19",
+  ETH_TESTNET: "0xbe8A3E0c8c049a3715DD3C338228a44C4bd5BB23",
   ETH_MAINNET: "",
-  BSC_TESTNET: "0x3ddb757a8b21e196336931289c019ac3c18f3905",
+  BSC_TESTNET: "0x20Ff0926CCA71C9Bab713De516B13A3B3d2E4A45",
   BSC_MAINNET: "0xADA43fca550894F6C7C938bDB2fBc6CBb5C6E392",
 };
 
@@ -87,7 +88,7 @@ const balances: BalanceInterface[] = [
     contractAddress: {
       ETH_TESTNET: "0x47d88fff2978a25787d618d22dc090a65651cdf9",
       ETH_MAINNET: "0xf66493f8a7c25b272c6d56ae8f55f0b7668b10a7",
-      BSC_TESTNET: "",
+      BSC_TESTNET: "0x5c648210abb0e77160dae48f5c3a20bc195295cc",
       // BSC_TESTNET: "0x289856272f27185433b9f9403516a254d2e2959e",
       BSC_MAINNET: "",
     },
@@ -97,8 +98,8 @@ const balances: BalanceInterface[] = [
       BSC_TESTNET: 18,
       BSC_MAINNET: 18,
     },
-    chainIds: [1, 3],
-    network: ["eth"],
+    chainIds: [1, 3, 56, 97],
+    network: ["eth", "bsc"],
     mainAsset: true,
   },
   {

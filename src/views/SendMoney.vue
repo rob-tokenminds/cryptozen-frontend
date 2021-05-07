@@ -1054,7 +1054,7 @@
                         {{ transactionReward }} Ninja Token ({{
                           transactionRewardInUsd
                         }}
-                        USD)
+                        USD) (estimated)
                       </v-card-title>
                     </v-card>
                   </v-col>
@@ -1173,11 +1173,11 @@
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ProfileMenu from "./shared/ProfileMenu.vue";
 import SelectAmount from "./shared/SelectAmount.vue";
-import Balances, {
+import balances, {
+  BalanceInterface,
   CRYPTOZEN_CONTRACTS,
   NETWORKS_LIST,
 } from "../static/balance";
-import balances, { BalanceInterface, CoinList } from "../static/balance";
 import {
   AddressBookInterface,
   Fetcher,
@@ -1194,21 +1194,25 @@ import { shleemy } from "shleemy";
 // import erc20abi from "../../static/erc20abi";
 import fromExponential from "from-exponential";
 import cryptozenabi from "../static/cryptozenabi";
-import {
-  Fetcher as UniswapFetcher,
-  Percent,
-  Route,
-  Token,
-  TokenAmount,
-  Trade,
-  TradeType,
-  WETH,
-} from "@uniswap/sdk";
+// import {
+//   Fetcher as UniswapFetcher,
+//   Percent,
+//   Route,
+//   Token,
+//   TokenAmount,
+//   Trade,
+//   TradeType,
+//   WETH,
+// } from "@uniswap/sdk";
 // import CryptozenSdk from "../library/cryptozen-sdk";
 import { providers } from "ethers";
 import axios from "axios";
 import CurrencyModel from "@/models/CurrencyModel";
-import { CoingeckoInterface } from "../interfaces";
+import { CoingeckoInterface } from "@/interfaces";
+import CryptozenSdk from "@/library/cryptozen-sdk";
+import { storeInterface } from "@/store";
+import { Contract } from "web3-eth-contract";
+import uniswap_v2_abi from "@/static/uniswap-v2-abi";
 // const EventSource = NativeEventSource || EventSourcePolyfill;
 // // OR: may also need to set as global property
 // global.EventSource = NativeEventSource || EventSourcePolyfill;
@@ -1285,6 +1289,8 @@ export default class SendMoney extends Vue {
   transactionRewardInEth = "0";
   pageLoading = true;
   addressByEmail = false;
+  WETH = "";
+  uniswapRouterAddress = "";
 
   get coins(): BalanceInterface[] {
     return this.balances;
@@ -1321,12 +1327,9 @@ export default class SendMoney extends Vue {
   }
 
   @Watch("transactionRewardInEth")
-  async watchtransactionRewardInEth(value: string): Promise<void> {
+  async watchTransactionRewardInEth(value: string): Promise<void> {
     if (value !== "0") {
-      const usd = this.convertToUsd(value);
-      console.log("usdusd", usd);
-      console.log("usdusdvalue", value);
-      this.transactionRewardInUsd = usd;
+      this.transactionRewardInUsd = this.convertToUsd(value);
     }
   }
 
@@ -1342,7 +1345,6 @@ export default class SendMoney extends Vue {
 
   @Watch("e1")
   watchE1(value: number): void {
-    console.log("valuee1", value);
     if (value === 4) {
       this.componentKey += 1;
       this.isReview = true;
@@ -1552,14 +1554,32 @@ export default class SendMoney extends Vue {
         ) as CoingeckoInterface;
       }
       await this.checkApproval();
+      this.gasPrice = await this.web3().eth.getGasPrice();
       console.log("this.swapAmount", this.swapAmount);
       // if (this.swapAmount) {
       //   await this.UpdateRecipientGetsAmount(this.swapAmount);
       //   await this.updateUsdAmount();
       // }
       console.log("this.selectedAddress", this.selectedAddress);
+
+      this.WETH = await this.cryptozenContract().methods.WETH().call();
+      this.uniswapRouterAddress = await this.cryptozenContract()
+        .methods.uniswapRouterAddress()
+        .call();
       this.pageLoading = false;
     });
+  }
+
+  cryptozenContract(): Contract {
+    const web3 = this.$store.state.web3 as Web3;
+    const networkName = `${this.$store.state.networkName.toUpperCase()}_${this.$store.state.networkType.toUpperCase()}` as NETWORKS_LIST;
+    const CRYPTOZEN_CONTRACT = CRYPTOZEN_CONTRACTS[networkName];
+    return new web3.eth.Contract(cryptozenabi, CRYPTOZEN_CONTRACT);
+  }
+
+  uniswapContract(): Contract {
+    const web3 = this.$store.state.web3 as Web3;
+    return new web3.eth.Contract(uniswap_v2_abi, this.uniswapRouterAddress);
   }
 
   async checkApproval(shouldSleep = false): Promise<void> {
@@ -1594,7 +1614,7 @@ export default class SendMoney extends Vue {
           location.reload();
         } else {
           this.approveLoadingStatus = true;
-          this.checkApproval(true);
+          this.checkApproval(true).then();
         }
       }
     } else {
@@ -1702,6 +1722,8 @@ export default class SendMoney extends Vue {
           } else {
             await new Promise((resolve, reject) => {
               if (this.params) {
+                this.params.gas = this.gas;
+                console.log("this.params", this.params);
                 web3.eth
                   .sendTransaction(this.params)
                   .on("transactionHash", async (hash) => {
@@ -1716,11 +1738,7 @@ export default class SendMoney extends Vue {
                             isToken: this.params.value === "0x0",
                             fee: this.transferFee,
                             reference: this.reference,
-                            reward: {
-                              transactionRewardInUsd: this
-                                .transactionRewardInUsd,
-                              transactionReward: this.transactionReward,
-                            },
+                            reward: this.transactionReward,
                           }
                         );
                       } else {
@@ -1943,7 +1961,7 @@ export default class SendMoney extends Vue {
     }
   }
 
-  async checkSubmittedAddresBook(id: string): Promise<void> {
+  async checkSubmittedAddressBook(id: string): Promise<void> {
     const token = Vue.$cookies.get("cryptozen_token");
     const addressBookData = await Fetcher.getSubmittedAddressBook(token, id);
     console.log("addressBookData", addressBookData);
@@ -1951,7 +1969,7 @@ export default class SendMoney extends Vue {
       this.newSubmittedAddressBook = addressBookData;
     } else {
       await sleep(30000);
-      await this.checkSubmittedAddresBook(id);
+      await this.checkSubmittedAddressBook(id);
     }
   }
 
@@ -1996,40 +2014,13 @@ export default class SendMoney extends Vue {
   }
 
   getAmount(transaction: TransactionInterface): string {
-    if (transaction.isToken) {
-      let decimals = transaction.tokenDecimal;
-      if (this.chainId !== 1 && this.chainId !== 3) {
-        decimals = 18;
-      }
-      return `${(
-        Number(transaction.value) /
-        10 ** Number(decimals)
-      ).toString()} ${transaction.tokenName}`;
-    } else {
-      const web3 = this.$store.getters["getWeb3"] as Web3;
-      return `${web3.utils.fromWei(transaction.value, "ether")} ${
-        this.mainCurrency
-      }`;
-    }
+    return `${this.swapAmount} ${transaction.tokenName}`;
   }
 
   getAmountReceipt(transaction: TransactionInterface): string {
-    if (transaction.isToken) {
-      let decimals = transaction.tokenDecimal;
-      if (this.chainId !== 1 && this.chainId !== 3) {
-        decimals = 18;
-      }
-      return `${(
-        Number(transaction.value) / 10 ** Number(decimals) -
-        Number(transaction.fee)
-      ).toString()} ${transaction.tokenName}`;
-    } else {
-      const web3 = this.$store.getters["getWeb3"] as Web3;
-      return `${
-        Number(web3.utils.fromWei(transaction.value, "ether")) -
-        Number(transaction.fee)
-      } ${this.mainCurrency}`;
-    }
+    return `${Number(this.swapAmount) - Number(this.transferFee)} ${
+      transaction.tokenName
+    }`;
   }
 
   getStatus(transaction: TransactionInterface): string {
@@ -2176,7 +2167,6 @@ export default class SendMoney extends Vue {
   async checkFee(inputAmount: number): Promise<void> {
     if (!this.loadingFee) {
       try {
-        const chainId = this.$store.state.chainId;
         if (
           this.selectedCurrency &&
           (this.selectedAddress || this.addressByEmail)
@@ -2227,7 +2217,7 @@ export default class SendMoney extends Vue {
             console.log("inputAmount.toString()", inputAmount.toString());
             amount = web3.utils.toWei(inputAmount.toString(), "ether");
             contractData = contract.methods
-              .transferSameEther(recipientAddress, amount)
+              .transferSameEther(recipientAddress)
               .encodeABI();
             value = amount;
           }
@@ -2241,12 +2231,17 @@ export default class SendMoney extends Vue {
             to: CRYPTOZEN_CONTRACT,
             value,
             data: contractData,
+            gasPrice: this.gasPrice,
           };
           await this.$store.dispatch("getTier");
           const tier = this.$store.state.tier;
           const transferFee: number = await contract.methods
             .calculateTransferFee(amount, tier[1])
-            .call();
+            .call({
+              from: window.ethereum.selectedAddress,
+              gasPrice: this.gasPrice,
+            });
+          // const transferFee = (Number(amount) * Number(tier[1])) / 10000;
           console.log("amountamountamount", amount);
           console.log("transferFee", transferFee);
           console.log("tier[1]", tier[1]);
@@ -2255,7 +2250,7 @@ export default class SendMoney extends Vue {
               const decimal = this.selectedCurrency.decimal[networkName];
 
               this.transferFee = Number(transferFee / 10 ** decimal).toFixed(5);
-              this.transferFeeOnUsd = await this.checktransferFeeOnUsd(
+              this.transferFeeOnUsd = await this.checkTransferFeeOnUsd(
                 this.transferFee
               );
             } else {
@@ -2268,11 +2263,17 @@ export default class SendMoney extends Vue {
           }
           console.log("this.transferFee", this.transferFee);
           this.gas = await web3.eth.estimateGas(params);
-          this.gasPrice = await web3.eth.getGasPrice();
+
           console.log("gasPrice", this.gasPrice);
           console.log("gas", this.gas);
-          await this.checkRewardFee(
-            this.transferFee.toString(),
+          // await this.checkRewardFee(
+          //   this.transferFee.toString(),
+          //   !this.selectedCurrency.mainCurrency,
+          //   this.selectedCurrency
+          // );
+          await this.checkRewardFeeNew(
+            new Bignumber(this.gas).times(this.gasPrice).toString(),
+            this.transferFee,
             !this.selectedCurrency.mainCurrency,
             this.selectedCurrency
           );
@@ -2311,7 +2312,7 @@ export default class SendMoney extends Vue {
   //   this.$emit("prev-step", this.currentStep - 1);
   // }
 
-  async checktransferFeeOnUsd(amount: string): Promise<string> {
+  async checkTransferFeeOnUsd(amount: string): Promise<string> {
     if (this.selectedCurrency && this.selectedCurrency.value === "ninja") {
       return this.convertToUsd(await this.ninjaToWeth(amount));
     } else {
@@ -2319,30 +2320,42 @@ export default class SendMoney extends Vue {
     }
   }
 
+  networkName(): NETWORKS_LIST {
+    const state = this.$store.state as storeInterface;
+    return `${state.networkName.toUpperCase()}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
+  }
+
+  web3(): Web3 {
+    const state = this.$store.state as storeInterface;
+    return state.web3 as Web3;
+  }
+
   async ninjaToWeth(amount: string): Promise<string> {
-    const state = this.$store.state;
-    const networkName = `ETH_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
-    let ethProvider: any = new providers.Web3Provider(window.ethereum);
+    const state = this.$store.state as storeInterface;
+    const {
+      ChainId,
+      Token,
+      Fetcher,
+      WETH,
+      Route,
+      Trade,
+      TokenAmount,
+      Percent,
+      TradeType,
+    } = CryptozenSdk(
+      state.networkName.toLowerCase(),
+      state.networkType === "TESTNET"
+    );
+
+    const networkName = this.networkName();
+    const ethProvider = new providers.Web3Provider(window.ethereum);
     const ninjaBalance = balances.find((b) => b.value === "ninja");
     if (ninjaBalance && ninjaBalance.contractAddress) {
       const chainId = state.chainId;
-      let NinjaContract = ninjaBalance.contractAddress[networkName];
-      let Ninja = new Token(chainId, NinjaContract as string, 18);
-      if (state.networkName !== "ETH") {
-        if (state.networkType === "TESTNET") {
-          ethProvider = new providers.JsonRpcProvider(
-            process.env.VUE_APP_ROPSTEN_NODE_URL as string
-          );
-          Ninja = new Token(3, NinjaContract as string, 18);
-        } else {
-          ethProvider = new providers.JsonRpcProvider(
-            process.env.VUE_APP_MAINNET_NODE_URL as string
-          );
-          Ninja = new Token(1, NinjaContract as string, 18);
-        }
-      }
+      const NinjaContract = ninjaBalance.contractAddress[networkName];
+      const Ninja = new Token(chainId, NinjaContract as string, 18);
 
-      const NinjaWETHPair = await UniswapFetcher.fetchPairData(
+      const NinjaWETHPair = await Fetcher.fetchPairData(
         WETH[Ninja.chainId],
         Ninja,
         ethProvider
@@ -2368,38 +2381,123 @@ export default class SendMoney extends Vue {
     return "0";
   }
 
+  async checkRewardFeeNew(
+    gasFee: string,
+    transferFee: string,
+    isToken: boolean,
+    TRADETOKENContract?: BalanceInterface
+  ): Promise<void> {
+    try {
+      const contract = this.cryptozenContract();
+      const web3 = this.web3();
+      console.log("checkRewardFeeNew TRADETOKENContract", TRADETOKENContract);
+      console.log("checkRewardFeeNew gasFee", gasFee);
+      console.log("checkRewardFeeNew this.WETH", this.WETH);
+      const fee1 = await contract.methods
+        .calculateNinjaReward(fromExponential(gasFee), this.WETH)
+        .call();
+      let fee2 = "0";
+      console.log("checkRewardFeeNew fee1", fee1);
+
+      if (
+        isToken &&
+        TRADETOKENContract &&
+        TRADETOKENContract.contractAddress &&
+        TRADETOKENContract.decimal &&
+        web3
+      ) {
+        if (TRADETOKENContract.id !== 9999) {
+          const feeTf = new Bignumber(transferFee)
+            .times(10 ** TRADETOKENContract.decimal[this.networkName()])
+            .toString();
+          console.log("checkRewardFeeNew feeTf", feeTf);
+          fee2 = await contract.methods
+            .calculateNinjaReward(
+              fromExponential(feeTf),
+              TRADETOKENContract.contractAddress[this.networkName()]
+            )
+            .call();
+        }
+      } else {
+        const feeTf = web3.utils.toWei(transferFee, "ether");
+        console.log("checkRewardFeeNew feeTf", feeTf);
+        fee2 = await contract.methods
+          .calculateNinjaReward(fromExponential(feeTf), this.WETH)
+          .call();
+      }
+
+      console.log("checkRewardFeeNew fee2", fee2);
+      this.transactionReward = Number(
+        new Bignumber(fee1)
+          .plus(fee2)
+          .div(10 ** 18)
+          .toFixed(5)
+      ).toString();
+      console.log("checkRewardFeeNew [this.WETH, this.ninjaContractAddress]", [
+        this.WETH,
+        this.ninjaContractAddress(),
+      ]);
+      console.log(
+        "checkRewardFeeNew this.transactionReward",
+        this.transactionReward
+      );
+      const amountOut = await this.uniswapContract()
+        .methods.getAmountsOut(
+          fromExponential(new Bignumber(fee1).plus(fee2).toString()),
+          [this.ninjaContractAddress(), this.WETH]
+        )
+        .call();
+      console.log("checkRewardFeeNew amountOut", amountOut);
+      this.transactionRewardInEth = web3.utils.fromWei(amountOut[1], "ether");
+      console.log(
+        "checkRewardFeeNew this.transactionRewardInEth",
+        this.transactionRewardInEth
+      );
+    } catch (e) {
+      throw new Error(`error checkRewardFeeNew ${e.message}`);
+    }
+  }
+
+  ninjaContractAddress(): string {
+    const ninjaBalance = balances.find((b) => b.value === "ninja");
+    if (ninjaBalance && ninjaBalance.contractAddress) {
+      return ninjaBalance.contractAddress[this.networkName()];
+    }
+    return "";
+  }
+
   async checkRewardFee(
     amountFee: string,
     isToken: boolean,
     TRADETOKENContract?: BalanceInterface
   ): Promise<void> {
-    const state = this.$store.state;
-    const networkName = `ETH_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
+    const state = this.$store.state as storeInterface;
+    const {
+      ChainId,
+      Token,
+      Fetcher,
+      WETH,
+      Route,
+      Trade,
+      TokenAmount,
+      Percent,
+      TradeType,
+    } = CryptozenSdk(
+      state.networkName.toLowerCase(),
+      state.networkType === "TESTNET"
+    );
+    const networkName = `${state.networkName.toUpperCase()}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
     const chainId = state.chainId as number;
     const ninjaBalance = balances.find((b) => b.value === "ninja");
     if (ninjaBalance && ninjaBalance.contractAddress) {
-      let ethProvider: any = new providers.Web3Provider(window.ethereum);
-      let NinjaContract = ninjaBalance.contractAddress[networkName];
-      let Ninja = new Token(chainId, NinjaContract as string, 18);
-      if (state.networkName !== "ETH") {
-        if (state.networkType === "TESTNET") {
-          ethProvider = new providers.JsonRpcProvider(
-            process.env.VUE_APP_ROPSTEN_NODE_URL as string
-          );
-          Ninja = new Token(3, NinjaContract as string, 18);
-        } else {
-          ethProvider = new providers.JsonRpcProvider(
-            process.env.VUE_APP_MAINNET_NODE_URL as string
-          );
-          Ninja = new Token(1, NinjaContract as string, 18);
-        }
-      }
-
+      const ethProvider = new providers.Web3Provider(window.ethereum);
+      const NinjaContract = ninjaBalance.contractAddress[networkName];
+      const Ninja = new Token(chainId, NinjaContract as string, 18);
       console.log("NinjaContract", NinjaContract);
       if (Ninja) {
         console.log("Ninja", Ninja);
 
-        const NinjaWETHPair = await UniswapFetcher.fetchPairData(
+        const NinjaWETHPair = await Fetcher.fetchPairData(
           WETH[Ninja.chainId],
           Ninja,
           ethProvider
@@ -2420,7 +2518,7 @@ export default class SendMoney extends Vue {
               contractAddress,
               decimal
             );
-            const TRADETOKENWETHPAIR = await UniswapFetcher.fetchPairData(
+            const TRADETOKENWETHPAIR = await Fetcher.fetchPairData(
               WETH[Ninja.chainId],
               TRADETOKEN,
               ethProvider
@@ -2539,7 +2637,7 @@ export default class SendMoney extends Vue {
           let BNBWETHPAIRS;
           if (BNBToken) {
             console.log("BNBToken", BNBToken);
-            BNBWETHPAIRS = await UniswapFetcher.fetchPairData(
+            BNBWETHPAIRS = await Fetcher.fetchPairData(
               WETH[Ninja.chainId],
               BNBToken,
               ethProvider

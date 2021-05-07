@@ -169,7 +169,7 @@
             :readonly="readOnly"
           >
             <!-- <template v-slot:append-outer>
-               
+
                 </template> -->
 
             <template v-slot:label>
@@ -666,7 +666,7 @@ export default class SelectAmount extends Vue {
       TokenAmount,
       Percent,
       TradeType,
-    } = CryptozenSdk(network);
+    } = CryptozenSdk(network, this.$store.state.networkType === "TESTNET");
     const ethProvider = new providers.Web3Provider(window.ethereum);
     const Ninja = new Token(
       this.$store.state.chainId,
@@ -674,7 +674,7 @@ export default class SelectAmount extends Vue {
       18
     );
     const NinjaWETHPair = await Fetcher.fetchPairData(
-      WETH[this.$store.state.chainId],
+      WETH[Ninja.chainId],
       Ninja,
       ethProvider
     );
@@ -720,14 +720,14 @@ export default class SelectAmount extends Vue {
       TokenAmount,
       Percent,
       TradeType,
-    } = CryptozenSdk(network);
+    } = CryptozenSdk(network, this.$store.state.networkType === "TESTNET");
     const Ninja = new Token(
       this.$store.state.chainId,
       process.env.VUE_APP_NINJA_TOKEN_CONTRACT as string,
       18
     );
     const NinjaWETHPair = await Fetcher.fetchPairData(
-      WETH[this.$store.state.chainId],
+      WETH[Ninja.chainId],
       Ninja,
       ethProvider
     );
@@ -751,7 +751,7 @@ export default class SelectAmount extends Vue {
           decimal
         );
         const TRADETOKENWETHPAIR = await Fetcher.fetchPairData(
-          WETH[this.$store.state.chainId],
+          WETH[TRADETOKEN.chainId],
           TRADETOKEN,
           ethProvider
         );
@@ -764,7 +764,7 @@ export default class SelectAmount extends Vue {
         const routeEth = new Route(
           [NinjaWETHPair],
           Ninja,
-          WETH[this.$store.state.chainId]
+          WETH[TRADETOKEN.chainId]
         );
         // console.log("amountFee", amountFee);
         const amount = new BigNumber(amountFee).times(10 ** decimal).toFixed();

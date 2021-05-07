@@ -383,10 +383,12 @@ const store: StoreOptions<storeInterface> = {
                 })
                 .on("receipt", (receipt) => {
                   console.log("receipt", receipt);
+                  localStorage.removeItem(`approval:${state.selectedAddress}`);
                   resolve(true);
                 })
                 .on("error", (error) => {
                   reject(error);
+                  localStorage.removeItem(`approval:${state.selectedAddress}`);
                 });
             });
           }
@@ -606,12 +608,13 @@ const store: StoreOptions<storeInterface> = {
         fee,
         reference,
         reward,
-      }: {
+      }: //
+      {
         hash: string;
         isToken: boolean;
         fee: string;
         reference: string;
-        reward: any;
+        reward: string;
       }
     ) {
       const token = Vue.$cookies.get("cryptozen_token");
@@ -687,23 +690,19 @@ const store: StoreOptions<storeInterface> = {
       return trx;
     },
     async getTier({ state }) {
-      if (state.chainId === 1 || state.chainId === 3) {
-        const web3 = state.web3;
-        if (web3) {
-          const networkName = `${state.networkName.toUpperCase()}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
-          const CRYPTOZEN_CONTRACT = CRYPTOZEN_CONTRACTS[networkName];
-          const contract = new web3.eth.Contract(
-            cryptozenabi,
-            CRYPTOZEN_CONTRACT
-          );
-          const tier = await contract.methods
-            .getTier()
-            .call({ from: state.selectedAddress });
-          console.log("tier", tier);
-          state.tier = tier;
-        }
-      } else {
-        state.tier = [0, 6, 0] as any;
+      const web3 = state.web3;
+      if (web3) {
+        const networkName = `${state.networkName.toUpperCase()}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
+        const CRYPTOZEN_CONTRACT = CRYPTOZEN_CONTRACTS[networkName];
+        const contract = new web3.eth.Contract(
+          cryptozenabi,
+          CRYPTOZEN_CONTRACT
+        );
+        const tier = await contract.methods
+          .getTier()
+          .call({ from: state.selectedAddress });
+        console.log("tier", tier);
+        state.tier = tier;
       }
     },
     async getRewards({ state }) {
@@ -998,5 +997,21 @@ const store: StoreOptions<storeInterface> = {
   },
   // plugins: [vuexLocal.plugin],
 };
+
+// declare module "vue/types/vue" {
+//   interface Vue {
+//     $vStore: Store<{ state: storeInterface }>;
+//   }
+// }
+//
+// const typedStorePlugin: PluginObject<void> = {
+//   install(VueInstance: typeof Vue) {
+//     Object.defineProperty(VueInstance.prototype, "$vStore", {
+//       get() {
+//         return this.$store;
+//       },
+//     });
+//   },
+// };
 
 export default new Vuex.Store(store);

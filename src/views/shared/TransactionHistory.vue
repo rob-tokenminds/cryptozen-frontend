@@ -105,9 +105,10 @@
                     <v-card-title class="primary--text mt-n8">
                       {{
                         transaction.reward
-                          ? transaction.reward.transactionReward
+                          ? (transaction.reward / 10 ** 18).toFixed(4)
                           : "0"
                       }}
+                      {{ !transaction.blockNumber ? "(estimated)" : "" }}
                       Ninja Token
                     </v-card-title>
                   </v-card>
@@ -168,7 +169,11 @@
                   <v-card flat tile>
                     <v-card-subtitle> Block Number </v-card-subtitle>
                     <v-card-title class="primary--text mt-n8">
-                      {{ transaction.blockNumber }}
+                      {{
+                        transaction.blockNumber
+                          ? transaction.blockNumber
+                          : "Pending Transaction"
+                      }}
                     </v-card-title>
                   </v-card>
                 </v-col>
@@ -336,7 +341,7 @@ export default class TransactionHistory extends Vue {
         return { name: `Pending ${tx}`, color: "warning" };
       }
     } else {
-      if (transaction.fee) {
+      if (transaction.reward) {
         return { name: `Cryptozen ${tx}`, color: "primary" };
       } else {
         return { name: `External ${tx}`, color: "secondary" };

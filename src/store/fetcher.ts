@@ -277,7 +277,7 @@ export class Fetcher {
     isToken: boolean,
     fee: string,
     reference: string,
-    reward: any,
+    reward: string,
     chainId: number
   ): Promise<TransactionInterface> {
     const fetch = await Fetcher.post(
@@ -285,10 +285,10 @@ export class Fetcher {
       {
         hash,
         isToken,
-        fee,
         reference,
-        reward,
         chainId,
+        fee,
+        reward,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -302,7 +302,7 @@ export class Fetcher {
     isToken: boolean,
     fee: string,
     reference: string,
-    reward: any,
+    reward: string,
     chainId: number
   ): Promise<TransactionInterface> {
     const fetch = await Fetcher.post(
@@ -540,4 +540,5 @@ export interface TransactionInterface {
   isOnHold: boolean;
   chainId: number;
   isClaimReward: boolean;
+  reward: string;
 }

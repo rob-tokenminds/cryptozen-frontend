@@ -55,10 +55,10 @@ var _SOLIDITY_TYPE_MAXIMA;
 })(exports.Rounding || (exports.Rounding = {}));
 
 //var FACTORY_ADDRESS = "0xBCfCcbde45cE874adCB698cC183deBcF17952812";
-var FACTORY_ADDRESS = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
+var FACTORY_ADDRESS = "0x6725F303b657a9451d8BA641348b6761A6CC7a17";
 
 var INIT_CODE_HASH =
-  "0x00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5";
+  "0xd0d4c4cd0848c93cb4fd1f498d7013ee6bfb25783ea21593d5834f5d250ece66";
 var MINIMUM_LIQUIDITY = /*#__PURE__*/ JSBI.BigInt(1000); // exports for internal consumption
 
 var ZERO = /*#__PURE__*/ JSBI.BigInt(0);

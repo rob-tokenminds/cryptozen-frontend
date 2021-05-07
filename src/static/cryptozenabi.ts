@@ -1,61 +1,23 @@
 const abi: any = [
+  { inputs: [], stateMutability: "nonpayable", type: "constructor" },
   {
-    inputs: [],
-    name: "claimRewards",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
+    anonymous: false,
     inputs: [
       {
+        indexed: false,
         internalType: "address",
-        name: "recipient",
+        name: "userAddress",
         type: "address",
       },
       {
+        indexed: false,
         internalType: "uint256",
         name: "amount",
         type: "uint256",
       },
     ],
-    name: "putReward",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address payable",
-        name: "feeAddress",
-        type: "address",
-      },
-      {
-        internalType: "uint256[3][9]",
-        name: "tiers",
-        type: "uint256[3][9]",
-      },
-      {
-        internalType: "contract IERC20",
-        name: "ninjaContractAddress",
-        type: "address",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "constructor",
+    name: "CryptozenReward",
+    type: "event",
   },
   {
     anonymous: false,
@@ -77,26 +39,95 @@ const abi: any = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "WETH",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
+      { internalType: "uint256", name: "amountIn", type: "uint256" },
       {
-        internalType: "address[]",
-        name: "recipients",
-        type: "address[]",
+        internalType: "address",
+        name: "tokenContractAddress",
+        type: "address",
       },
-      {
-        internalType: "uint256[]",
-        name: "amounts",
-        type: "uint256[]",
-      },
+    ],
+    name: "calculateNinjaReward",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amount", type: "uint256" },
+      { internalType: "uint256", name: "percent", type: "uint256" },
+    ],
+    name: "calculateTransferFee",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "claimRewards",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getFeePercentage",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getReward",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getTier",
+    outputs: [{ internalType: "uint256[3]", name: "", type: "uint256[3]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "ninjaContract",
+    outputs: [{ internalType: "contract IERC20", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "recipient", type: "address" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
+    ],
+    name: "putReward",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address[]", name: "recipients", type: "address[]" },
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
     ],
     name: "putRewards",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -108,21 +139,18 @@ const abi: any = [
     type: "function",
   },
   {
+    inputs: [{ internalType: "address", name: "yourAddress", type: "address" }],
+    name: "rewardOf",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
-      {
-        internalType: "address payable",
-        name: "feeAddress",
-        type: "address",
-      },
+      { internalType: "address payable", name: "feeAddress", type: "address" },
     ],
     name: "setFeeAddress",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -135,43 +163,50 @@ const abi: any = [
       },
     ],
     name: "setNinjaContract",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [
-      {
-        internalType: "uint256[3][9]",
-        name: "tiers",
-        type: "uint256[3][9]",
-      },
+      { internalType: "uint256[3][9]", name: "tiers", type: "uint256[3][9]" },
     ],
     name: "setTiers",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [
       {
-        internalType: "address",
-        name: "newOwner",
+        internalType: "contract IUniswapV2Router01",
+        name: "routerAddress",
         type: "address",
       },
     ],
+    name: "setUniswapRouterAddress",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "index", type: "uint256" }],
+    name: "tier",
+    outputs: [{ internalType: "uint256[3]", name: "", type: "uint256[3]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "tiers",
+    outputs: [
+      { internalType: "uint256[3][9]", name: "", type: "uint256[3][9]" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
     name: "transferOwnership",
     outputs: [],
     stateMutability: "nonpayable",
@@ -179,25 +214,10 @@ const abi: any = [
   },
   {
     inputs: [
-      {
-        internalType: "address payable",
-        name: "recipient",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
+      { internalType: "address payable", name: "recipient", type: "address" },
     ],
     name: "transferSameEther",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    outputs: [],
     stateMutability: "payable",
     type: "function",
   },
@@ -208,222 +228,45 @@ const abi: any = [
         name: "tokenContractAddress",
         type: "address",
       },
-      {
-        internalType: "address",
-        name: "recipient",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
+      { internalType: "address", name: "recipient", type: "address" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
     ],
     name: "transferSameToken",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
+    inputs: [],
+    name: "uniswapRouterAddress",
+    outputs: [
+      {
+        internalType: "contract IUniswapV2Router01",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
-      {
-        internalType: "uint256",
-        name: "index",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256[3]",
-        name: "tier",
-        type: "uint256[3]",
-      },
+      { internalType: "uint256", name: "index", type: "uint256" },
+      { internalType: "uint256[3]", name: "tier", type: "uint256[3]" },
     ],
     name: "updateTier",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "percent",
-        type: "uint256",
-      },
+      { internalType: "address", name: "recipient", type: "address" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
     ],
-    name: "calculateTransferFee",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IERC20",
-        name: "tokenContractAddress",
-        type: "address",
-      },
-    ],
-    name: "checkAllowance",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getFeePercentage",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getNinjaBalance",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getReward",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getTier",
-    outputs: [
-      {
-        internalType: "uint256[3]",
-        name: "",
-        type: "uint256[3]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "getTierByAmount",
-    outputs: [
-      {
-        internalType: "uint256[3]",
-        name: "",
-        type: "uint256[3]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "ninjaContract",
-    outputs: [
-      {
-        internalType: "contract IERC20",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "owner",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "index",
-        type: "uint256",
-      },
-    ],
-    name: "tier",
-    outputs: [
-      {
-        internalType: "uint256[3]",
-        name: "",
-        type: "uint256[3]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "tiers",
-    outputs: [
-      {
-        internalType: "uint256[3][9]",
-        name: "",
-        type: "uint256[3][9]",
-      },
-    ],
-    stateMutability: "view",
+    name: "withdrawNinjaToken",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
 ];
