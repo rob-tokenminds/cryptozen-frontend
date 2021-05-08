@@ -444,8 +444,8 @@ const store: StoreOptions<storeInterface> = {
     async getLoginWord() {
       return await Fetcher.getLoginWords();
     },
-    async login({ state }, { address, signature }) {
-      const accessToken = await Fetcher.login(address, signature);
+    async login({ state }, { address, signature, chainId }) {
+      const accessToken = await Fetcher.login(address, signature, chainId);
       Vue.$cookies.set("cryptozen_token", accessToken);
       return accessToken;
     },
@@ -715,11 +715,11 @@ const store: StoreOptions<storeInterface> = {
         }
       }
       const networkName = `${state.networkName.toUpperCase()}_${state.networkType.toUpperCase()}` as NETWORKS_LIST;
-      let web3 = state.web3 as Web3;
-      if ("ETH" !== state.networkName.toUpperCase()) {
-        const nodeUrl = NODE_URLS[networkName];
-        web3 = new Web3(nodeUrl);
-      }
+      const web3 = state.web3 as Web3;
+      // if ("ETH" !== state.networkName.toUpperCase()) {
+      //   const nodeUrl = NODE_URLS[networkName];
+      //   web3 = new Web3(nodeUrl);
+      // }
       console.log("state.chainId", state.chainId);
       const CRYPTOZEN_CONTRACT = CRYPTOZEN_CONTRACTS[networkName];
       console.log("cryptozenContract", CRYPTOZEN_CONTRACT);

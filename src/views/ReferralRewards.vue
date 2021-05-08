@@ -78,7 +78,7 @@
               color="secondary"
               :disabled="!claimableReward || loadingClaimReward"
               :loading="loadingClaimReward"
-              >Claim Rewards</v-btn
+              >Claim {{ $store.state.networkName.toUpperCase() }} Rewards</v-btn
             >
           </v-col>
         </v-row>
@@ -180,16 +180,16 @@ export default class ReferralRewards extends Vue {
 
       const cryptozenContract = CRYPTOZEN_CONTRACTS[networkName];
 
-      if (state.chainId !== 1 && state.chainId !== 3) {
-        throw new Error("Please switch the network to Ethereum on Metamask ");
-        // if (state.chainId === 56) {
-        //   web3 = new Web3(process.env.VUE_APP_MAINNET_NODE_URL as string);
-        //   cryptozenContract = cryptozen_contract(1);
-        // } else {
-        //   web3 = new Web3(process.env.VUE_APP_ROPSTEN_NODE_URL as string);
-        //   cryptozenContract = cryptozen_contract(3);
-        // }
-      }
+      // if (state.chainId !== 1 && state.chainId !== 3) {
+      //   throw new Error("Please switch the network to Ethereum on Metamask ");
+      //   // if (state.chainId === 56) {
+      //   //   web3 = new Web3(process.env.VUE_APP_MAINNET_NODE_URL as string);
+      //   //   cryptozenContract = cryptozen_contract(1);
+      //   // } else {
+      //   //   web3 = new Web3(process.env.VUE_APP_ROPSTEN_NODE_URL as string);
+      //   //   cryptozenContract = cryptozen_contract(3);
+      //   // }
+      // }
       const contract = new web3.eth.Contract(cryptozenabi, cryptozenContract);
       const contractMethod = contract.methods.claimRewards().encodeABI({
         from: state.selectedAddress,

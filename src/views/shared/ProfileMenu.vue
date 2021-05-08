@@ -142,7 +142,7 @@
                   <v-list-item-content v-bind="attrs" v-on="on">
                     <v-list-item-title class="primary--text"
                       >Tier {{ tier >= 0 ? tier : "-" }} |
-                      {{ ninjaBalance }} Ninja</v-list-item-title
+                      {{ ninjaBalance / 10 ** 18 }} Ninja</v-list-item-title
                     >
                     <!-- <v-list-item-subtitle
                   >Referrals until Tier 2</v-list-item-subtitle
@@ -196,10 +196,16 @@ import { Vue, Component, Prop, PropSync, Watch } from "vue-property-decorator";
 import { UserNotification } from "@/store";
 import { mdiBellAlertOutline } from "@mdi/js";
 // import { NativeEventSource, EventSourcePolyfill } from "event-source-polyfill";
-import { BalanceInterface } from "@/static/balance";
+import {
+  BalanceInterface,
+  CRYPTOZEN_CONTRACTS,
+  NETWORKS_LIST,
+} from "@/static/balance";
 import ChainIds from "../../static/chain_ids";
 import { AbstractProvider } from "web3-core";
 import Web3 from "web3";
+import { Contract } from "web3-eth-contract";
+import cryptozenabi from "@/static/cryptozenabi";
 // import Web3 from "web3";
 // import cryptozenabi from "../../static/cryptozenabi";
 // import Bignumber from "bignumber.js";
@@ -215,6 +221,7 @@ export default class ProfileMenu extends Vue {
 
   editYourEmail = false;
   yourEmail = this.myEmail;
+  ninjaBalance = 0;
 
   get asset(): string {
     const chainId = this.$store.state.chainId;
@@ -364,6 +371,7 @@ export default class ProfileMenu extends Vue {
     this.$nextTick(() => {
       this.checkNotification();
       this.checkTier();
+      this.getNinjaBalance();
       // this.getNotifications();
     });
   }
@@ -377,6 +385,24 @@ export default class ProfileMenu extends Vue {
     this.newNotif = false;
     const profile = this.$store.getters["getProfile"];
     await this.$store.dispatch("clearNotifications", profile.id);
+  }
+
+  async getNinjaBalance(): Promise<void> {
+    if (this.$store.state.selectedAddress) {
+      this.ninjaBalance = await this.cryptozenContract()
+        .methods.getNinjaBalanceAndRewardOf(this.$store.state.selectedAddress)
+        .call();
+    } else {
+      await sleep(1000);
+      await this.getNinjaBalance();
+    }
+  }
+
+  cryptozenContract(): Contract {
+    const web3 = this.$store.state.web3 as Web3;
+    const networkName = `${this.$store.state.networkName.toUpperCase()}_${this.$store.state.networkType.toUpperCase()}` as NETWORKS_LIST;
+    const CRYPTOZEN_CONTRACT = CRYPTOZEN_CONTRACTS[networkName];
+    return new web3.eth.Contract(cryptozenabi, CRYPTOZEN_CONTRACT);
   }
 
   get notifications(): Promise<UserNotification> {
@@ -394,19 +420,19 @@ export default class ProfileMenu extends Vue {
     }
   }
 
-  get ninjaBalance(): string {
-    const balances = this.$store.state.balances as BalanceInterface[];
-    const balance = balances.find((b) => b.value === "ninja");
-    if (balance && balance.currency) {
-      const currency = balance.currency.find(
-        (c) =>
-          c.network.toLowerCase() === this.$store.state.networkName &&
-          c.address === this.$store.state.selectedAddress
-      );
-      if (currency) return currency.balance;
-    }
-    return "0";
-  }
+  // get ninjaBalance(): string {
+  //   const balances = this.$store.state.balances as BalanceInterface[];
+  //   const balance = balances.find((b) => b.value === "ninja");
+  //   if (balance && balance.currency) {
+  //     const currency = balance.currency.find(
+  //       (c) =>
+  //         c.network.toLowerCase() === this.$store.state.networkName &&
+  //         c.address === this.$store.state.selectedAddress
+  //     );
+  //     if (currency) return currency.balance;
+  //   }
+  //   return "0";
+  // }
   async checkNotification(): Promise<void> {
     const profile = this.$store.getters["getProfile"];
     if (this.$store.state.isLogin && profile && profile.id) {

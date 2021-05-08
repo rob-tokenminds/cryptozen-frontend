@@ -79,10 +79,15 @@ export class Fetcher {
     return fetch.data.words;
   }
 
-  static async login(address: string, signature: string): Promise<string> {
+  static async login(
+    address: string,
+    signature: string,
+    chainId: number
+  ): Promise<string> {
     const fetch = await axios.post(`${BACKEND_URL}/user/login`, {
       address,
       signature,
+      chainId,
     });
     return fetch.data.accessToken;
   }

@@ -663,9 +663,11 @@ export default class App extends Vue {
           );
         });
         if (signature) {
+          await this.$store.dispatch("updateChainId", this.web3);
           accessToken = await this.$store.dispatch("login", {
             address: window.ethereum.selectedAddress,
             signature,
+            chainId: this.$store.state.chainId,
           });
           localStorage.removeItem("coin_gecko_price");
           location.reload();
