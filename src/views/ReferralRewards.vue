@@ -259,7 +259,11 @@ export default class ReferralRewards extends Vue {
   }
 
   get rewards(): RewardInterface[] {
-    return this.$store.getters["getRewards"];
+    return this.$store.getters["getRewards"].sort(
+      (a: RewardInterface, b: RewardInterface) =>
+        new Date(b.created_at).getTime() / 1000 -
+        new Date(a.created_at).getTime() / 1000
+    );
   }
 
   get claimableReward(): number {
