@@ -244,11 +244,12 @@ export class Fetcher {
   static async getTransactions(
     token: string,
     addresses: string,
+    chainId: number,
     currency = ""
   ): Promise<TransactionInterface[]> {
     const fetch = await Fetcher.get(`/user/transactions/${addresses}`, {
       headers: { Authorization: `Bearer ${token}` },
-      params: { currency },
+      params: { chainId, currency },
     });
     return fetch.data;
   }

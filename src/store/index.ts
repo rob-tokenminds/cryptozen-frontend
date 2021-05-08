@@ -560,7 +560,7 @@ const store: StoreOptions<storeInterface> = {
       const transactions = await Fetcher.getTransactions(
         token,
         addresses,
-
+        state.chainId,
         currency
       );
       if (transactions.length) {
