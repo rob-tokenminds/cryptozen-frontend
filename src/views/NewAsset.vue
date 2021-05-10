@@ -36,6 +36,7 @@
         <template v-slot:default="{ items }">
           <v-row>
             <v-col
+              class="text-center"
               v-for="item of items"
               :key="item.value"
               cols="6"
