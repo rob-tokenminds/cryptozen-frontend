@@ -58,6 +58,7 @@
                   <v-avatar
                     v-if="item.network.find((n) => n.toLowerCase() === 'bsc')"
                     size="30"
+                    class="ml-3"
                     ><v-img :src="require('../assets/bsc.svg')"></v-img
                   ></v-avatar>
                 </v-list-item-title>
