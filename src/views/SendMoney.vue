@@ -528,7 +528,7 @@
                       <v-col :cols="isMobile ? 6 : 8">
                         <v-text-field
                           :key="componentKey"
-                          class="text-h5 rounded-0"
+                          class="text-h5 rounded-0 recipient-gets-input"
                           color="primary"
                           label="Recipient gets"
                           outlined
@@ -815,7 +815,7 @@
                     <v-col :cols="isMobile ? 6 : 8">
                       <v-text-field
                         :key="componentKey"
-                        class="text-h5 rounded-0"
+                        class="text-h5 rounded-0 recipient-gets-input"
                         color="primary"
                         label="Recipient gets"
                         outlined
@@ -2698,5 +2698,12 @@ function sleep(ms: number): Promise<unknown> {
 <style scoped>
 .bala {
   border: 0.5px solid #005672;
+}
+::v-deep .recipient-gets-input .v-input__slot{
+  height: 58px !important;
+  top: -2px;
+}
+::v-deep .v-text-field--outlined.v-input--is-focused fieldset, .v-text-field--outlined.v-input--has-state fieldset {
+    border-width: 1px !important;
 }
 </style>
