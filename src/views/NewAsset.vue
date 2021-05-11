@@ -1,5 +1,13 @@
 <template>
   <v-card :loading="loading" :disabled="loading">
+    
+   <v-app-bar
+      color="primary"
+      dark
+      scroll-target="#scrolling-techniques-6"
+    >
+      <v-toolbar-title>ADD ASSET</v-toolbar-title>
+    </v-app-bar>
     <v-container>
       <v-data-iterator
         class="ml-2"
