@@ -36,6 +36,7 @@
         <template v-slot:default="{ items }">
           <v-row>
             <v-col
+              class="text-center"
               v-for="item of items"
               :key="item.value"
               cols="6"
@@ -147,4 +148,8 @@ export default class NewAsset extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+::v-deep .v-select.v-select--chips:not(.v-text-field--single-line).v-text-field--enclosed .v-select__selections {
+  min-height: initial !important;
+}
+</style>

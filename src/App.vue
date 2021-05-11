@@ -222,7 +222,7 @@
     <v-dialog
       v-model="addNewAsset"
       transition="dialog-bottom-transition"
-      width="1000"
+      width="800"
     >
       <NewAsset></NewAsset>
     </v-dialog>
