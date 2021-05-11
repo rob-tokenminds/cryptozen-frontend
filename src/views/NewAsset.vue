@@ -57,7 +57,7 @@
                   <v-img :src="item.logo"></v-img>
                 </v-list-item-avatar>
                 <v-list-item-title>
-                  {{ item.value.toUpperCase() }}
+                 <span class="coin-name"> {{ item.value.toUpperCase() }}</span>
                   <v-avatar
                     v-if="item.network.find((n) => n.toLowerCase() === 'eth')"
                     size="40"
@@ -164,5 +164,9 @@ export default class NewAsset extends Vue {
 .my-5px{
   margin-top: 5px !important;
   margin-bottom: 5px !important;
+}
+.coin-name{
+  display: inline-block;
+  transform: translateY(2px);
 }
 </style>
