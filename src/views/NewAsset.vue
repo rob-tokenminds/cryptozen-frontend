@@ -58,8 +58,8 @@
                   <v-avatar
                     v-if="item.network.find((n) => n.toLowerCase() === 'bsc')"
                     size="30"
-                    class="ml-3"
-                    ><v-img :src="require('../assets/bsc.svg')"></v-img
+                    class="ml-3 my-5px"
+                    ><v-img  :src="require('../assets/bsc.svg')"></v-img
                   ></v-avatar>
                 </v-list-item-title>
                 <v-list-item-subtitle> {{ item.name }}</v-list-item-subtitle>
@@ -152,5 +152,9 @@ export default class NewAsset extends Vue {
 <style scoped>
 ::v-deep .v-select.v-select--chips:not(.v-text-field--single-line).v-text-field--enclosed .v-select__selections {
   min-height: initial !important;
+}
+.my-5px{
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
 }
 </style>
