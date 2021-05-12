@@ -85,24 +85,24 @@
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> Set Up By </v-card-subtitle>
-                    <v-card-title class="primary--text mt-n8">
+                    <v-card-text class="primary--text">
                       {{ getWalletName(transaction.from) }}
-                    </v-card-title>
+                    </v-card-text>
                   </v-card>
                 </v-col>
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> Reference </v-card-subtitle>
-                    <v-card-title class="primary--text mt-n8">
+                    <v-card-text class="primary--text">
                       {{ transaction.reference }}
-                    </v-card-title>
+                    </v-card-text>
                   </v-card>
                 </v-col>
 
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> Rewards </v-card-subtitle>
-                    <v-card-title class="primary--text mt-n8">
+                    <v-card-text class="primary--text">
                       {{
                         transaction.reward
                           ? (transaction.reward / 10 ** 18).toFixed(4)
@@ -110,7 +110,7 @@
                       }}
                       {{ !transaction.blockNumber ? "(estimated)" : "" }}
                       Ninja Token
-                    </v-card-title>
+                    </v-card-text>
                   </v-card>
                 </v-col>
               </v-row>
@@ -118,38 +118,38 @@
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> To </v-card-subtitle>
-                    <v-card-title
+                    <v-card-text
                       v-if="!transaction.isOnHold"
-                      class="primary--text mt-n8"
+                      class="primary--text"
                     >
                       {{ getWalletName(transaction.to) }}
-                    </v-card-title>
-                    <v-card-title v-else class="primary--text mt-n8">
+                    </v-card-text>
+                    <v-card-text v-else class="primary--text">
                       <a
                         :ref="`encrypted-email-${transaction.id}`"
                         @click="decryptEmail(transaction)"
                         >Encrypted (click to decrypt)</a
                       >
-                    </v-card-title>
+                    </v-card-text>
                   </v-card>
                 </v-col>
 
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> TX Hash </v-card-subtitle>
-                    <v-card-title class="primary--text mt-n8">
+                    <v-card-text class="primary--text">
                       {{ transaction.hash }}
-                    </v-card-title>
+                    </v-card-text>
                   </v-card>
                 </v-col>
 
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> Platform Fee </v-card-subtitle>
-                    <v-card-title class="primary--text mt-n8">
+                    <v-card-text class="primary--text">
                       {{ transaction.fee ? transaction.fee : 0 }}
                       {{ transaction.tokenSymbol.toUpperCase() }}
-                    </v-card-title>
+                    </v-card-text>
                   </v-card>
                 </v-col>
               </v-row>
@@ -158,23 +158,23 @@
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> Gas Fee </v-card-subtitle>
-                    <v-card-title class="primary--text mt-n8">
+                    <v-card-text class="primary--text">
                       {{ getFee(transaction) }}
                       {{ currencyByChainId(transaction) }}
-                    </v-card-title>
+                    </v-card-text>
                   </v-card>
                 </v-col>
 
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> Block Number </v-card-subtitle>
-                    <v-card-title class="primary--text mt-n8">
+                    <v-card-text class="primary--text">
                       {{
                         transaction.blockNumber
                           ? transaction.blockNumber
                           : "Pending Transaction"
                       }}
-                    </v-card-title>
+                    </v-card-text>
                   </v-card>
                 </v-col>
               </v-row>
@@ -183,9 +183,9 @@
                 <v-col cols="12" md="4" sm="4" lg="4" xl="4">
                   <v-card flat tile>
                     <v-card-subtitle> Sent Amount </v-card-subtitle>
-                    <v-card-title class="primary--text mt-n8">
+                    <v-card-text class="primary--text">
                       {{ getAmount(transaction, true) }}
-                    </v-card-title>
+                    </v-card-text>
                   </v-card>
                 </v-col>
 
@@ -194,9 +194,9 @@
                     <v-card-subtitle>
                       Recipient Received Amount
                     </v-card-subtitle>
-                    <v-card-title class="primary--text mt-n8">
+                    <v-card-text class="primary--text">
                       {{ getAmountReceipt(transaction) }}
-                    </v-card-title>
+                    </v-card-text>
                   </v-card>
                 </v-col>
 

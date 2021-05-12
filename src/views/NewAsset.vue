@@ -1,5 +1,13 @@
 <template>
   <v-card :loading="loading" :disabled="loading">
+    
+   <v-app-bar
+      color="primary"
+      dark
+      scroll-target="#scrolling-techniques-6"
+    >
+      <v-toolbar-title>ADD ASSET</v-toolbar-title>
+    </v-app-bar>
     <v-container>
       <v-data-iterator
         class="ml-2"
@@ -49,7 +57,7 @@
                   <v-img :src="item.logo"></v-img>
                 </v-list-item-avatar>
                 <v-list-item-title>
-                  {{ item.value.toUpperCase() }}
+                 <span class="coin-name"> {{ item.value.toUpperCase() }}</span>
                   <v-avatar
                     v-if="item.network.find((n) => n.toLowerCase() === 'eth')"
                     size="40"
@@ -58,7 +66,8 @@
                   <v-avatar
                     v-if="item.network.find((n) => n.toLowerCase() === 'bsc')"
                     size="30"
-                    ><v-img :src="require('../assets/bsc.svg')"></v-img
+                    class="ml-3 my-5px"
+                    ><v-img  :src="require('../assets/bsc.svg')"></v-img
                   ></v-avatar>
                 </v-list-item-title>
                 <v-list-item-subtitle> {{ item.name }}</v-list-item-subtitle>
@@ -151,5 +160,13 @@ export default class NewAsset extends Vue {
 <style scoped>
 ::v-deep .v-select.v-select--chips:not(.v-text-field--single-line).v-text-field--enclosed .v-select__selections {
   min-height: initial !important;
+}
+.my-5px{
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+}
+.coin-name{
+  display: inline-block;
+  transform: translateY(2px);
 }
 </style>
