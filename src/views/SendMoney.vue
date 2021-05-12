@@ -129,13 +129,7 @@
                         color="primary"
                         small
                         @click="approve(coin)"
-                        >{{
-                          getCoinCurrency(coin).allowance
-                            ? isMobile
-                              ? "Approve"
-                              : "Approve Contract"
-                            : "Approve Contract"
-                        }}</v-btn
+                        >{{ isMobile ? "Approve" : "Approve Contract" }}</v-btn
                       >
                     </v-list-item-content>
                   </v-list-item>
