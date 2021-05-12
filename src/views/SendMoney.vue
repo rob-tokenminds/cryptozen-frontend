@@ -1658,18 +1658,16 @@ export default class SendMoney extends Vue {
       //     `Your ${this.mainCurrency} balance is 0, you need some amount to approve the token`
       //   );
       // }
-      if (!this.getBalanceCurrency?.allowancePending) {
-        this.approveLoadingStatus = true;
-        this.currentlyApproved = coin;
-        await this.$store.dispatch("approve", coin);
-        await this.$store.dispatch("updateCoinBalance", {
-          coin,
-          address: this.$store.state.selectedAddress,
-        });
-        this.approveLoadingStatus = false;
-      } else {
-        throw new Error("Something went wrong");
-      }
+
+      this.approveLoadingStatus = true;
+      this.currentlyApproved = coin;
+      console.log("this.currentlyApproved", this.currentlyApproved);
+      await this.$store.dispatch("approve", coin);
+      await this.$store.dispatch("updateCoinBalance", {
+        coin,
+        address: this.$store.state.selectedAddress,
+      });
+      this.approveLoadingStatus = false;
     } catch (e) {
       console.error("e", e);
       alert(e.message);
@@ -2233,13 +2231,18 @@ export default class SendMoney extends Vue {
             data: contractData,
             gasPrice: this.gasPrice,
           };
+          console.log("this.gasPrice", this.gasPrice);
+          console.log(
+            "window.ethereum.selectedAddress",
+            window.ethereum.selectedAddress
+          );
           await this.$store.dispatch("getTier");
           const tier = this.$store.state.tier;
           const transferFee: number = await contract.methods
             .calculateTransferFee(amount, tier[1])
             .call({
               from: window.ethereum.selectedAddress,
-              gasPrice: this.gasPrice,
+              // gasPrice: this.gasPrice,
             });
           // const transferFee = (Number(amount) * Number(tier[1])) / 10000;
           console.log("amountamountamount", amount);
@@ -2699,11 +2702,12 @@ function sleep(ms: number): Promise<unknown> {
 .bala {
   border: 0.5px solid #005672;
 }
-::v-deep .recipient-gets-input .v-input__slot{
+::v-deep .recipient-gets-input .v-input__slot {
   height: 58px !important;
   top: -2px;
 }
-::v-deep .v-text-field--outlined.v-input--is-focused fieldset, .v-text-field--outlined.v-input--has-state fieldset {
-    border-width: 1px !important;
+::v-deep .v-text-field--outlined.v-input--is-focused fieldset,
+.v-text-field--outlined.v-input--has-state fieldset {
+  border-width: 1px !important;
 }
 </style>
