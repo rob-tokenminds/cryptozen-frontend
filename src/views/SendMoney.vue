@@ -122,21 +122,26 @@
                       <v-icon v-if="getCoinCurrency(coin).allowance"
                         >mdi-chevron-right</v-icon
                       >
-
-                      <v-btn
-                        :disabled="approveLoadingStatus"
-                        v-else
-                        color="primary"
-                        small
-                        @click="approve(coin)"
-                        >{{
-                          getCoinCurrency(coin).allowance
-                            ? isMobile
-                              ? "Approve"
-                              : "Approve Contract"
-                            : "Approve Contract"
-                        }}</v-btn
-                      >
+                      <v-tooltip top v-else max-width="350">
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn v-bind="attrs" v-on="on"
+                            :disabled="approveLoadingStatus"
+                            color="primary"
+                            small
+                            @click="approve(coin)"
+                            >{{
+                              getCoinCurrency(coin).allowance
+                                ? isMobile
+                                  ? "Approve"
+                                  : "Connect"
+                                : "Connect"
+                            }}</v-btn
+                          >
+                        </template>
+                        In order to transact any crypto you need to enable sending first by clicking on the button and then confirm in metamask. This will whitelist the cryptocurrency
+                        in your wallet for usage sending through CryptoZen. You'll still need to approve
+                        any transaction before it's actually send
+                      </v-tooltip>
                     </v-list-item-content>
                   </v-list-item>
                 </v-card-text>
