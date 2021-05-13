@@ -1,9 +1,17 @@
 <template>
   <v-card flat v-if="!pageLoading">
+    <v-app-bar app color="white" flat class="alert-toolbar">
+      <v-app-bar flat dence class="blue-grey lighten-5" height="30" top="100">
+        <v-spacer></v-spacer>
+        <v-subheader class="text-center"
+          >Alpha version! use at your own risk</v-subheader
+        >
+        <v-spacer></v-spacer>
+      </v-app-bar>
+    </v-app-bar>
     <v-stepper v-model="e1" class="elevation-0">
       <!-- <v-toolbar dark color="white"> -->
-
-      <v-stepper-header>
+      <v-stepper-header class="stepper-header">
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
@@ -2717,5 +2725,13 @@ function sleep(ms: number): Promise<unknown> {
 
 .hover-pointer:hover{
   cursor: pointer;
+}
+::v-deep .alert-toolbar{
+  left: 0px !important;
+  height: 30px !important;
+}
+::v-deep .v-stepper{
+  position: relative;
+  top: 30px;
 }
 </style>
