@@ -52,7 +52,7 @@
             >
           </span>
         </template>
-        Comming Soon
+        Coming Soon
     </v-tooltip>
     <v-tooltip top>
         <template v-slot:activator="{ on, attrs }">
@@ -62,7 +62,7 @@
               >
            </span>
         </template>
-        Comming Soon
+        Coming Soon
     </v-tooltip>
      
 
