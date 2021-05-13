@@ -151,7 +151,7 @@
                 </v-list-item>
               </template>
               <p class="white--text">
-                Your Ninja token balance is XXX, which puts you in Tier X. More
+                Your Ninja token balance is {{ ninjaBalance / 10 ** 18 }}, which puts you in Tier X. More
                 info https://docs.cryptozen.ninja/
               </p>
             </v-tooltip>
