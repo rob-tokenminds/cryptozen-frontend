@@ -40,17 +40,31 @@
         @click="sendMoneyDialog = true"
         >Send {{ getBalance.name }}</v-btn
       >
-
-      <v-btn
-        disabled
-        color="secondary"
-        @click="swapMoneyDialog = true"
-        class="ma-1"
-        >Swap {{ getBalance.name }} Coming soon</v-btn
-      >
-      <v-btn disabled color="secondary" class="ml-1"
-        >Lock Compound Coming soon</v-btn
-      >
+    <v-tooltip top>
+        <template v-slot:activator="{ on, attrs }">
+          <span v-bind="attrs" v-on="on">
+            <v-btn
+              disabled
+              color="secondary"
+              @click="swapMoneyDialog = true"
+              class="ma-1"
+              >Swap {{ getBalance.name }}</v-btn
+            >
+          </span>
+        </template>
+        Comming Soon
+    </v-tooltip>
+    <v-tooltip top>
+        <template v-slot:activator="{ on, attrs }">
+           <span v-bind="attrs" v-on="on">
+              <v-btn disabled color="secondary" class="ml-1"
+                >Lock Compound</v-btn
+              >
+           </span>
+        </template>
+        Comming Soon
+    </v-tooltip>
+     
 
       <v-btn
         class="ma-1"
