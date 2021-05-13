@@ -4,7 +4,7 @@
     dense
     :class="vListTopClass"
     :width="myEmail ? 320 : undefined"
-    height="70"
+    height="55"
   >
     <v-list-item flat dense>
       <v-list-item-icon v-if="syncedShowBell">
