@@ -148,7 +148,7 @@ export default class Balance extends Vue {
   sendMoneyDialog = false;
   swapMoneyDialog = false;
   loadingApprove = false;
-  label = "Approve contract address";
+  label = "Enable sending";
 
   get coinGeckoPrices(): CoingeckoInterface[] {
     return this.$store.state.coinGeckoPrices;
