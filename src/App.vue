@@ -3,13 +3,6 @@
     style="background: #e5e5e5"
     v-if="$route.path !== `/create-address-book` && isLogin"
   >
-    <v-system-bar app height="30">
-      <v-spacer></v-spacer>
-      <v-subheader class="text-center"
-        >Alpha version! use at your own risk</v-subheader
-      >
-      <v-spacer></v-spacer>
-    </v-system-bar>
     <v-navigation-drawer v-model="drawer" app color="primary" width="350">
       <v-list>
         <v-list-item>
@@ -286,6 +279,13 @@
 
     <!-- Sizes your content based upon application components -->
     <v-main>
+      <v-toolbar flat dence class="blue-grey lighten-5" height="30">
+        <v-spacer></v-spacer>
+        <v-subheader class="text-center"
+          >Alpha version! use at your own risk</v-subheader
+        >
+        <v-spacer></v-spacer>
+      </v-toolbar>
       <!-- Provides the application the proper gutter -->
 
       <v-container>
