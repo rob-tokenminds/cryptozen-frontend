@@ -10,7 +10,7 @@
         <v-spacer></v-spacer>
         <v-img
           v-if="!isMobile"
-          class="ma-5"
+          class="ma-5 hover-pointer"
           max-height="60"
           max-width="130"
           src="../assets/logo2.svg"
@@ -2710,5 +2710,9 @@ function sleep(ms: number): Promise<unknown> {
 }
 ::v-deep .v-text-field--outlined.v-input--is-focused fieldset, .v-text-field--outlined.v-input--has-state fieldset {
     border-width: 1px !important;
+}
+
+.hover-pointer:hover{
+  cursor: pointer;
 }
 </style>
