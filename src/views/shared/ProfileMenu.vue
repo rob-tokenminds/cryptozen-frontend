@@ -136,7 +136,7 @@
               </p>
             </v-tooltip>
             <v-divider></v-divider>
-            <v-tooltip bottom>
+            <v-tooltip bottom close-delay="1500" >
               <template v-slot:activator="{ on, attrs }">
                 <v-list-item>
                   <v-list-item-content v-bind="attrs" v-on="on">
@@ -150,9 +150,9 @@
                   </v-list-item-content>
                 </v-list-item>
               </template>
-              <p class="white--text">
+              <p class="white--text" style="pointer-events: initial;">
                 Your Ninja token balance is {{ ninjaBalance / 10 ** 18 }}, which puts you in Tier X. More
-                info https://docs.cryptozen.ninja/
+                info <a href="https://docs.cryptozen.ninja/" target="_blank" class="white--text">https://docs.cryptozen.ninja/</a>
               </p>
             </v-tooltip>
             <v-divider></v-divider>
