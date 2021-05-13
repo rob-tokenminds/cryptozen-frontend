@@ -557,7 +557,7 @@
                           item-value="value"
                           outlined
                           v-model="selectedRecipientTokenModel"
-                          class="rounded-0"
+                          class="rounded-0 coin-list"
                           height="50"
                         >
                           <template v-slot:item="{ item, on, attrs }">
@@ -2701,9 +2701,14 @@ function sleep(ms: number): Promise<unknown> {
 .bala {
   border: 0.5px solid #005672;
 }
+::v-deep .coin-list .v-input__slot {
+  min-height: 55.5px !important;
+}
+::v-deep .recipient-gets-input .v-input__slot fieldset {
+  height: 62px !important;
+}
 ::v-deep .recipient-gets-input .v-input__slot {
-  height: 58px !important;
-  top: -2px;
+  top: -1.5px;
 }
 ::v-deep .v-text-field--outlined.v-input--is-focused fieldset,
 .v-text-field--outlined.v-input--has-state fieldset {
