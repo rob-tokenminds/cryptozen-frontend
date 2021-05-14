@@ -1,16 +1,24 @@
 <template>
   <v-card flat v-if="!pageLoading">
+    <v-app-bar app color="white" flat class="alert-toolbar">
+      <v-app-bar flat dence class="blue-grey lighten-5" height="30" top="100">
+        <v-spacer></v-spacer>
+        <v-subheader class="text-center"
+          >Alpha version! use at your own risk</v-subheader
+        >
+        <v-spacer></v-spacer>
+      </v-app-bar>
+    </v-app-bar>
     <v-stepper v-model="e1" class="elevation-0">
       <!-- <v-toolbar dark color="white"> -->
-
-      <v-stepper-header>
+      <v-stepper-header class="stepper-header">
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-img
           v-if="!isMobile"
-          class="ma-5"
+          class="ma-5 hover-pointer"
           max-height="60"
           max-width="130"
           src="../assets/logo2.svg"
@@ -122,15 +130,15 @@
                       <v-icon v-if="getCoinCurrency(coin).allowance"
                         >mdi-chevron-right</v-icon
                       >
-
                       <v-btn
-                        :disabled="approveLoadingStatus"
-                        v-else
-                        color="primary"
-                        small
-                        @click="approve(coin)"
-                        >{{ isMobile ? "Approve" : "Approve Contract" }}</v-btn
-                      >
+                      v-else
+                      :disabled="approveLoadingStatus"
+                      color="primary"
+                      small
+                      @click="approve(coin)"
+                      >{{ isMobile ? "Approve" : "ENABLE SENDING" }}</v-btn
+                    >
+                       
                     </v-list-item-content>
                   </v-list-item>
                 </v-card-text>
@@ -552,7 +560,7 @@
                           item-value="value"
                           outlined
                           v-model="selectedRecipientTokenModel"
-                          class="rounded-0"
+                          class="rounded-0 coin-list"
                           height="50"
                         >
                           <template v-slot:item="{ item, on, attrs }">
@@ -2696,12 +2704,29 @@ function sleep(ms: number): Promise<unknown> {
 .bala {
   border: 0.5px solid #005672;
 }
+::v-deep .coin-list .v-input__slot {
+  min-height: 55.5px !important;
+}
+::v-deep .recipient-gets-input .v-input__slot fieldset {
+  height: 62px !important;
+}
 ::v-deep .recipient-gets-input .v-input__slot {
-  height: 58px !important;
-  top: -2px;
+  top: -1.5px;
 }
 ::v-deep .v-text-field--outlined.v-input--is-focused fieldset,
 .v-text-field--outlined.v-input--has-state fieldset {
   border-width: 1px !important;
+}
+
+.hover-pointer:hover{
+  cursor: pointer;
+}
+::v-deep .alert-toolbar{
+  left: 0px !important;
+  height: 30px !important;
+}
+::v-deep .v-stepper{
+  position: relative;
+  top: 30px;
 }
 </style>

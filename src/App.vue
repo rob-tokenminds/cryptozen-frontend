@@ -3,13 +3,6 @@
     style="background: #e5e5e5"
     v-if="$route.path !== `/create-address-book` && isLogin"
   >
-    <v-system-bar app height="30">
-      <v-spacer></v-spacer>
-      <v-subheader class="text-center"
-        >Alpha version! use at your own risk</v-subheader
-      >
-      <v-spacer></v-spacer>
-    </v-system-bar>
     <v-navigation-drawer v-model="drawer" app color="primary" width="350">
       <v-list>
         <v-list-item>
@@ -256,7 +249,16 @@
         <SendMoney :step="1" @update-dialog="updateSendMoneyDialog"></SendMoney>
       </v-card>
     </v-dialog>
-    <v-app-bar app color="white" flat :prominent="isMobile">
+    <v-app-bar app color="white" flat :prominent="isMobile" class="alert-toolbar">
+      <v-app-bar flat dence class="blue-grey lighten-5" height="30" top="100">
+        <v-spacer></v-spacer>
+        <v-subheader class="text-center"
+          >Alpha version! use at your own risk</v-subheader
+        >
+        <v-spacer></v-spacer>
+      </v-app-bar>
+    </v-app-bar>
+    <v-app-bar app color="white" flat :prominent="isMobile" class="main-toolbar">
       <v-app-bar color="white" flat :max-width="isMobile ? '100%' : '65%'">
         <v-app-bar-nav-icon
           v-if="navIcon"
@@ -286,6 +288,7 @@
 
     <!-- Sizes your content based upon application components -->
     <v-main>
+     
       <!-- Provides the application the proper gutter -->
 
       <v-container>
@@ -801,3 +804,19 @@ function sleep(ms: number): Promise<unknown> {
 //   })
 // });
 </script>
+<style scoped>
+::v-deep .alert-toolbar .v-toolbar__content{
+    padding: 0;
+    height: initial !important;
+}
+::v-deep .alert-toolbar .v-toolbar__content .v-subheader {
+    height: 30px !important;
+}
+
+::v-deep .v-main {
+  padding-top: 94px !important;
+}
+.main-toolbar{
+  top: 30px
+}
+</style>
