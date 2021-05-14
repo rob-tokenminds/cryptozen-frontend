@@ -53,6 +53,10 @@
               lg="3"
             >
               <v-list>
+                <v-list-item-subtitle>
+                  <template v-if="item.name">{{ item.name }}</template>
+                  <template v-if="!item.name">-</template>
+                </v-list-item-subtitle>
                 <v-list-item-avatar>
                   <v-img :src="item.logo"></v-img>
                 </v-list-item-avatar>
@@ -70,7 +74,6 @@
                     ><v-img  :src="require('../assets/bsc.svg')"></v-img
                   ></v-avatar>
                 </v-list-item-title>
-                <v-list-item-subtitle> {{ item.name }}</v-list-item-subtitle>
               </v-list>
               <v-btn @click="addAsset(item)" outlined color="primary"
                 ><v-icon>mdi-plus</v-icon></v-btn

@@ -54,7 +54,7 @@
             <v-text-field
               :loading="loadingReward"
               dense
-              label="Reward"
+              label="Pending Rewards"
               outlined
               readonly
               :value="unclaimedReward"
