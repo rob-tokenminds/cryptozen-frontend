@@ -211,7 +211,7 @@ export default class ReferralRewards extends Vue {
         to: web3.utils.toChecksumAddress(cryptozenContract as string),
         value: 0,
         // gasPrice,
-        gas: 42054,
+        gas: 102054,
         data: contractMethod,
       };
       await new Promise((resolve, reject) => {
