@@ -39,7 +39,9 @@
           >
           </v-img>
         </v-avatar>
-        <v-chip v-if="transaction.isError" color="error">Failed</v-chip>
+        <v-chip v-if="transaction.isError" color="error" class="mr-1"
+          >Failed</v-chip
+        >
         <v-chip :color="statusTransaction(transaction).color">
           {{ statusTransaction(transaction).name }}</v-chip
         >
