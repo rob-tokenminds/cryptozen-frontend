@@ -39,6 +39,7 @@
           >
           </v-img>
         </v-avatar>
+        <v-chip v-if="transaction.isError" color="error">Failed</v-chip>
         <v-chip :color="statusTransaction(transaction).color">
           {{ statusTransaction(transaction).name }}</v-chip
         >
@@ -316,7 +317,7 @@ export default class TransactionHistory extends Vue {
         return `https://etherscan.io/tx/${hash}`;
       case 3:
         return `https://ropsten.etherscan.io/tx/${hash}`;
-      case 64:
+      case 56:
         return `https://bscscan.com/tx/${hash}`;
       case 97:
         return `https://testnet.bscscan.com/tx/${hash}`;
@@ -416,31 +417,34 @@ export default class TransactionHistory extends Vue {
   }
 
   getAmount(transaction: TransactionInterface, toString = false): string {
-    if (transaction.isToken) {
-      let decimals = transaction.tokenDecimal;
-      if (transaction.chainId !== 1 && transaction.chainId !== 3) {
-        decimals = 18;
-      }
-      let value: any = Number(transaction.value) / 10 ** Number(decimals);
-      if (toString) {
-        value = value.toString();
+    if (!transaction.isError) {
+      if (transaction.isToken) {
+        let decimals = transaction.tokenDecimal;
+        if (transaction.chainId !== 1 && transaction.chainId !== 3) {
+          decimals = 18;
+        }
+        let value: any = Number(transaction.value) / 10 ** Number(decimals);
+        if (toString) {
+          value = value.toString();
+        } else {
+          value = Number(value.toFixed(5));
+        }
+        return `${value.toString()} ${transaction.tokenSymbol?.toUpperCase()}`;
       } else {
-        value = Number(value.toFixed(5));
+        const web3 = this.$store.getters["getWeb3"] as Web3;
+        let value: any = Number(transaction.value);
+        // if (toString) {
+        //   value = value.toString();
+        // } else {
+        //   value = value.toFixed(4);
+        // }
+        return `${web3.utils.fromWei(
+          value.toString(),
+          "ether"
+        )} ${this.currencyByChainId(transaction)}`;
       }
-      return `${value.toString()} ${transaction.tokenSymbol?.toUpperCase()}`;
-    } else {
-      const web3 = this.$store.getters["getWeb3"] as Web3;
-      let value: any = Number(transaction.value);
-      // if (toString) {
-      //   value = value.toString();
-      // } else {
-      //   value = value.toFixed(4);
-      // }
-      return `${web3.utils.fromWei(
-        value.toString(),
-        "ether"
-      )} ${this.currencyByChainId(transaction)}`;
     }
+    return `0 ${transaction.tokenSymbol?.toUpperCase()}`;
   }
 
   getStatus(transaction: TransactionInterface): string {
@@ -600,6 +604,7 @@ export default class TransactionHistory extends Vue {
 
   async getTransactions(): Promise<void> {
     try {
+      console.log("getTransactions", "getTransactions");
       this.loadingTransactions = true;
       if (this.$store.state.userAddresses.length && this.$store.state.isLogin) {
         await this.$store.dispatch("getAddressBookList");

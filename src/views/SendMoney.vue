@@ -131,14 +131,13 @@
                         >mdi-chevron-right</v-icon
                       >
                       <v-btn
-                      v-else
-                      :disabled="approveLoadingStatus"
-                      color="primary"
-                      small
-                      @click="approve(coin)"
-                      >{{ isMobile ? "Approve" : "ENABLE SENDING" }}</v-btn
-                    >
-                       
+                        v-else
+                        :disabled="approveLoadingStatus"
+                        color="primary"
+                        small
+                        @click="approve(coin)"
+                        >{{ isMobile ? "Approve" : "ENABLE SENDING" }}</v-btn
+                      >
                     </v-list-item-content>
                   </v-list-item>
                 </v-card-text>
@@ -2141,7 +2140,7 @@ export default class SendMoney extends Vue {
         return `https://etherscan.io/tx/${hash}`;
       case 3:
         return `https://ropsten.etherscan.io/tx/${hash}`;
-      case 64:
+      case 56:
         return `https://bscscan.com/tx/${hash}`;
       case 97:
         return `https://testnet.bscscan.com/tx/${hash}`;
@@ -2718,14 +2717,14 @@ function sleep(ms: number): Promise<unknown> {
   border-width: 1px !important;
 }
 
-.hover-pointer:hover{
+.hover-pointer:hover {
   cursor: pointer;
 }
-::v-deep .alert-toolbar{
+::v-deep .alert-toolbar {
   left: 0px !important;
   height: 30px !important;
 }
-::v-deep .v-stepper{
+::v-deep .v-stepper {
   position: relative;
   top: 30px;
 }
