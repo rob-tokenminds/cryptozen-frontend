@@ -959,7 +959,7 @@ const store: StoreOptions<storeInterface> = {
         const userAddresses = JSON.parse(watchAddresses);
         for (const address of userAddresses) {
           const result = localStorage.getItem(
-            `result:bsc:${state.chainId}:${address.toLowerCase()}`
+            `result:bsc:${state.networkType}:${address.toLowerCase()}`
           );
           console.log("resres", result);
           if (result) {

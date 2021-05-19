@@ -5,6 +5,7 @@ import AbiDecoder from "abi-decoder";
 import erc20abi from "@/static/erc20abi";
 import cryptozenabi from "@/static/cryptozenabi";
 import { CRYPTOZEN_CONTRACTS } from "@/static/balance";
+import { fromUnixTime } from "date-fns";
 AbiDecoder.addABI(erc20abi);
 AbiDecoder.addABI(cryptozenabi);
 export class ExternalTransaction {
@@ -104,9 +105,7 @@ export class BscExternalTransaction {
             if (token || Number(value)) {
               const data: TransactionInterface = {
                 chainId: this.chainId,
-                created_at: new Date(
-                  Number(trx.timeStamp) * 1000
-                ).toDateString(),
+                created_at: fromUnixTime(Number(trx.timeStamp)).toISOString(),
                 fee: "0",
                 from: trx.from,
                 gas: Number(trx.gas),
@@ -123,9 +122,7 @@ export class BscExternalTransaction {
                 to: trx.to,
                 tokenName: token ? token.name : "BSC",
                 tokenSymbol: token ? token.value : "BSC",
-                updated_at: new Date(
-                  Number(trx.timeStamp) * 1000
-                ).toDateString(),
+                updated_at: fromUnixTime(Number(trx.timeStamp)).toISOString(),
                 value: value,
                 id: trx.hash,
                 user_id: this.state.profile?.id as string,
@@ -160,7 +157,7 @@ export class BscExternalTransaction {
 
           const data: TransactionInterface = {
             chainId: this.chainId,
-            created_at: new Date(Number(trx.timeStamp) * 1000).toDateString(),
+            created_at: fromUnixTime(Number(trx.timeStamp)).toISOString(),
             fee: "0",
             from: trx.from,
             gas: Number(trx.gas),
@@ -177,7 +174,7 @@ export class BscExternalTransaction {
             to: trx.to,
             tokenName: token ? token.name : trx.tokenName,
             tokenSymbol: token ? token.value : trx.tokenSymbol,
-            updated_at: new Date(Number(trx.timeStamp) * 1000).toDateString(),
+            updated_at: fromUnixTime(Number(trx.timeStamp)).toISOString(),
             value: trx.value,
             tokenDecimal: Number(trx.tokenDecimal),
             id: trx.hash,
@@ -199,7 +196,9 @@ export class BscExternalTransaction {
 
   startBlockNumber(): number {
     const last = localStorage.getItem(
-      `lastBlockNumber:bsc:${this.chainId}:${this.address.toLowerCase()}`
+      `lastBlockNumber:bsc:${
+        this.state.networkType
+      }:${this.address.toLowerCase()}`
     );
     if (last) {
       return Number(last) + 1;
@@ -209,7 +208,7 @@ export class BscExternalTransaction {
 
   getResult(): TransactionInterface[] {
     const result = localStorage.getItem(
-      `result:bsc:${this.chainId}:${this.address.toLowerCase()}`
+      `result:bsc:${this.state.networkType}:${this.address.toLowerCase()}`
     );
     if (result) {
       return JSON.parse(result);
@@ -227,12 +226,12 @@ export class BscExternalTransaction {
         }
       }
       localStorage.setItem(
-        `result:bsc:${this.chainId}:${this.address.toLowerCase()}`,
+        `result:bsc:${this.state.networkType}:${this.address.toLowerCase()}`,
         JSON.stringify(finalResult)
       );
     } else {
       localStorage.setItem(
-        `result:bsc:${this.chainId}:${this.address.toLowerCase()}`,
+        `result:bsc:${this.state.networkType}:${this.address.toLowerCase()}`,
         JSON.stringify(result)
       );
     }
@@ -240,7 +239,9 @@ export class BscExternalTransaction {
 
   setBlockNumber(): void {
     localStorage.setItem(
-      `lastBlockNumber:bsc:${this.chainId}:${this.address.toLowerCase()}`,
+      `lastBlockNumber:bsc:${
+        this.state.networkType
+      }:${this.address.toLowerCase()}`,
       this.blockNumber.toString()
     );
   }
