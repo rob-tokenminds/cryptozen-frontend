@@ -678,7 +678,9 @@ export default class TransactionHistory extends Vue {
   }
 
   async getHistoryTrx(): Promise<void> {
+    this.loadingSyncTransactions = true;
     await this.$store.dispatch("historyTrx");
+    this.loadingSyncTransactions = false;
   }
 
   get isReversed(): boolean {
