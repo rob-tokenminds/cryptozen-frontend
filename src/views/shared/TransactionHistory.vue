@@ -17,7 +17,6 @@
       type="expansion-panels, expansion-panel-header, list-item, ist-item-avatar, list-item-two-line"
     ></v-skeleton-loader>
     <v-card
-      v-else
       v-for="transaction in transactions"
       :key="transaction.id"
       class="mb-2"
@@ -42,7 +41,10 @@
         <v-chip v-if="transaction.isError" color="error" class="mr-1"
           >Failed</v-chip
         >
-        <v-chip :color="statusTransaction(transaction).color">
+        <v-chip
+          class="white--text"
+          :color="statusTransaction(transaction).color"
+        >
           {{ statusTransaction(transaction).name }}</v-chip
         >
       </v-card-actions>
@@ -249,6 +251,13 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-card>
+    <div class="text-center">
+      <v-pagination
+        v-model="page"
+        :length="length"
+        :total-visible="10"
+      ></v-pagination>
+    </div>
   </v-container>
 </template>
 
@@ -269,7 +278,8 @@ export default class TransactionHistory extends Vue {
   @Prop(String) readonly label!: string;
   @Prop(String) readonly currency!: string;
   loadingTransactions = false;
-
+  page = 1;
+  limit = 10;
   sendMoneyDialog = false;
 
   getAmountReceipt(transaction: TransactionInterface): string {
@@ -347,7 +357,10 @@ export default class TransactionHistory extends Vue {
         return { name: `Pending ${tx}`, color: "warning" };
       }
     } else {
-      if (transaction.reward) {
+      if (transaction.isApprove) {
+        return { name: `Approval`, color: "blue" };
+      }
+      if (Number(transaction.reward)) {
         return { name: `Cryptozen ${tx}`, color: "primary" };
       } else {
         return { name: `External ${tx}`, color: "secondary" };
@@ -515,7 +528,7 @@ export default class TransactionHistory extends Vue {
   watchRouteParamsCoin(value: string): void {
     if (value) {
       this.getTransactions();
-      this.getSyncTransactions();
+      // this.getSyncTransactions();
     }
   }
 
@@ -523,10 +536,10 @@ export default class TransactionHistory extends Vue {
   watchRouteParamschain_id(value: string): void {
     if (value) {
       this.getTransactions();
-      this.getSyncTransactions();
+      // this.getSyncTransactions();
     }
   }
-
+  length = 0;
   get transactions(): TransactionInterface[] {
     let transactions: TransactionInterface[] = this.$store.getters[
       "getTransactions"
@@ -544,7 +557,12 @@ export default class TransactionHistory extends Vue {
     transactions = transactions.sort((t, t2) => {
       return t2.timestamp - t.timestamp;
     });
-    return transactions;
+    this.length = Math.ceil(transactions.length / this.limit);
+
+    const page = this.page;
+    const per_page = this.limit;
+    const offset = (page - 1) * per_page;
+    return transactions.slice(offset).slice(0, this.limit);
   }
 
   getBalanceById(id: number): BalanceInterface | undefined {
@@ -567,9 +585,9 @@ export default class TransactionHistory extends Vue {
   }
 
   getIconByTx(tx: TransactionInterface): string {
-    const balance = this.getBalanceByNameAndSymbol(
-      tx.tokenName,
-      tx.tokenSymbol
+    const tokenList = this.$store.state.tokenList as BalanceInterface[];
+    const balance = tokenList.find(
+      (t) => t.value.toLowerCase() === tx.tokenSymbol.toLowerCase()
     );
     if (balance) {
       if (balance.logo) {
@@ -578,40 +596,69 @@ export default class TransactionHistory extends Vue {
         return require(`../../assets/${balance.value.toLowerCase()}.svg`);
       }
     }
+    try {
+      if (require(`../../assets/${tx.tokenSymbol.toLowerCase()}.svg`)) {
+        return require(`../../assets/${tx.tokenSymbol.toLowerCase()}.svg`);
+      }
+    } catch (e) {
+      const aa = "";
+    }
+
     return "";
   }
 
   async mounted(): Promise<void> {
     this.$nextTick(async () => {
-      await this.getTransactions();
+      // this.savedTrx();
+      this.getTransactions().then();
       // this.getSyncTransactions();
     });
   }
-  loadingSyncTransactions = false;
-  async getSyncTransactions(): Promise<void> {
-    try {
-      this.loadingSyncTransactions = true;
-      if (window.ethereum.selectedAddress && this.$store.state.isLogin) {
-        await this.$store.dispatch("getSyncTransactions", {
-          address: window.ethereum.selectedAddress,
-          // currency: this.$route.params.coin ? this.$route.params.coin : "",
-          currency: "",
-        });
-      } else {
-        await sleep(5000);
-        await this.getTransactions();
-      }
-      this.loadingSyncTransactions = false;
-    } catch (e) {
-      this.loadingSyncTransactions = false;
-    }
+
+  savedTrx(): void {
+    // this.$store.state.transactions = [];
+    // if (this.$store.state.userAddresses.length) {
+    //   for (const address of this.$store.state.userAddresses) {
+    //     const result = localStorage.getItem(`result:bsc:${address}`);
+    //     console.log("resultresult", result);
+    //     if (result) {
+    //       this.$store.state.transactions.concat(JSON.parse(result));
+    //     }
+    //   }
+    // } else {
+    //   sleep(100);
+    //   this.savedTrx();
+    // }
   }
+
+  loadingSyncTransactions = false;
+  // async getSyncTransactions(): Promise<void> {
+  //   try {
+  //     this.loadingSyncTransactions = true;
+  //     if (window.ethereum.selectedAddress && this.$store.state.isLogin) {
+  //       await this.$store.dispatch("getSyncTransactions", {
+  //         address: window.ethereum.selectedAddress,
+  //         // currency: this.$route.params.coin ? this.$route.params.coin : "",
+  //         currency: "",
+  //       });
+  //     } else {
+  //       await sleep(5000);
+  //       await this.getTransactions();
+  //     }
+  //     this.loadingSyncTransactions = false;
+  //   } catch (e) {
+  //     this.loadingSyncTransactions = false;
+  //   }
+  // }
 
   async getTransactions(): Promise<void> {
     try {
-      console.log("getTransactions", "getTransactions");
       this.loadingTransactions = true;
-      if (this.$store.state.userAddresses.length && this.$store.state.isLogin) {
+      if (
+        this.$store.state.userAddresses.length &&
+        this.$store.state.isLogin &&
+        this.$store.state.chainId
+      ) {
         await this.$store.dispatch("getAddressBookList");
 
         await this.$store.dispatch("getTransactions", {
@@ -619,6 +666,7 @@ export default class TransactionHistory extends Vue {
           // currency: this.$route.params.coin ? this.$route.params.coin : "",
           currency: "",
         });
+        this.getHistoryTrx().then();
       } else {
         await sleep(100);
         await this.getTransactions();
@@ -627,6 +675,10 @@ export default class TransactionHistory extends Vue {
     } catch (e) {
       this.loadingTransactions = false;
     }
+  }
+
+  async getHistoryTrx(): Promise<void> {
+    await this.$store.dispatch("historyTrx");
   }
 
   get isReversed(): boolean {
