@@ -42,15 +42,15 @@
           <v-list-item-content>
             <v-list-item-title
               >{{ item }}
-              <v-btn @click="removeAddress(i)" icon>
-                <v-icon
-                  v-if="
-                    item.toLowerCase() !==
-                    $store.state.selectedAddress.toLowerCase()
-                  "
-                  color="red"
-                  >mdi-close</v-icon
-                ></v-btn
+              <v-btn
+                v-if="
+                  item.toLowerCase() !==
+                  $store.state.selectedAddress.toLowerCase()
+                "
+                @click="removeAddress(i)"
+                icon
+              >
+                <v-icon color="red">mdi-close</v-icon></v-btn
               >
             </v-list-item-title>
           </v-list-item-content>

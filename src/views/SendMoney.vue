@@ -1778,6 +1778,7 @@ export default class SendMoney extends Vue {
 
       this.loadingSendMoney = false;
     } catch (e) {
+      alert(`possible error: ${e.message}`);
       this.loadingSendMoney = false;
     }
   }
