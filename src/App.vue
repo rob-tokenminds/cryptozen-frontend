@@ -94,22 +94,22 @@
         </v-list-item>
         <v-list-item class="mt-n6">
           <v-row dense>
-            <v-col cols="6">
+            <v-col cols="12">
               <v-btn outlined color="white" block @click="addNewAsset = true">
                 <v-icon left> mdi-plus </v-icon> Add Asset</v-btn
               >
             </v-col>
-            <v-col cols="6">
-              <v-btn
-                outlined
-                class=""
-                color="white"
-                block
-                @click="addWallet = true"
-              >
-                <v-icon left> mdi-plus </v-icon> Add Wallet</v-btn
-              >
-            </v-col>
+            <!--            <v-col cols="6">-->
+            <!--              <v-btn-->
+            <!--                outlined-->
+            <!--                class=""-->
+            <!--                color="white"-->
+            <!--                block-->
+            <!--                @click="addWallet = true"-->
+            <!--              >-->
+            <!--                <v-icon left> mdi-plus </v-icon> Add Wallet</v-btn-->
+            <!--              >-->
+            <!--            </v-col>-->
           </v-row>
         </v-list-item>
         <!--        <v-list-item>-->
@@ -228,18 +228,6 @@
     </v-dialog>
 
     <v-dialog
-      v-model="addWallet"
-      transition="dialog-bottom-transition"
-      width="600"
-    >
-      <v-card flat>
-        <v-container>
-          <AddWallet></AddWallet>
-        </v-container>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog
       v-model="sendMoneyDialog"
       fullscreen
       hide-overlay
@@ -249,7 +237,13 @@
         <SendMoney :step="1" @update-dialog="updateSendMoneyDialog"></SendMoney>
       </v-card>
     </v-dialog>
-    <v-app-bar app color="white" flat :prominent="isMobile" class="alert-toolbar">
+    <v-app-bar
+      app
+      color="white"
+      flat
+      :prominent="isMobile"
+      class="alert-toolbar"
+    >
       <v-app-bar flat dence class="blue-grey lighten-5" height="30" top="100">
         <v-spacer></v-spacer>
         <v-subheader class="text-center"
@@ -258,7 +252,13 @@
         <v-spacer></v-spacer>
       </v-app-bar>
     </v-app-bar>
-    <v-app-bar app color="white" flat :prominent="isMobile" class="main-toolbar">
+    <v-app-bar
+      app
+      color="white"
+      flat
+      :prominent="isMobile"
+      class="main-toolbar"
+    >
       <v-app-bar color="white" flat :max-width="isMobile ? '100%' : '65%'">
         <v-app-bar-nav-icon
           v-if="navIcon"
@@ -288,7 +288,6 @@
 
     <!-- Sizes your content based upon application components -->
     <v-main>
-     
       <!-- Provides the application the proper gutter -->
 
       <v-container>
@@ -343,7 +342,6 @@ import NewAsset from "./views/NewAsset.vue";
 import axios from "axios";
 import { CoingeckoInterface } from "./interfaces";
 import { addHours } from "date-fns";
-import AddWallet from "@/views/AddWallet.vue";
 
 // import { Signer } from "ethers";
 interface Window {
@@ -358,7 +356,7 @@ const alwaysShowBalance = ["eth", "bnb", "ninja", "dai", "usdt", "usdc"];
 
 @Component({
   name: "App",
-  components: { SendMoney, ProfileMenu, NewAsset, AddWallet },
+  components: { SendMoney, ProfileMenu, NewAsset },
 })
 export default class App extends Vue {
   icons = {
@@ -805,18 +803,18 @@ function sleep(ms: number): Promise<unknown> {
 // });
 </script>
 <style scoped>
-::v-deep .alert-toolbar .v-toolbar__content{
-    padding: 0;
-    height: initial !important;
+::v-deep .alert-toolbar .v-toolbar__content {
+  padding: 0;
+  height: initial !important;
 }
 ::v-deep .alert-toolbar .v-toolbar__content .v-subheader {
-    height: 30px !important;
+  height: 30px !important;
 }
 
 ::v-deep .v-main {
   padding-top: 94px !important;
 }
-.main-toolbar{
-  top: 30px
+.main-toolbar {
+  top: 30px;
 }
 </style>

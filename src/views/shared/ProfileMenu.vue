@@ -136,7 +136,16 @@
               </p>
             </v-tooltip>
             <v-divider></v-divider>
-            <v-tooltip bottom close-delay="1500" >
+
+            <v-list-item @click="addWallet = true">
+              <v-list-item-content>
+                <v-list-item-title class="primary--text"
+                  >Manage Wallets</v-list-item-title
+                >
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+            <v-tooltip bottom close-delay="1500">
               <template v-slot:activator="{ on, attrs }">
                 <v-list-item>
                   <v-list-item-content v-bind="attrs" v-on="on">
@@ -150,9 +159,15 @@
                   </v-list-item-content>
                 </v-list-item>
               </template>
-              <p class="white--text" style="pointer-events: initial;">
-                Your Ninja token balance is {{ ninjaBalance / 10 ** 18 }}, which puts you in Tier {{ tier >= 0 ? tier : "-" }}. More
-                info <a href="https://docs.cryptozen.ninja/" target="_blank" class="white--text">https://docs.cryptozen.ninja/</a>
+              <p class="white--text" style="pointer-events: initial">
+                Your Ninja token balance is {{ ninjaBalance / 10 ** 18 }}, which
+                puts you in Tier {{ tier >= 0 ? tier : "-" }}. More info
+                <a
+                  href="https://docs.cryptozen.ninja/"
+                  target="_blank"
+                  class="white--text"
+                  >https://docs.cryptozen.ninja/</a
+                >
               </p>
             </v-tooltip>
             <v-divider></v-divider>
@@ -187,6 +202,18 @@
         </v-card>
       </v-dialog>
     </v-list-item>
+
+    <v-dialog
+      v-model="addWallet"
+      transition="dialog-bottom-transition"
+      width="600"
+    >
+      <v-card flat>
+        <v-container>
+          <AddWallet></AddWallet>
+        </v-container>
+      </v-card>
+    </v-dialog>
   </v-list>
 </template>
 
@@ -206,6 +233,7 @@ import { AbstractProvider } from "web3-core";
 import Web3 from "web3";
 import { Contract } from "web3-eth-contract";
 import cryptozenabi from "@/static/cryptozenabi";
+import AddWallet from "@/views/AddWallet.vue";
 // import Web3 from "web3";
 // import cryptozenabi from "../../static/cryptozenabi";
 // import Bignumber from "bignumber.js";
@@ -213,12 +241,12 @@ import cryptozenabi from "@/static/cryptozenabi";
 // const EventSource = NativeEventSource || EventSourcePolyfill;
 // // OR: may also need to set as global property
 // global.EventSource = NativeEventSource || EventSourcePolyfill;
-@Component({ name: "ProfileMenu", components: {} })
+@Component({ name: "ProfileMenu", components: { AddWallet } })
 export default class ProfileMenu extends Vue {
   @Prop(Boolean) readonly isMobile!: boolean;
   @Prop(String) readonly classTop!: string;
   @PropSync("showBell", { type: Boolean }) syncedShowBell!: boolean;
-
+  addWallet = false;
   editYourEmail = false;
   yourEmail = this.myEmail;
   ninjaBalance = 0;
