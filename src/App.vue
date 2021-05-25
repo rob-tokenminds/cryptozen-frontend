@@ -351,7 +351,7 @@ interface Window {
 }
 declare const window: Window;
 
-const chainIDS = [3, 97, 56];
+const chainIDS = [1, 3, 97, 56];
 const alwaysShowBalance = ["eth", "bnb", "ninja", "dai", "usdt", "usdc"];
 
 @Component({
@@ -720,7 +720,7 @@ export default class App extends Vue {
           alert(`Token is expired, will re-login`);
           localStorage.removeItem("coin_gecko_price");
           this.$cookies.remove("cryptozen_token");
-          this.$router.push("/");
+          await this.$router.push("/");
           location.reload();
           // await this.init();
         }
