@@ -2226,13 +2226,16 @@ export default class SendMoney extends Vue {
             throw new Error("Contract data not found !");
           }
 
-          const params = {
+          const params: any = {
             from: window.ethereum.selectedAddress,
             to: CRYPTOZEN_CONTRACT,
             value,
             data: contractData,
-            gasPrice: this.gasPrice,
+            // gasPrice: this.gasPrice,
           };
+          if (this.chainId === 56 || this.chainId === 97) {
+            params.gasPrice = this.gasPrice;
+          }
           console.log("this.gasPrice", this.gasPrice);
           console.log(
             "window.ethereum.selectedAddress",
