@@ -519,7 +519,7 @@
                                 size="15"
                               >
                               </v-progress-circular>
-                              Total Reward (estimated)</v-list-item-subtitle
+                              Total Mining Rewards</v-list-item-subtitle
                             >
                           </v-col>
                         </v-row>
@@ -806,7 +806,7 @@
                               size="15"
                             >
                             </v-progress-circular>
-                            Total Reward (estimated)</v-list-item-subtitle
+                            Total Mining Rewards</v-list-item-subtitle
                           >
                         </v-col>
                       </v-row>
