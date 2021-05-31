@@ -1316,7 +1316,14 @@ export default class SendMoney extends Vue {
   }
 
   get balances(): BalanceInterface[] {
-    const balances = this.$store.state.balances as BalanceInterface[];
+    let balances = this.$store.state.balances as BalanceInterface[];
+    balances = balances.map((item)=>{
+      if(item.name == "Binance"){
+        item.name = "BNB";
+        return item;
+      }
+      return item;
+    })
     return balances.filter((b) =>
       b.network.find(
         (n) => n.toLowerCase() === this.$store.state.networkName.toLowerCase()
