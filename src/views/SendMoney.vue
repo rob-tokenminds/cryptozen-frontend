@@ -155,7 +155,25 @@
               <p class="text-center primary--text text-h5 mt-2">
                 Who are you sending money to?
               </p>
+               <div class="text-center ma-2">
+                <v-snackbar
+                  color="primary"
+                  v-model="snackbar"
+                >
+                  {{ text }}
 
+                  <template v-slot:action="{ attrs }">
+                    <v-btn
+                      color="white"
+                      text
+                      v-bind="attrs"
+                      @click="snackbar = false"
+                    >
+                      Close
+                    </v-btn>
+                  </template>
+                </v-snackbar>
+              </div>
               <v-card flat>
                 <v-card-text>Select Recipient</v-card-text>
               </v-card>
@@ -277,7 +295,7 @@
 
                             <v-btn
                               color="secondary"
-                              @click="createRecipient()"
+                              @click="createRecipient();"
                               :loading="createWalletLoading"
                             >
                               Add a Recipient
@@ -1293,6 +1311,9 @@ export default class SendMoney extends Vue {
   addressByEmail = false;
   WETH = "";
   uniswapRouterAddress = "";
+  
+  snackbar = false;
+  text = ``;
 
   get coins(): BalanceInterface[] {
     return this.balances;
@@ -1863,7 +1884,9 @@ export default class SendMoney extends Vue {
             this.createWalletLoading = false;
             this.newAddressBookSubmitted = true;
             this.newSubmittedAddressBook = addressBookData;
-            alert("Recipient has been successfully added");
+            this.text = "Recipient has been successfully added";
+            this.snackbar = true;
+            // alert("Recipient has been successfully added");
             this.addARecipientName = "";
             this.addARecipientWalletAddress = "";
             // this.selectedCurrency = "";
