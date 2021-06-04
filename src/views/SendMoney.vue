@@ -2270,7 +2270,12 @@ export default class SendMoney extends Vue {
             }
           }
           console.log("this.transferFee", this.transferFee);
-          this.gas = await web3.eth.estimateGas(params);
+          console.log("params", params);
+          try {
+            this.gas = await web3.eth.estimateGas(params);
+          } catch (e) {
+            this.gas = 155311;
+          }
 
           console.log("gasPrice", this.gasPrice);
           console.log("gas", this.gas);
