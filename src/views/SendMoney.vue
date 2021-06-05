@@ -1,4 +1,6 @@
 <template>
+  <v-container>
+  
   <v-card flat v-if="!pageLoading">
     <v-app-bar app color="white" flat class="alert-toolbar">
       <v-app-bar flat dence class="blue-grey lighten-5" height="30" top="100">
@@ -230,6 +232,34 @@
                                   >{{ addressBook.address }}
                                 </v-list-item-subtitle>
                               </v-list-item-content>
+
+                              <v-avatar class="mr-2" size="30">
+                                <v-img :src="getChainIdIcon(addressBook)"></v-img>
+                              </v-avatar>
+
+                              <v-menu bottom left>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-btn icon v-bind="attrs" v-on="on">
+                                    <v-icon>mdi-dots-vertical</v-icon>
+                                  </v-btn>
+                                </template>
+
+                                <v-list>
+                                  <v-list-item @click="editWalletData(addressBook)">
+                                    <v-list-item-title>Edit</v-list-item-title>
+                                  </v-list-item>
+                                  <v-divider></v-divider>
+                                  <v-list-item
+                                    @click="
+                                      deleteWalletId = addressBook.id;
+                                      deleteWallet = true;
+                                    "
+                                  >
+                                    <v-list-item-title>Delete</v-list-item-title>
+                                  </v-list-item>
+                                </v-list>
+                              </v-menu>
+
                             </v-list-item>
                           </v-card>
                         </v-container>
@@ -1187,6 +1217,87 @@
   <v-card v-else :loading="true">
     <v-card-text>Please wait...</v-card-text>
   </v-card>
+  
+  <v-dialog v-model="editWallet" max-width="800">
+    <v-card>
+      <v-container>
+        <v-card-title class="headline"> Edit Wallet </v-card-title>
+
+        <v-divider></v-divider>
+
+        <v-container>
+          <v-select
+            :items="currency"
+            item-text="name"
+            item-value="value"
+            label="Select Currency (*)"
+            v-model="editAWalletCurrency"
+          ></v-select>
+          <v-text-field
+            v-model="editAWalletName"
+            label="Nickname"
+          ></v-text-field>
+
+          <v-text-field
+            v-model="editAWalletAddress"
+            label="Wallet Address"
+          ></v-text-field>
+        </v-container>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn color="secondary" outlined @click="editWallet = false">
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="secondary"
+            @click="updateWallet()"
+            :loading="editWalletLoading"
+          >
+            Update Wallet
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-container>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="deleteWallet" max-width="500">
+    <v-card>
+      <v-container>
+        <v-card-title class="headline"> Delete Wallet </v-card-title>
+
+        <v-card-text>Are you sure to delete this wallet ?</v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="secondary"
+            outlined
+            @click="
+              deleteWalletId = '';
+              deleteWallet = false;
+            "
+          >
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="secondary"
+            @click="walletDelete()"
+            :loading="editWalletLoading"
+          >
+            Delete Wallet
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-container>
+    </v-card>
+  </v-dialog>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -1314,7 +1425,19 @@ export default class SendMoney extends Vue {
   
   snackbar = false;
   text = ``;
+  editWallet = false;
+  editWalletLoading = false;
+  editAWalletCurrency = "";
+  editAWalletAddress = "";
+  editAWalletName = "";
+  editWalletId = "";
 
+  deleteWalletId = "";
+
+  get currency(): BalanceInterface[] {
+    return this.$store.state.balances;
+  }
+  
   get coins(): BalanceInterface[] {
     return this.balances;
   }
@@ -2026,6 +2149,69 @@ export default class SendMoney extends Vue {
       }
     }
     return "";
+  }
+  getChainIdIcon(addressBook: AddressBookInterface): string {
+    let icon = "eth";
+    if (addressBook.chainId === 97 || addressBook.chainId === 56) {
+      icon = "bnb";
+    }
+    return require(`../assets/${icon}.svg`);
+  }
+  editWalletData(wallet: AddressBookInterface): void {
+    console.log("wallet", wallet);
+    if (wallet) {
+      this.editAWalletCurrency = wallet.currency;
+      this.editAWalletAddress = wallet.address;
+      this.editAWalletName = wallet.name;
+      this.editWalletId = wallet.id;
+      this.editWallet = true;
+    }
+  }
+  async updateWallet(): Promise<void> {
+    this.editWalletLoading = true;
+    try {
+      const balance = this.getBalanceById(this.addWalletId);
+      if (balance) {
+        await this.$store.dispatch("updateWallet", {
+          id: this.editWalletId,
+          name: this.editAWalletName,
+          address: this.editAWalletAddress,
+          currency: balance.value.toLowerCase(),
+          tokenListId: this.addWalletId,
+        });
+      } else {
+        throw new Error("Coin not found !");
+      }
+
+      this.editWalletLoading = false;
+      this.editWallet = false;
+      this.editAWalletCurrency = "";
+      this.editAWalletAddress = "";
+      this.editAWalletName = "";
+      this.editWalletId = "";
+      alert("Wallet has been successfully updated");
+    } catch (e) {
+      // console.log("e", e);
+      alert(e.message);
+
+      this.editWalletLoading = false;
+    }
+  }
+  deleteWalletLoading = false;
+  deleteWallet = false;
+  async walletDelete(): Promise<void> {
+    this.deleteWalletLoading = true;
+    try {
+      await this.$store.dispatch("deleteWallet", this.deleteWalletId);
+      this.deleteWalletLoading = false;
+      this.deleteWallet = false;
+      this.deleteWalletId = "";
+      alert("Wallet has been successfully deleted");
+    } catch (e) {
+      // console.log("e", e);
+      // alert(e.message);
+      this.deleteWalletLoading = false;
+    }
   }
 
   closeDialog(): void {
