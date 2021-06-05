@@ -1215,7 +1215,7 @@
     </v-stepper>
   </v-card>
   <v-card v-else :loading="true">
-    <v-card-text>Please wait...</v-card-text>
+    <v-card-text>Please connect with Metamask</v-card-text>
   </v-card>
   
   <v-dialog v-model="editWallet" max-width="800">
