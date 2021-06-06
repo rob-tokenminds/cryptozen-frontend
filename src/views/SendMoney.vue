@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div>
   
   <v-card flat v-if="!pageLoading">
     <v-app-bar app color="white" flat class="alert-toolbar">
@@ -1297,7 +1297,7 @@
       </v-container>
     </v-card>
   </v-dialog>
-  </v-container>
+  </div>
 </template>
 
 <script lang="ts">
@@ -2921,13 +2921,14 @@ function sleep(ms: number): Promise<unknown> {
   border: 0.5px solid #005672;
 }
 ::v-deep .coin-list .v-input__slot {
-  min-height: 55.5px !important;
+  min-height: 57px !important;
 }
 ::v-deep .recipient-gets-input .v-input__slot fieldset {
   height: 62px !important;
 }
 ::v-deep .recipient-gets-input .v-input__slot {
-  top: -1.5px;
+  top: 0px;
+  min-height: initial;
 }
 ::v-deep .v-text-field--outlined.v-input--is-focused fieldset,
 .v-text-field--outlined.v-input--has-state fieldset {
