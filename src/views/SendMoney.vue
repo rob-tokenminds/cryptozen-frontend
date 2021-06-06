@@ -133,14 +133,13 @@
                         >mdi-chevron-right</v-icon
                       >
                       <v-btn
-                      v-else
-                      :disabled="approveLoadingStatus"
-                      color="primary"
-                      small
-                      @click="approve(coin)"
-                      >{{ isMobile ? "Approve" : "ENABLE SENDING" }}</v-btn
-                    >
-                       
+                        v-else
+                        :disabled="approveLoadingStatus"
+                        color="primary"
+                        small
+                        @click="approve(coin)"
+                        >{{ isMobile ? "Approve" : "ENABLE SENDING" }}</v-btn
+                      >
                     </v-list-item-content>
                   </v-list-item>
                 </v-card-text>
@@ -1930,6 +1929,7 @@ export default class SendMoney extends Vue {
 
       this.loadingSendMoney = false;
     } catch (e) {
+      alert(`possible error: ${e.message}`);
       this.loadingSendMoney = false;
     }
   }
@@ -2357,7 +2357,7 @@ export default class SendMoney extends Vue {
         return `https://etherscan.io/tx/${hash}`;
       case 3:
         return `https://ropsten.etherscan.io/tx/${hash}`;
-      case 64:
+      case 56:
         return `https://bscscan.com/tx/${hash}`;
       case 97:
         return `https://testnet.bscscan.com/tx/${hash}`;
@@ -2442,13 +2442,16 @@ export default class SendMoney extends Vue {
             throw new Error("Contract data not found !");
           }
 
-          const params = {
+          const params: any = {
             from: window.ethereum.selectedAddress,
             to: CRYPTOZEN_CONTRACT,
             value,
             data: contractData,
-            gasPrice: this.gasPrice,
+            // gasPrice: this.gasPrice,
           };
+          if (this.chainId === 56 || this.chainId === 97) {
+            params.gasPrice = this.gasPrice;
+          }
           console.log("this.gasPrice", this.gasPrice);
           console.log(
             "window.ethereum.selectedAddress",
@@ -2483,7 +2486,12 @@ export default class SendMoney extends Vue {
             }
           }
           console.log("this.transferFee", this.transferFee);
-          this.gas = await web3.eth.estimateGas(params);
+          console.log("params", params);
+          try {
+            this.gas = await web3.eth.estimateGas(params);
+          } catch (e) {
+            this.gas = 155311;
+          }
 
           console.log("gasPrice", this.gasPrice);
           console.log("gas", this.gas);
@@ -2935,14 +2943,14 @@ function sleep(ms: number): Promise<unknown> {
   border-width: 1px !important;
 }
 
-.hover-pointer:hover{
+.hover-pointer:hover {
   cursor: pointer;
 }
-::v-deep .alert-toolbar{
+::v-deep .alert-toolbar {
   left: 0px !important;
   height: 30px !important;
 }
-::v-deep .v-stepper{
+::v-deep .v-stepper {
   position: relative;
   top: 30px;
 }

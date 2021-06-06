@@ -1,6 +1,6 @@
 <template>
   <v-card class="mb-2" flat>
-    <v-card-title>Select Wallet</v-card-title>
+    <v-card-title>Select New Wallet</v-card-title>
     <v-row dense>
       <v-col cols="12" md="6" sm="6" lg="6" xl="6">
         <v-btn
@@ -31,6 +31,32 @@
         </v-btn>
       </v-col>
     </v-row>
+
+    <v-card class="mt-5">
+      <v-divider></v-divider>
+
+      <v-card-title>Wallet List</v-card-title>
+
+      <v-list dense>
+        <v-list-item v-for="(item, i) in walletList" :key="i">
+          <v-list-item-content>
+            <v-list-item-title
+              >{{ item }}
+              <v-btn
+                v-if="
+                  item.toLowerCase() !==
+                  $store.state.selectedAddress.toLowerCase()
+                "
+                @click="removeAddress(i)"
+                icon
+              >
+                <v-icon color="red">mdi-close</v-icon></v-btn
+              >
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-card>
 
     <v-dialog v-model="showMetamaskDialog" width="600">
       <v-card>
@@ -75,6 +101,28 @@ export default class AddWallet extends Vue {
   newAddress = false;
   showAddAddress = false;
   address = "";
+
+  get walletList(): string[] {
+    return this.$store.state.userAddresses;
+  }
+
+  removeAddress(index: number): void {
+    if (confirm(`Delete this wallet address ? ${this.walletList[index]}`)) {
+      for (const network of ["MAINNET", "TESTNET"]) {
+        localStorage.removeItem(
+          `lastBlockNumber:bsc:${network}:${this.walletList[
+            index
+          ].toLowerCase()}`
+        );
+        localStorage.removeItem(
+          `result:bsc:${network}:${this.walletList[index].toLowerCase()}`
+        );
+      }
+
+      this.walletList.splice(index, 1);
+      localStorage.setItem("watchAddresses", JSON.stringify(this.walletList));
+    }
+  }
 
   async addAddress(): Promise<void> {
     const web3 = this.$store.getters["getWeb3"] as Web3;

@@ -194,24 +194,24 @@ export default class ReferralRewards extends Vue {
       const contractMethod = contract.methods.claimRewards().encodeABI({
         from: state.selectedAddress,
       });
-      const gasPrice = await web3.eth.getGasPrice();
+      // const gasPrice = await web3.eth.getGasPrice();
 
-      let params: any = {
+      // let params: any = {
+      //   from: state.selectedAddress,
+      //   to: web3.utils.toChecksumAddress(cryptozenContract as string),
+      //   value: 0,
+      //   gasPrice,
+      //   data: contractMethod,
+      // };
+      // const realGasLimit = ((await web3.eth.estimateGas(params)) * 2).toFixed(
+      //   0
+      // );
+      const params = {
         from: state.selectedAddress,
         to: web3.utils.toChecksumAddress(cryptozenContract as string),
         value: 0,
-        gasPrice,
-        data: contractMethod,
-      };
-      const realGasLimit = ((await web3.eth.estimateGas(params)) * 2).toFixed(
-        0
-      );
-      params = {
-        from: state.selectedAddress,
-        to: web3.utils.toChecksumAddress(cryptozenContract as string),
-        value: 0,
-        gasPrice,
-        gas: realGasLimit,
+        // gasPrice,
+        gas: 102054,
         data: contractMethod,
       };
       await new Promise((resolve, reject) => {

@@ -547,4 +547,6 @@ export interface TransactionInterface {
   chainId: number;
   isClaimReward: boolean;
   reward: string;
+  isApprove?: boolean;
+  isExternal?: boolean;
 }

@@ -26,6 +26,7 @@ import { CoingeckoInterface } from "../interfaces";
 import BigNumber from "bignumber.js";
 import axios from "axios";
 import { addHours } from "date-fns";
+import { ExternalTransaction } from "@/library/external-trx";
 export interface updateCoinBalanceParams {
   web3: Web3;
   coin: BalanceInterface;
@@ -952,6 +953,46 @@ const store: StoreOptions<storeInterface> = {
         }
       }
     },
+    async historyTrx({ state }) {
+      const watchAddresses = localStorage.getItem("watchAddresses");
+      if (watchAddresses) {
+        const userAddresses = JSON.parse(watchAddresses);
+        for (const address of userAddresses) {
+          const result = localStorage.getItem(
+            `result:bsc:${state.networkType}:${address.toLowerCase()}`
+          );
+          console.log("resres", result);
+          if (result) {
+            for (const res of JSON.parse(result)) {
+              console.log("resresresres", res);
+              if (!state.transactions.find((t) => t.hash === res.hash)) {
+                state.transactions.push(res);
+              }
+            }
+          }
+        }
+
+        const blockNumber = await state.web3?.eth.getBlockNumber();
+        for (const address of userAddresses) {
+          const extTrx = new ExternalTransaction(
+            state.chainId,
+            address,
+            blockNumber ? blockNumber : 99999999,
+            state
+          );
+          const trxs = await extTrx.fetch();
+          console.log("trxs", trxs);
+          if (trxs.length) {
+            for (const trx of trxs) {
+              if (!state.transactions.find((t) => t.hash === trx.hash)) {
+                state.transactions.push(trx);
+              }
+            }
+          }
+          await sleep(1000);
+        }
+      }
+    },
   },
   getters: {
     getSelectedAddress(state) {
@@ -1013,5 +1054,9 @@ const store: StoreOptions<storeInterface> = {
 //     });
 //   },
 // };
+
+function sleep(ms: number): Promise<unknown> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export default new Vuex.Store(store);
