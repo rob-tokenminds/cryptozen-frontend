@@ -107,7 +107,7 @@
       <v-card flat :max-width="isMobile ? `100%` : `65%`">
         <v-row dense>
           <v-col
-            cols="6"
+            cols="9"
             v-for="(currency, index) in getCurrency(balance.currency)"
             :key="index"
           >

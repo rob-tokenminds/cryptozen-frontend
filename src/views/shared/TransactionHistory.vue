@@ -62,7 +62,7 @@
                     <!--                          require(`../../assets/${transaction.tokenSymbol}.svg`)-->
                     <!--                        "-->
                     <!--                      ></v-img>-->
-                    <v-img :src="getIconByTx(transaction)"></v-img>
+                    <v-img :src="getIconByTx(transaction)" class="transaction-coin-logo"></v-img>
                   </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title class="primary--text"
@@ -692,3 +692,8 @@ function sleep(ms: number): Promise<unknown> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 </script>
+<style scoped>
+::v-deep .transaction-coin-logo .v-image__image {
+  background-size: auto;
+}
+</style>
