@@ -2231,7 +2231,7 @@ export default class SendMoney extends Vue {
             to: CRYPTOZEN_CONTRACT,
             value,
             data: contractData,
-            // gasPrice: this.gasPrice,
+            gasPrice: this.gasPrice,
           };
           if (this.chainId === 56 || this.chainId === 97) {
             params.gasPrice = this.gasPrice;
@@ -2271,11 +2271,11 @@ export default class SendMoney extends Vue {
           }
           console.log("this.transferFee", this.transferFee);
           console.log("params", params);
-          try {
-            this.gas = await web3.eth.estimateGas(params);
-          } catch (e) {
-            this.gas = 155311;
-          }
+          // try {
+          this.gas = await web3.eth.estimateGas(params);
+          // } catch (e) {
+          //   this.gas = 155311;
+          // }
 
           console.log("gasPrice", this.gasPrice);
           console.log("gas", this.gas);
