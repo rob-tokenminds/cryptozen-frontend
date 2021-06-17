@@ -1,402 +1,706 @@
 <template>
   <div>
-  
-  <v-card flat v-if="!pageLoading">
-    <v-app-bar app color="white" flat class="alert-toolbar">
-      <v-app-bar flat dence class="blue-grey lighten-5" height="30" top="100">
-        <v-spacer></v-spacer>
-        <v-subheader class="text-center"
-          >Alpha version! use at your own risk</v-subheader
-        >
-        <v-spacer></v-spacer>
-      </v-app-bar>
-    </v-app-bar>
-    <v-stepper v-model="e1" class="elevation-0">
-      <!-- <v-toolbar dark color="white"> -->
-      <v-stepper-header class="stepper-header">
-        <v-spacer></v-spacer>
-        <v-spacer></v-spacer>
-        <v-spacer></v-spacer>
-        <v-spacer></v-spacer>
-        <v-img
-          v-if="!isMobile"
-          class="ma-5 hover-pointer"
-          max-height="60"
-          max-width="130"
-          src="../assets/logo2.svg"
-          @click="goToHome()"
-        ></v-img>
-        <v-spacer></v-spacer>
-        <v-spacer></v-spacer>
-        <v-stepper-step
-          @click="isReview ? (e1 = 1) : ''"
-          :complete="e1 > 1"
-          step="1"
-        >
-          <a :class="isReview ? `text-decoration-underline` : ``"> Wallet</a>
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          @click="isReview ? (e1 = 2) : ''"
-          :complete="e1 > 2"
-          step="2"
-        >
-          <a :class="isReview ? `text-decoration-underline` : ``"> Recipient</a>
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          @click="isReview ? (e1 = 3) : ''"
-          :complete="e1 > 3"
-          step="3"
-        >
-          <a :class="isReview ? `text-decoration-underline` : ``"> Amount</a>
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          @click="isReview ? (e1 = 4) : ''"
-          step="4"
-          :complete="e1 > 4"
-        >
-          <a :class="isReview ? `text-decoration-underline` : ``"> Review</a>
-        </v-stepper-step>
-        <v-spacer></v-spacer>
-
-        <ProfileMenu
-          :classTop="'aa'"
-          :showBell="false"
-          v-if="!isMobile"
-        ></ProfileMenu>
-        <v-spacer></v-spacer>
-        <v-spacer></v-spacer>
-        <v-spacer></v-spacer>
-        <v-btn color="primary" icon large class="mt-3" @click="closeDialog">
-          <v-icon class="">mdi-close</v-icon></v-btn
-        >
-
-        <v-spacer></v-spacer>
-      </v-stepper-header>
-
-      <v-stepper-items>
-        <v-stepper-content step="1">
-          <v-card
-            :disabled="approveLoadingStatus"
-            flat
-            class="d-flex justify-center"
+    <v-card flat v-if="!pageLoading">
+      <v-app-bar app color="white" flat class="alert-toolbar">
+        <v-app-bar flat dence class="blue-grey lighten-5" height="30" top="100">
+          <v-spacer></v-spacer>
+          <v-subheader class="text-center"
+            >Alpha version! use at your own risk</v-subheader
           >
-            <v-card flat :loading="approveLoadingStatus">
-              <p class="text-center primary--text text-h5 mt-2">
-                Where do you want to send from ?
-              </p>
-              <p
-                class="text-center primary--text mt-2"
-                v-if="approveLoadingStatus"
-              >
-                Approving, please wait ...
-              </p>
+          <v-spacer></v-spacer>
+        </v-app-bar>
+      </v-app-bar>
+      <v-stepper v-model="e1" class="elevation-0">
+        <!-- <v-toolbar dark color="white"> -->
+        <v-stepper-header class="stepper-header">
+          <v-spacer></v-spacer>
+          <v-spacer></v-spacer>
+          <v-spacer></v-spacer>
+          <v-spacer></v-spacer>
+          <v-img
+            v-if="!isMobile"
+            class="ma-5 hover-pointer"
+            max-height="60"
+            max-width="130"
+            src="../assets/logo2.svg"
+            @click="goToHome()"
+          ></v-img>
+          <v-spacer></v-spacer>
+          <v-spacer></v-spacer>
+          <v-stepper-step
+            @click="isReview ? (e1 = 1) : ''"
+            :complete="e1 > 1"
+            step="1"
+          >
+            <a :class="isReview ? `text-decoration-underline` : ``"> Wallet</a>
+          </v-stepper-step>
+          <v-divider></v-divider>
+          <v-stepper-step
+            @click="isReview ? (e1 = 2) : ''"
+            :complete="e1 > 2"
+            step="2"
+          >
+            <a :class="isReview ? `text-decoration-underline` : ``">
+              Recipient</a
+            >
+          </v-stepper-step>
+          <v-divider></v-divider>
+          <v-stepper-step
+            @click="isReview ? (e1 = 3) : ''"
+            :complete="e1 > 3"
+            step="3"
+          >
+            <a :class="isReview ? `text-decoration-underline` : ``"> Amount</a>
+          </v-stepper-step>
+          <v-divider></v-divider>
+          <v-stepper-step
+            @click="isReview ? (e1 = 4) : ''"
+            step="4"
+            :complete="e1 > 4"
+          >
+            <a :class="isReview ? `text-decoration-underline` : ``"> Review</a>
+          </v-stepper-step>
+          <v-spacer></v-spacer>
 
-              <v-card flat>
-                <v-card-text>Select balance</v-card-text>
-              </v-card>
+          <ProfileMenu
+            :classTop="'aa'"
+            :showBell="false"
+            v-if="!isMobile"
+          ></ProfileMenu>
+          <v-spacer></v-spacer>
+          <v-spacer></v-spacer>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" icon large class="mt-3" @click="closeDialog">
+            <v-icon class="">mdi-close</v-icon></v-btn
+          >
 
-              <v-card
-                v-for="coin in balances"
-                :key="coin.value"
-                elevation="2"
-                class="mx-auto mt-2"
-                height="100"
-                width="700"
-                @click="nextSendFrom(coin)"
-              >
-                <v-card-text>
-                  <v-list-item>
-                    <v-list-item-avatar tile>
-                      <v-img
-                        v-if="!coin.logo"
-                        :src="require(`../assets/${coin.value}.svg`)"
-                      ></v-img>
-                      <v-img v-else :src="coin.logo"></v-img>
-                    </v-list-item-avatar>
-                    <v-list-item-content>
-                      <v-list-item-title
-                        class="primary--text text-subtitle-1"
-                        >{{ getCoinCurrency(coin).balance }}</v-list-item-title
-                      >
-                      <v-list-item-subtitle class="">{{
-                        coin.name
-                      }}</v-list-item-subtitle>
-                    </v-list-item-content>
+          <v-spacer></v-spacer>
+        </v-stepper-header>
 
-                    <v-spacer v-if="!isMobile"></v-spacer>
-                    <v-list-item-content>
-                      <!--                      {{ getCoinCurrency(coin).allowance }}-->
-                      <v-icon v-if="getCoinCurrency(coin).allowance"
-                        >mdi-chevron-right</v-icon
-                      >
-                      <v-btn
-                        v-else
-                        :disabled="approveLoadingStatus"
-                        color="primary"
-                        small
-                        @click="approve(coin)"
-                        >{{ isMobile ? "Approve" : "ENABLE SENDING" }}</v-btn
-                      >
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-card-text>
-              </v-card>
-
-              <v-card-actions> </v-card-actions>
-            </v-card>
-          </v-card>
-        </v-stepper-content>
-
-        <v-stepper-content step="2">
-          <v-card flat class="d-flex justify-center">
-            <v-card flat>
-              <p class="text-center primary--text text-h5 mt-2">
-                Who are you sending money to?
-              </p>
-               <div class="text-center ma-2">
-                <v-snackbar
-                  color="primary"
-                  v-model="snackbar"
+        <v-stepper-items>
+          <v-stepper-content step="1">
+            <v-card
+              :disabled="approveLoadingStatus"
+              flat
+              class="d-flex justify-center"
+            >
+              <v-card flat :loading="approveLoadingStatus">
+                <p class="text-center primary--text text-h5 mt-2">
+                  Where do you want to send from ?
+                </p>
+                <p
+                  class="text-center primary--text mt-2"
+                  v-if="approveLoadingStatus"
                 >
-                  {{ text }}
+                  Approving, please wait ...
+                </p>
 
-                  <template v-slot:action="{ attrs }">
-                    <v-btn
-                      color="white"
-                      text
-                      v-bind="attrs"
-                      @click="snackbar = false"
-                    >
-                      Close
-                    </v-btn>
-                  </template>
-                </v-snackbar>
-              </div>
-              <v-card flat>
-                <v-card-text>Select Recipient</v-card-text>
+                <v-card flat>
+                  <v-card-text>Select balance</v-card-text>
+                </v-card>
+
+                <v-card
+                  v-for="coin in balances"
+                  :key="coin.value"
+                  elevation="2"
+                  class="mx-auto mt-2"
+                  height="100"
+                  width="700"
+                  @click="nextSendFrom(coin)"
+                >
+                  <v-card-text>
+                    <v-list-item>
+                      <v-list-item-avatar tile>
+                        <v-img
+                          v-if="!coin.logo"
+                          :src="require(`../assets/${coin.value}.svg`)"
+                        ></v-img>
+                        <v-img v-else :src="coin.logo"></v-img>
+                      </v-list-item-avatar>
+                      <v-list-item-content>
+                        <v-list-item-title
+                          class="primary--text text-subtitle-1"
+                          >{{
+                            getCoinCurrency(coin).balance
+                          }}</v-list-item-title
+                        >
+                        <v-list-item-subtitle class="">{{
+                          coin.name
+                        }}</v-list-item-subtitle>
+                      </v-list-item-content>
+
+                      <v-spacer v-if="!isMobile"></v-spacer>
+                      <v-list-item-content>
+                        <!--                      {{ getCoinCurrency(coin).allowance }}-->
+                        <v-icon v-if="getCoinCurrency(coin).allowance"
+                          >mdi-chevron-right</v-icon
+                        >
+                        <v-btn
+                          v-else
+                          :disabled="approveLoadingStatus"
+                          color="primary"
+                          small
+                          @click="approve(coin)"
+                          >{{ isMobile ? "Approve" : "ENABLE SENDING" }}</v-btn
+                        >
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-card-text>
+                </v-card>
+
+                <v-card-actions> </v-card-actions>
               </v-card>
-              <v-card flat class="mx-auto" width="700">
-                <v-expansion-panels class="mb-2">
-                  <v-expansion-panel @click="getAddressBooks()">
-                    <v-expansion-panel-header>
-                      <v-list-item>
-                        <v-list-item-avatar tile>
-                          <v-icon large color="primary"
-                            >mdi-home-outline</v-icon
-                          >
-                        </v-list-item-avatar>
-                        <v-list-item-content>
-                          <v-list-item-title class="primary--text text-h6"
-                            >Address Book</v-list-item-title
-                          >
-                        </v-list-item-content>
-                      </v-list-item></v-expansion-panel-header
-                    >
-                    <v-expansion-panel-content>
-                      <v-card flat :loading="loadingAddressBooks">
-                        <v-container>
-                          <!-- <v-skeleton-loader
+            </v-card>
+          </v-stepper-content>
+
+          <v-stepper-content step="2">
+            <v-card flat class="d-flex justify-center">
+              <v-card flat>
+                <p class="text-center primary--text text-h5 mt-2">
+                  Who are you sending money to?
+                </p>
+                <div class="text-center ma-2">
+                  <v-snackbar color="primary" v-model="snackbar">
+                    {{ text }}
+
+                    <template v-slot:action="{ attrs }">
+                      <v-btn
+                        color="white"
+                        text
+                        v-bind="attrs"
+                        @click="snackbar = false"
+                      >
+                        Close
+                      </v-btn>
+                    </template>
+                  </v-snackbar>
+                </div>
+                <v-card flat>
+                  <v-card-text>Select Recipient</v-card-text>
+                </v-card>
+                <v-card flat class="mx-auto" width="700">
+                  <v-expansion-panels class="mb-2">
+                    <v-expansion-panel @click="getAddressBooks()">
+                      <v-expansion-panel-header>
+                        <v-list-item>
+                          <v-list-item-avatar tile>
+                            <v-icon large color="primary"
+                              >mdi-home-outline</v-icon
+                            >
+                          </v-list-item-avatar>
+                          <v-list-item-content>
+                            <v-list-item-title class="primary--text text-h6"
+                              >Address Book</v-list-item-title
+                            >
+                          </v-list-item-content>
+                        </v-list-item></v-expansion-panel-header
+                      >
+                      <v-expansion-panel-content>
+                        <v-card flat :loading="loadingAddressBooks">
+                          <v-container>
+                            <!-- <v-skeleton-loader
                             v-if="loadingAddressBooks"
                             type="card"
                           ></v-skeleton-loader> -->
 
+                            <v-card
+                              v-for="addressBook of addressBooks"
+                              :key="addressBook.id"
+                              class="mb-2"
+                              @click="
+                                selectedAddress = addressBook;
+                                e1 = 3;
+                              "
+                            >
+                              <v-list-item class="">
+                                <v-list-item-avatar>
+                                  <v-img
+                                    :src="
+                                      getAddressBookIconById(
+                                        addressBook.token_list_id
+                                      )
+                                    "
+                                  ></v-img>
+                                </v-list-item-avatar>
+                                <v-list-item-content>
+                                  <v-list-item-title class="primary--text ma-2"
+                                    >{{ addressBook.currency.toUpperCase() }} |
+                                    {{ addressBook.name }}</v-list-item-title
+                                  >
+                                  <v-list-item-subtitle class="ma-2"
+                                    >{{ addressBook.address }}
+                                  </v-list-item-subtitle>
+                                </v-list-item-content>
+
+                                <v-avatar class="mr-2" size="30">
+                                  <v-img
+                                    :src="getChainIdIcon(addressBook)"
+                                  ></v-img>
+                                </v-avatar>
+
+                                <v-menu bottom left>
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <v-btn icon v-bind="attrs" v-on="on">
+                                      <v-icon>mdi-dots-vertical</v-icon>
+                                    </v-btn>
+                                  </template>
+
+                                  <v-list>
+                                    <v-list-item
+                                      @click="editWalletData(addressBook)"
+                                    >
+                                      <v-list-item-title
+                                        >Edit</v-list-item-title
+                                      >
+                                    </v-list-item>
+                                    <v-divider></v-divider>
+                                    <v-list-item
+                                      @click="
+                                        deleteWalletId = addressBook.id;
+                                        deleteWallet = true;
+                                      "
+                                    >
+                                      <v-list-item-title
+                                        >Delete</v-list-item-title
+                                      >
+                                    </v-list-item>
+                                  </v-list>
+                                </v-menu>
+                              </v-list-item>
+                            </v-card>
+                          </v-container>
+                        </v-card>
+                      </v-expansion-panel-content>
+                    </v-expansion-panel>
+                  </v-expansion-panels>
+
+                  <v-expansion-panels class="mb-2">
+                    <v-expansion-panel>
+                      <v-expansion-panel-header>
+                        <v-list-item>
+                          <v-list-item-avatar tile>
+                            <v-icon large color="primary">mdi-plus</v-icon>
+                          </v-list-item-avatar>
+                          <v-list-item-content>
+                            <v-list-item-title class="primary--text text-h6"
+                              >New Recipient</v-list-item-title
+                            >
+                          </v-list-item-content>
+                        </v-list-item></v-expansion-panel-header
+                      >
+                      <v-expansion-panel-content>
+                        <v-card>
+                          <v-container v-if="!newAddressBookSubmitted">
+                            <v-container>
+                              <v-text-field
+                                v-model="addARecipientName"
+                                label="Wallet Name"
+                              ></v-text-field>
+                              <v-radio-group v-model="newRecipientType" row>
+                                <v-radio
+                                  label="Wallet Address"
+                                  value="address"
+                                ></v-radio>
+                                <v-radio
+                                  label="E-Mail Address"
+                                  value="email"
+                                ></v-radio>
+                              </v-radio-group>
+                              <v-text-field
+                                v-if="newRecipientType === 'email'"
+                                v-model="addARecipientEmail"
+                                label="Account Holder email address"
+                              ></v-text-field>
+                              <v-text-field
+                                v-if="newRecipientType === 'address'"
+                                v-model="addARecipientWalletAddress"
+                                label="Wallet Address"
+                              ></v-text-field>
+                            </v-container>
+
+                            <v-card-actions>
+                              <v-spacer></v-spacer>
+
+                              <!--                            <v-btn-->
+                              <!--                              color="secondary"-->
+                              <!--                              outlined-->
+                              <!--                              @click="addARecipient = false"-->
+                              <!--                            >-->
+                              <!--                              Cancel-->
+                              <!--                            </v-btn>-->
+
+                              <v-btn
+                                color="secondary"
+                                @click="createRecipient()"
+                                :loading="createWalletLoading"
+                              >
+                                Add a Recipient
+                              </v-btn>
+                              <v-spacer></v-spacer>
+                            </v-card-actions>
+                          </v-container>
+
+                          <v-container v-else-if="!newSubmittedAddressBook">
+                            <v-card-text
+                              >New address has been submitted, please wait until
+                              recipient submit the address</v-card-text
+                            >
+                          </v-container>
+
                           <v-card
-                            v-for="addressBook of addressBooks"
-                            :key="addressBook.id"
                             class="mb-2"
+                            v-if="newSubmittedAddressBook"
                             @click="
-                              selectedAddress = addressBook;
+                              selectedAddress = newSubmittedAddressBook;
                               e1 = 3;
                             "
                           >
                             <v-list-item class="">
-                              <v-list-item-avatar>
-                                <v-img
-                                  :src="
-                                    getAddressBookIconById(
-                                      addressBook.token_list_id
-                                    )
-                                  "
-                                ></v-img>
+                              <v-list-item-avatar size="60">
+                                <v-avatar color="">
+                                  <v-img
+                                    :src="
+                                      getAddressBookIconById(
+                                        newSubmittedAddressBook.token_list_id
+                                      )
+                                    "
+                                  ></v-img>
+                                </v-avatar>
                               </v-list-item-avatar>
                               <v-list-item-content>
                                 <v-list-item-title class="primary--text ma-2"
-                                  >{{ addressBook.currency.toUpperCase() }} |
-                                  {{ addressBook.name }}</v-list-item-title
+                                  >{{
+                                    newSubmittedAddressBook.currency.toUpperCase()
+                                  }}
+                                  |
+                                  {{
+                                    newSubmittedAddressBook.name
+                                  }}</v-list-item-title
                                 >
                                 <v-list-item-subtitle class="ma-2"
-                                  >{{ addressBook.address }}
+                                  >{{ newSubmittedAddressBook.address }}
                                 </v-list-item-subtitle>
                               </v-list-item-content>
-
-                              <v-avatar class="mr-2" size="30">
-                                <v-img :src="getChainIdIcon(addressBook)"></v-img>
-                              </v-avatar>
-
-                              <v-menu bottom left>
-                                <template v-slot:activator="{ on, attrs }">
-                                  <v-btn icon v-bind="attrs" v-on="on">
-                                    <v-icon>mdi-dots-vertical</v-icon>
-                                  </v-btn>
-                                </template>
-
-                                <v-list>
-                                  <v-list-item @click="editWalletData(addressBook)">
-                                    <v-list-item-title>Edit</v-list-item-title>
-                                  </v-list-item>
-                                  <v-divider></v-divider>
-                                  <v-list-item
-                                    @click="
-                                      deleteWalletId = addressBook.id;
-                                      deleteWallet = true;
-                                    "
-                                  >
-                                    <v-list-item-title>Delete</v-list-item-title>
-                                  </v-list-item>
-                                </v-list>
-                              </v-menu>
-
                             </v-list-item>
                           </v-card>
-                        </v-container>
-                      </v-card>
-                    </v-expansion-panel-content>
-                  </v-expansion-panel>
-                </v-expansion-panels>
+                        </v-card>
+                      </v-expansion-panel-content>
+                    </v-expansion-panel>
+                  </v-expansion-panels>
+                </v-card>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="primary" outlined @click="e1 = 1"> Back </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-card>
+          </v-stepper-content>
 
-                <v-expansion-panels class="mb-2">
-                  <v-expansion-panel>
-                    <v-expansion-panel-header>
-                      <v-list-item>
-                        <v-list-item-avatar tile>
-                          <v-icon large color="primary">mdi-plus</v-icon>
-                        </v-list-item-avatar>
-                        <v-list-item-content>
-                          <v-list-item-title class="primary--text text-h6"
-                            >New Recipient</v-list-item-title
-                          >
-                        </v-list-item-content>
-                      </v-list-item></v-expansion-panel-header
-                    >
-                    <v-expansion-panel-content>
-                      <v-card>
-                        <v-container v-if="!newAddressBookSubmitted">
-                          <v-container>
-                            <v-text-field
-                              v-model="addARecipientName"
-                              label="Wallet Name"
-                            ></v-text-field>
-                            <v-radio-group v-model="newRecipientType" row>
-                              <v-radio
-                                label="Wallet Address"
-                                value="address"
-                              ></v-radio>
-                              <v-radio
-                                label="E-Mail Address"
-                                value="email"
-                              ></v-radio>
-                            </v-radio-group>
-                            <v-text-field
-                              v-if="newRecipientType === 'email'"
-                              v-model="addARecipientEmail"
-                              label="Account Holder email address"
-                            ></v-text-field>
-                            <v-text-field
-                              v-if="newRecipientType === 'address'"
-                              v-model="addARecipientWalletAddress"
-                              label="Wallet Address"
-                            ></v-text-field>
-                          </v-container>
+          <v-stepper-content step="3">
+            <p class="text-center primary--text text-h5">
+              You are sending on behalf of {{ selectedEthereumAddress }}
+            </p>
 
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-
-                            <!--                            <v-btn-->
-                            <!--                              color="secondary"-->
-                            <!--                              outlined-->
-                            <!--                              @click="addARecipient = false"-->
-                            <!--                            >-->
-                            <!--                              Cancel-->
-                            <!--                            </v-btn>-->
-
-                            <v-btn
-                              color="secondary"
-                              @click="createRecipient();"
-                              :loading="createWalletLoading"
-                            >
-                              Add a Recipient
-                            </v-btn>
-                            <v-spacer></v-spacer>
-                          </v-card-actions>
-                        </v-container>
-
-                        <v-container v-else-if="!newSubmittedAddressBook">
-                          <v-card-text
-                            >New address has been submitted, please wait until
-                            recipient submit the address</v-card-text
-                          >
-                        </v-container>
-
-                        <v-card
-                          class="mb-2"
-                          v-if="newSubmittedAddressBook"
-                          @click="
-                            selectedAddress = newSubmittedAddressBook;
-                            e1 = 3;
-                          "
-                        >
-                          <v-list-item class="">
-                            <v-list-item-avatar size="60">
-                              <v-avatar color="">
-                                <v-img
-                                  :src="
-                                    getAddressBookIconById(
-                                      newSubmittedAddressBook.token_list_id
-                                    )
-                                  "
-                                ></v-img>
-                              </v-avatar>
+            <v-card flat class="d-flex justify-center">
+              <v-card flat>
+                <v-card v-if="selectedCurrency" flat width="600">
+                  <v-card flat>
+                    <v-card v-if="selectedCurrency" flat width="600">
+                      <v-text-field
+                        :key="componentKey"
+                        height=""
+                        class="text-h5 rounded-0"
+                        color="primary"
+                        outlined
+                        :max="getCoinCurrency(selectedCurrency).balance"
+                        v-model="swapAmount"
+                        :hint="hint"
+                        persistent-hint
+                        type="number"
+                        :step="0.01"
+                      >
+                        <template v-slot:append>
+                          <v-list-item class="mt-n4">
+                            <v-list-item-avatar tile>
+                              <v-img
+                                :src="
+                                  getAddressBookIconById(selectedCurrency.id)
+                                "
+                              ></v-img>
                             </v-list-item-avatar>
                             <v-list-item-content>
-                              <v-list-item-title class="primary--text ma-2"
+                              <v-list-item-title
+                                class="primary--text text-subtitle-1"
                                 >{{
-                                  newSubmittedAddressBook.currency.toUpperCase()
-                                }}
-                                |
-                                {{
-                                  newSubmittedAddressBook.name
+                                  selectedCurrency.value === "eth"
+                                    ? "Ethereum"
+                                    : selectedCurrency.value.toUpperCase()
                                 }}</v-list-item-title
                               >
-                              <v-list-item-subtitle class="ma-2"
-                                >{{ newSubmittedAddressBook.address }}
-                              </v-list-item-subtitle>
                             </v-list-item-content>
                           </v-list-item>
-                        </v-card>
-                      </v-card>
-                    </v-expansion-panel-content>
-                  </v-expansion-panel>
-                </v-expansion-panels>
+                        </template>
+
+                        <template v-slot:label>
+                          {{ label }} ${{ amountSendUsd }}
+                        </template>
+
+                        <template v-slot:message="{ message }">
+                          <p v-if="getCoinCurrency(selectedCurrency)">
+                            You have
+                            <a
+                              class="primary--text font-weight-bold"
+                              @click="
+                                swapAmount = getCoinCurrency(selectedCurrency)
+                                  .balance
+                              "
+                              >{{
+                                getCoinCurrency(selectedCurrency).balance
+                              }}</a
+                            >
+                          </p>
+                          <p v-else>{{ message }}</p>
+                        </template>
+                      </v-text-field>
+
+                      <v-list-item class="mt-n5">
+                        <v-divider
+                          class="mr-2 mb-4 bala"
+                          elevation="10"
+                          vertical
+                          inset
+                        ></v-divider>
+
+                        <v-list-item-content>
+                          <v-row no-gutters dense>
+                            <v-col cols="12">
+                              <v-list-item-subtitle
+                                class="secondary--text text-subtitle-2 text-left mb-1"
+                                ><a
+                                  v-if="!loadingFee"
+                                  class="primary--text text-subtitle-2"
+                                  >-{{ gasFee }} {{ mainCurrency }} ({{
+                                    convertToUsd(gasFee)
+                                  }}
+                                  USD)</a
+                                >
+                                <v-progress-circular
+                                  v-else
+                                  indeterminate
+                                  color="primary"
+                                  size="15"
+                                >
+                                </v-progress-circular>
+                                Gas fee (estimated)</v-list-item-subtitle
+                              >
+                              <v-list-item-subtitle
+                                class="secondary--text text-subtitle-2 text-left mb-1"
+                                ><a
+                                  v-if="!loadingFee"
+                                  class="primary--text text-subtitle-2"
+                                  >-{{ transferFee }}
+                                  {{ selectedCurrency.value.toUpperCase() }} ({{
+                                    transferFeeOnUsd
+                                  }}
+                                  USD)</a
+                                >
+                                <v-progress-circular
+                                  v-else
+                                  indeterminate
+                                  color="primary"
+                                  size="15"
+                                >
+                                </v-progress-circular>
+                                Platform fee (Tier
+                                {{ tier }})</v-list-item-subtitle
+                              >
+                              <v-divider class="mb-1"></v-divider>
+                              <v-list-item-subtitle
+                                class="secondary--text text-subtitle-2 text-left mb-1"
+                                ><a
+                                  v-if="!loadingFee"
+                                  class="primary--text text-subtitle-2"
+                                  >{{
+                                    (
+                                      Number(convertToUsd(gasFee)) +
+                                      Number(transferFeeOnUsd)
+                                    ).toFixed(5)
+                                  }}
+                                  USD</a
+                                >
+                                <v-progress-circular
+                                  v-else
+                                  indeterminate
+                                  color="primary"
+                                  size="15"
+                                >
+                                </v-progress-circular>
+                                Total Fee</v-list-item-subtitle
+                              >
+                            </v-col>
+                          </v-row>
+                          <v-divider class="mb-3 bala"></v-divider>
+                          <v-row>
+                            <v-col sm class="" cols="12">
+                              <v-list-item-subtitle
+                                class="secondary--text text-subtitle-2 text-left mb-1"
+                                ><a
+                                  v-if="!loadingFee"
+                                  class="primary--text text-subtitle-2"
+                                  >+{{ transactionReward }} Ninja Token (
+                                  {{ transactionRewardInUsd }} USD)</a
+                                >
+                                <v-progress-circular
+                                  v-else
+                                  indeterminate
+                                  color="primary"
+                                  size="15"
+                                >
+                                </v-progress-circular>
+                                Platform Reward
+                                (estimated)</v-list-item-subtitle
+                              >
+
+                              <!--                        <v-spacer></v-spacer>-->
+                              <v-divider></v-divider>
+                              <v-list-item-subtitle
+                                class="secondary--text text-subtitle-2 text-left mb-1"
+                                ><a
+                                  v-if="!loadingFee"
+                                  class="primary--text text-subtitle-2"
+                                >
+                                  {{ transactionRewardInUsd }} USD</a
+                                >
+                                <v-progress-circular
+                                  v-else
+                                  indeterminate
+                                  color="primary"
+                                  size="15"
+                                >
+                                </v-progress-circular>
+                                Total Mining Rewards</v-list-item-subtitle
+                              >
+                            </v-col>
+                          </v-row>
+                          <!--                        <v-divider class="mb-3 bala"></v-divider>-->
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-row no-gutters>
+                        <v-col :cols="isMobile ? 6 : 8">
+                          <v-text-field
+                            :key="componentKey"
+                            class="text-h5 rounded-0 recipient-gets-input"
+                            color="primary"
+                            label="Recipient gets"
+                            outlined
+                            v-model="recipientGets"
+                            type="number"
+                            :step="0.01"
+                            flat
+                            height="50"
+                          >
+                            <!-- <template v-slot:append-outer>
+
+                    </template> -->
+
+                            <template v-slot:label>
+                              <p class="mb-5">
+                                Recipient gets ${{ amountReceiptUsd }}
+                              </p>
+                            </template>
+                          </v-text-field>
+                        </v-col>
+
+                        <v-col :cols="isMobile ? 6 : 4">
+                          <v-select
+                            color="primary"
+                            :items="coins"
+                            item-text="name"
+                            item-value="value"
+                            outlined
+                            v-model="selectedRecipientTokenModel"
+                            class="rounded-0 coin-list"
+                            height="50"
+                          >
+                            <template v-slot:item="{ item, on, attrs }">
+                              <v-list-item
+                                :disabled="
+                                  selectedCurrency.value !== item.value
+                                "
+                                :to="
+                                  selectedCurrency.value !== item.value
+                                    ? 'https://google.com'
+                                    : undefined
+                                "
+                                v-bind="attrs"
+                                v-on="on"
+                              >
+                                <v-list-item-avatar tile>
+                                  <v-img
+                                    :src="getAddressBookIconById(item.id)"
+                                  ></v-img>
+                                </v-list-item-avatar>
+                                <v-list-item-content>
+                                  <v-list-item-title
+                                    class="primary--text text-subtitle-1"
+                                    >{{ item.name
+                                    }}{{
+                                      selectedCurrency.value !== item.value
+                                        ? `(Swap Coming Soon)`
+                                        : ``
+                                    }}</v-list-item-title
+                                  >
+                                </v-list-item-content>
+                              </v-list-item>
+                            </template>
+
+                            <template v-slot:selection="{ item }">
+                              <v-list-item style="padding: 0 0px !important">
+                                <v-list-item-avatar tile class="">
+                                  <v-img
+                                    :src="getAddressBookIconById(item.id)"
+                                  ></v-img>
+                                </v-list-item-avatar>
+                                <v-list-item-content>
+                                  <v-list-item-title
+                                    class="primary--text text-subtitle-1"
+                                    >{{
+                                      item.value.toUpperCase()
+                                    }}</v-list-item-title
+                                  >
+                                </v-list-item-content>
+                              </v-list-item>
+                            </template>
+                          </v-select>
+                        </v-col>
+                      </v-row>
+
+                      <!--  -->
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="primary" outlined @click="e1 = 2">
+                          Back
+                        </v-btn>
+                        <v-btn
+                          color="primary"
+                          :disabled="loadingFee"
+                          @click="e1 = 4"
+                        >
+                          {{ continueLabel }}
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-card>
+                </v-card>
               </v-card>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" outlined @click="e1 = 1"> Back </v-btn>
-              </v-card-actions>
             </v-card>
-          </v-card>
-        </v-stepper-content>
+          </v-stepper-content>
 
-        <v-stepper-content step="3">
-          <p class="text-center primary--text text-h5">
-            You are sending on behalf of {{ selectedEthereumAddress }}
-          </p>
+          <v-stepper-content step="4">
+            <p class="text-center primary--text text-h5">Review</p>
 
-          <v-card flat class="d-flex justify-center">
-            <v-card flat>
-              <v-card v-if="selectedCurrency" flat width="600">
+            <v-card flat class="d-flex justify-center">
+              <v-card flat width="600">
                 <v-card flat>
                   <v-card v-if="selectedCurrency" flat width="600">
                     <v-text-field
@@ -437,7 +741,7 @@
                       </template>
 
                       <template v-slot:message="{ message }">
-                        <p v-if="getCoinCurrency(selectedCurrency)">
+                        <p v-if="selectedCurrency.currency">
                           You have
                           <a
                             class="primary--text font-weight-bold"
@@ -510,10 +814,8 @@
                                 v-if="!loadingFee"
                                 class="primary--text text-subtitle-2"
                                 >{{
-                                  (
-                                    Number(convertToUsd(gasFee)) +
-                                    Number(transferFeeOnUsd)
-                                  ).toFixed(5)
+                                  Number(convertToUsd(gasFee)) +
+                                  Number(transferFeeOnUsd)
                                 }}
                                 USD</a
                               >
@@ -570,7 +872,7 @@
                             >
                           </v-col>
                         </v-row>
-                        <!--                        <v-divider class="mb-3 bala"></v-divider>-->
+                        <!--                      <v-divider class="mb-3 bala"></v-divider>-->
                       </v-list-item-content>
                     </v-list-item>
                     <v-row no-gutters>
@@ -589,7 +891,7 @@
                         >
                           <!-- <template v-slot:append-outer>
 
-                    </template> -->
+                  </template> -->
 
                           <template v-slot:label>
                             <p class="mb-5">
@@ -607,19 +909,15 @@
                           item-value="value"
                           outlined
                           v-model="selectedRecipientTokenModel"
-                          class="rounded-0 coin-list"
+                          class="rounded-0"
                           height="50"
                         >
                           <template v-slot:item="{ item, on, attrs }">
                             <v-list-item
                               :disabled="selectedCurrency.value !== item.value"
-                              :to="
-                                selectedCurrency.value !== item.value
-                                  ? 'https://google.com'
-                                  : undefined
-                              "
                               v-bind="attrs"
                               v-on="on"
+                              style="padding: 0 0px !important"
                             >
                               <v-list-item-avatar tile>
                                 <v-img
@@ -642,7 +940,7 @@
 
                           <template v-slot:selection="{ item }">
                             <v-list-item style="padding: 0 0px !important">
-                              <v-list-item-avatar tile class="">
+                              <v-list-item-avatar tile>
                                 <v-img
                                   :src="getAddressBookIconById(item.id)"
                                 ></v-img>
@@ -662,433 +960,112 @@
                     </v-row>
 
                     <!--  -->
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn color="primary" outlined @click="e1 = 2">
-                        Back
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        :disabled="loadingFee"
-                        @click="e1 = 4"
-                      >
-                        {{ continueLabel }}
-                      </v-btn>
-                    </v-card-actions>
+                    <!--                  <v-card-actions>-->
+                    <!--                    <v-spacer></v-spacer>-->
+                    <!--                    <v-btn color="primary" outlined @click="e1 = 2"> Back </v-btn>-->
+                    <!--                    <v-btn color="primary" :disabled="loadingFee" @click="e1 = 4">-->
+                    <!--                      {{ continueLabel }}-->
+                    <!--                    </v-btn>-->
+                    <!--                  </v-card-actions>-->
                   </v-card>
                 </v-card>
-              </v-card>
-            </v-card>
-          </v-card>
-        </v-stepper-content>
-
-        <v-stepper-content step="4">
-          <p class="text-center primary--text text-h5">Review</p>
-
-          <v-card flat class="d-flex justify-center">
-            <v-card flat width="600">
-              <v-card flat>
-                <v-card v-if="selectedCurrency" flat width="600">
-                  <v-text-field
-                    :key="componentKey"
-                    height=""
-                    class="text-h5 rounded-0"
-                    color="primary"
-                    outlined
-                    :max="getCoinCurrency(selectedCurrency).balance"
-                    v-model="swapAmount"
-                    :hint="hint"
-                    persistent-hint
-                    type="number"
-                    :step="0.01"
-                  >
-                    <template v-slot:append>
-                      <v-list-item class="mt-n4">
-                        <v-list-item-avatar tile>
-                          <v-img
-                            :src="getAddressBookIconById(selectedCurrency.id)"
-                          ></v-img>
-                        </v-list-item-avatar>
-                        <v-list-item-content>
-                          <v-list-item-title
-                            class="primary--text text-subtitle-1"
-                            >{{
-                              selectedCurrency.value === "eth"
-                                ? "Ethereum"
-                                : selectedCurrency.value.toUpperCase()
-                            }}</v-list-item-title
-                          >
-                        </v-list-item-content>
-                      </v-list-item>
-                    </template>
-
-                    <template v-slot:label>
-                      {{ label }} ${{ amountSendUsd }}
-                    </template>
-
-                    <template v-slot:message="{ message }">
-                      <p v-if="selectedCurrency.currency">
-                        You have
-                        <a
-                          class="primary--text font-weight-bold"
-                          @click="
-                            swapAmount = getCoinCurrency(selectedCurrency)
-                              .balance
-                          "
-                          >{{ getCoinCurrency(selectedCurrency).balance }}</a
-                        >
-                      </p>
-                      <p v-else>{{ message }}</p>
-                    </template>
-                  </v-text-field>
-
-                  <v-list-item class="mt-n5">
-                    <v-divider
-                      class="mr-2 mb-4 bala"
-                      elevation="10"
-                      vertical
-                      inset
-                    ></v-divider>
-
-                    <v-list-item-content>
-                      <v-row no-gutters dense>
-                        <v-col cols="12">
-                          <v-list-item-subtitle
-                            class="secondary--text text-subtitle-2 text-left mb-1"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                              >-{{ gasFee }} {{ mainCurrency }} ({{
-                                convertToUsd(gasFee)
-                              }}
-                              USD)</a
-                            >
-                            <v-progress-circular
-                              v-else
-                              indeterminate
-                              color="primary"
-                              size="15"
-                            >
-                            </v-progress-circular>
-                            Gas fee (estimated)</v-list-item-subtitle
-                          >
-                          <v-list-item-subtitle
-                            class="secondary--text text-subtitle-2 text-left mb-1"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                              >-{{ transferFee }}
-                              {{ selectedCurrency.value.toUpperCase() }} ({{
-                                transferFeeOnUsd
-                              }}
-                              USD)</a
-                            >
-                            <v-progress-circular
-                              v-else
-                              indeterminate
-                              color="primary"
-                              size="15"
-                            >
-                            </v-progress-circular>
-                            Platform fee (Tier {{ tier }})</v-list-item-subtitle
-                          >
-                          <v-divider class="mb-1"></v-divider>
-                          <v-list-item-subtitle
-                            class="secondary--text text-subtitle-2 text-left mb-1"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                              >{{
-                                Number(convertToUsd(gasFee)) +
-                                Number(transferFeeOnUsd)
-                              }}
-                              USD</a
-                            >
-                            <v-progress-circular
-                              v-else
-                              indeterminate
-                              color="primary"
-                              size="15"
-                            >
-                            </v-progress-circular>
-                            Total Fee</v-list-item-subtitle
-                          >
-                        </v-col>
-                      </v-row>
-                      <v-divider class="mb-3 bala"></v-divider>
-                      <v-row>
-                        <v-col sm class="" cols="12">
-                          <v-list-item-subtitle
-                            class="secondary--text text-subtitle-2 text-left mb-1"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                              >+{{ transactionReward }} Ninja Token (
-                              {{ transactionRewardInUsd }} USD)</a
-                            >
-                            <v-progress-circular
-                              v-else
-                              indeterminate
-                              color="primary"
-                              size="15"
-                            >
-                            </v-progress-circular>
-                            Platform Reward (estimated)</v-list-item-subtitle
-                          >
-
-                          <!--                        <v-spacer></v-spacer>-->
-                          <v-divider></v-divider>
-                          <v-list-item-subtitle
-                            class="secondary--text text-subtitle-2 text-left mb-1"
-                            ><a
-                              v-if="!loadingFee"
-                              class="primary--text text-subtitle-2"
-                            >
-                              {{ transactionRewardInUsd }} USD</a
-                            >
-                            <v-progress-circular
-                              v-else
-                              indeterminate
-                              color="primary"
-                              size="15"
-                            >
-                            </v-progress-circular>
-                            Total Mining Rewards</v-list-item-subtitle
-                          >
-                        </v-col>
-                      </v-row>
-                      <!--                      <v-divider class="mb-3 bala"></v-divider>-->
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-row no-gutters>
-                    <v-col :cols="isMobile ? 6 : 8">
-                      <v-text-field
-                        :key="componentKey"
-                        class="text-h5 rounded-0 recipient-gets-input"
-                        color="primary"
-                        label="Recipient gets"
-                        outlined
-                        v-model="recipientGets"
-                        type="number"
-                        :step="0.01"
-                        flat
-                        height="50"
-                      >
-                        <!-- <template v-slot:append-outer>
-
-                  </template> -->
-
-                        <template v-slot:label>
-                          <p class="mb-5">
-                            Recipient gets ${{ amountReceiptUsd }}
-                          </p>
-                        </template>
-                      </v-text-field>
-                    </v-col>
-
-                    <v-col :cols="isMobile ? 6 : 4">
-                      <v-select
-                        color="primary"
-                        :items="coins"
-                        item-text="name"
-                        item-value="value"
-                        outlined
-                        v-model="selectedRecipientTokenModel"
-                        class="rounded-0"
-                        height="50"
-                      >
-                        <template v-slot:item="{ item, on, attrs }">
-                          <v-list-item
-                            :disabled="selectedCurrency.value !== item.value"
-                            v-bind="attrs"
-                            v-on="on"
-                            style="padding: 0 0px !important"
-                          >
-                            <v-list-item-avatar tile>
-                              <v-img
-                                :src="getAddressBookIconById(item.id)"
-                              ></v-img>
-                            </v-list-item-avatar>
-                            <v-list-item-content>
-                              <v-list-item-title
-                                class="primary--text text-subtitle-1"
-                                >{{ item.name
-                                }}{{
-                                  selectedCurrency.value !== item.value
-                                    ? `(Swap Coming Soon)`
-                                    : ``
-                                }}</v-list-item-title
-                              >
-                            </v-list-item-content>
-                          </v-list-item>
-                        </template>
-
-                        <template v-slot:selection="{ item }">
-                          <v-list-item style="padding: 0 0px !important">
-                            <v-list-item-avatar tile>
-                              <v-img
-                                :src="getAddressBookIconById(item.id)"
-                              ></v-img>
-                            </v-list-item-avatar>
-                            <v-list-item-content>
-                              <v-list-item-title
-                                class="primary--text text-subtitle-1"
-                                >{{
-                                  item.value.toUpperCase()
-                                }}</v-list-item-title
-                              >
-                            </v-list-item-content>
-                          </v-list-item>
-                        </template>
-                      </v-select>
-                    </v-col>
-                  </v-row>
-
-                  <!--  -->
-                  <!--                  <v-card-actions>-->
-                  <!--                    <v-spacer></v-spacer>-->
-                  <!--                    <v-btn color="primary" outlined @click="e1 = 2"> Back </v-btn>-->
-                  <!--                    <v-btn color="primary" :disabled="loadingFee" @click="e1 = 4">-->
-                  <!--                      {{ continueLabel }}-->
-                  <!--                    </v-btn>-->
-                  <!--                  </v-card-actions>-->
-                </v-card>
-              </v-card>
-              <p>To</p>
-              <v-card class="mb-2" v-if="selectedAddress">
-                <v-list-item class="">
-                  <v-list-item-avatar>
-                    <v-img
-                      :src="getAddressBookIconById(selectedCurrency.id)"
-                    ></v-img>
-                  </v-list-item-avatar>
-                  <v-list-item-content>
-                    <v-list-item-title class="primary--text ma-2"
-                      >{{ selectedAddress.currency.toUpperCase() }} |
-                      {{ selectedAddress.name }}</v-list-item-title
-                    >
-                    <v-list-item-subtitle class="ma-2"
-                      >{{ selectedAddress.address }}
-                    </v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-card>
-
-              <v-card class="mb-2" v-if="addressByEmail">
-                <v-list-item class="">
-                  <v-list-item-avatar size="60">
-                    <v-avatar color="main"></v-avatar>
-                  </v-list-item-avatar>
-
-                  <v-list-item-content>
-                    <v-list-item-title class="primary--text ma-2"
-                      >Email : {{ addARecipientEmail }}</v-list-item-title
-                    >
-                  </v-list-item-content>
-                </v-list-item>
-              </v-card>
-
-              <v-card flat class="mt-8">
-                <v-text-field
-                  outlined
-                  label="Personal Reference"
-                  v-model="reference"
-                ></v-text-field>
-              </v-card>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" outlined @click="e1 = 3"> Back </v-btn>
-                <v-btn
-                  color="primary"
-                  :loading="loadingSendMoney"
-                  @click="sendMoney"
-                >
-                  Send
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-card>
-        </v-stepper-content>
-
-        <v-stepper-content step="5">
-          <p v-if="transaction" class="text-center primary--text text-h5">
-            {{
-              transaction.isOnHold
-                ? "Awaiting Recipient Wallet Address"
-                : "Pending"
-            }}
-          </p>
-          <p class="text-center primary--text">
-            We will notify you once the transaction is confirmed
-          </p>
-
-          <v-card v-if="transaction" flat class="d-flex justify-center">
-            <v-card class="mb-2" :max-width="isMobile ? '100%' : 1100">
-              <v-card-subtitle>Pending</v-card-subtitle>
-              <v-divider></v-divider>
-
-              <v-row>
-                <v-col cols="12" md="6" sm="6" lg="6" xl="6">
-                  <v-list-item>
+                <p>To</p>
+                <v-card class="mb-2" v-if="selectedAddress">
+                  <v-list-item class="">
                     <v-list-item-avatar>
-                      <v-avatar color="main " size="60"></v-avatar>
+                      <v-img
+                        :src="getAddressBookIconById(selectedCurrency.id)"
+                      ></v-img>
                     </v-list-item-avatar>
                     <v-list-item-content>
-                      <v-list-item-title class="primary--text"
-                        >From :
-                        {{ getWalletName(transaction.from) }}</v-list-item-title
+                      <v-list-item-title class="primary--text ma-2"
+                        >{{ selectedAddress.currency.toUpperCase() }} |
+                        {{ selectedAddress.name }}</v-list-item-title
                       >
-                      <v-list-item-subtitle>
-                        {{ transaction.from }}
-                      </v-list-item-subtitle>
-                      <v-list-item-subtitle>
-                        {{ getStatus(transaction) }}
+                      <v-list-item-subtitle class="ma-2"
+                        >{{ selectedAddress.address }}
                       </v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
-                </v-col>
+                </v-card>
 
-                <v-col
-                  v-if="!transaction.isOnHold"
-                  cols="12"
-                  md="6"
-                  sm="6"
-                  lg="6"
-                  xl="6"
-                >
-                  <p
-                    v-if="!transaction.isOnHold"
-                    class="primary--text text-right mt-6 mr-2"
+                <v-card class="mb-2" v-if="addressByEmail">
+                  <v-list-item class="">
+                    <v-list-item-avatar size="60">
+                      <v-avatar color="main"></v-avatar>
+                    </v-list-item-avatar>
+
+                    <v-list-item-content>
+                      <v-list-item-title class="primary--text ma-2"
+                        >Email : {{ addARecipientEmail }}</v-list-item-title
+                      >
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-card>
+
+                <v-card flat class="mt-8">
+                  <v-text-field
+                    outlined
+                    label="Personal Reference"
+                    v-model="reference"
+                  ></v-text-field>
+                </v-card>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="primary" outlined @click="e1 = 3"> Back </v-btn>
+                  <v-btn
+                    color="primary"
+                    :loading="loadingSendMoney"
+                    @click="sendMoney"
                   >
-                    Amount Sent :
-                    {{ getAmount(transaction).toUpperCase() }}
-                  </p>
-                  <p class="primary--text text-right mt-6 mr-2">
-                    Amount Receipt :
-                    {{ getAmountReceipt(transaction).toUpperCase() }}
-                  </p>
-                </v-col>
+                    Send
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-card>
+          </v-stepper-content>
 
-                <v-col v-else cols="12" md="6" sm="6" lg="6" xl="6">
-                  <p class="primary--text text-right mt-6 mr-2">
-                    Amount :
-                    {{ getAmount(transaction).toUpperCase() }}
-                  </p>
-                </v-col>
-              </v-row>
+          <v-stepper-content step="5">
+            <p v-if="transaction" class="text-center primary--text text-h5">
+              {{
+                transaction.isOnHold
+                  ? "Awaiting Recipient Wallet Address"
+                  : "Pending"
+              }}
+            </p>
+            <p class="text-center primary--text">
+              We will notify you once the transaction is confirmed
+            </p>
 
-              <v-divider></v-divider>
-              <v-container>
-                <v-row class="mt-n1">
-                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
-                    <v-card flat tile>
-                      <v-card-subtitle> Set Up By </v-card-subtitle>
-                      <v-card-title class="primary--text mt-n8">
-                        {{ getWalletName(transaction.from) }}
-                      </v-card-title>
-                    </v-card>
+            <v-card v-if="transaction" flat class="d-flex justify-center">
+              <v-card class="mb-2" :max-width="isMobile ? '100%' : 1100">
+                <v-card-subtitle>Pending</v-card-subtitle>
+                <v-divider></v-divider>
+
+                <v-row>
+                  <v-col cols="12" md="6" sm="6" lg="6" xl="6">
+                    <v-list-item>
+                      <v-list-item-avatar>
+                        <v-avatar color="main " size="60"></v-avatar>
+                      </v-list-item-avatar>
+                      <v-list-item-content>
+                        <v-list-item-title class="primary--text"
+                          >From :
+                          {{
+                            getWalletName(transaction.from)
+                          }}</v-list-item-title
+                        >
+                        <v-list-item-subtitle>
+                          {{ transaction.from }}
+                        </v-list-item-subtitle>
+                        <v-list-item-subtitle>
+                          {{ getStatus(transaction) }}
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
+                    </v-list-item>
                   </v-col>
+
                   <v-col
                     v-if="!transaction.isOnHold"
                     cols="12"
@@ -1097,205 +1074,247 @@
                     lg="6"
                     xl="6"
                   >
-                    <v-card flat tile>
-                      <v-card-subtitle> Rewards </v-card-subtitle>
-                      <v-card-title class="primary--text mt-n8">
-                        {{ transactionReward }} Ninja Token ({{
-                          transactionRewardInUsd
-                        }}
-                        USD) (estimated)
-                      </v-card-title>
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-row class="mt-n6">
-                  <v-col
-                    v-if="!transaction.isOnHold"
-                    cols="12"
-                    md="4"
-                    sm="4"
-                    lg="4"
-                    xl="4"
-                  >
-                    <v-card flat tile>
-                      <v-card-subtitle> To </v-card-subtitle>
-                      <v-card-title class="primary--text mt-n8">
-                        {{ getWalletName(transaction.to) }}
-                      </v-card-title>
-                      <v-card-subtitle> {{ transaction.to }} </v-card-subtitle>
-                    </v-card>
-                  </v-col>
-                  <v-col v-else cols="12">
-                    <v-card flat tile>
-                      <v-card-subtitle> To </v-card-subtitle>
-                      <v-card-title class="primary--text mt-n8">
-                        {{
-                          addARecipientName
-                            ? addARecipientName
-                            : addARecipientEmail
-                        }}
-                      </v-card-title>
-                      <v-card-subtitle>
-                        {{ addARecipientEmail }}
-                      </v-card-subtitle>
-                    </v-card>
+                    <p
+                      v-if="!transaction.isOnHold"
+                      class="primary--text text-right mt-6 mr-2"
+                    >
+                      Amount Sent :
+                      {{ getAmount(transaction).toUpperCase() }}
+                    </p>
+                    <p class="primary--text text-right mt-6 mr-2">
+                      Amount Receipt :
+                      {{ getAmountReceipt(transaction).toUpperCase() }}
+                    </p>
                   </v-col>
 
-                  <v-col
-                    v-if="!transaction.isOnHold"
-                    cols="12"
-                    md="4"
-                    sm="4"
-                    lg="4"
-                    xl="4"
-                  >
-                    <v-card flat tile>
-                      <v-card-subtitle> TX Hash </v-card-subtitle>
-                      <v-card-subtitle class="primary--text mt-n8">
-                        {{ transaction.hash }}
-                      </v-card-subtitle>
-                    </v-card>
+                  <v-col v-else cols="12" md="6" sm="6" lg="6" xl="6">
+                    <p class="primary--text text-right mt-6 mr-2">
+                      Amount :
+                      {{ getAmount(transaction).toUpperCase() }}
+                    </p>
                   </v-col>
                 </v-row>
 
-                <v-row class="mt-n5">
-                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
-                    <v-card flat tile>
-                      <v-card-subtitle> Reference </v-card-subtitle>
-                      <v-card-title class="primary--text mt-n8">
-                        {{ transaction.reference }}
-                      </v-card-title>
-                    </v-card>
-                  </v-col>
+                <v-divider></v-divider>
+                <v-container>
+                  <v-row class="mt-n1">
+                    <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                      <v-card flat tile>
+                        <v-card-subtitle> Set Up By </v-card-subtitle>
+                        <v-card-title class="primary--text mt-n8">
+                          {{ getWalletName(transaction.from) }}
+                        </v-card-title>
+                      </v-card>
+                    </v-col>
+                    <v-col
+                      v-if="!transaction.isOnHold"
+                      cols="12"
+                      md="6"
+                      sm="6"
+                      lg="6"
+                      xl="6"
+                    >
+                      <v-card flat tile>
+                        <v-card-subtitle> Rewards </v-card-subtitle>
+                        <v-card-title class="primary--text mt-n8">
+                          {{ transactionReward }} Ninja Token ({{
+                            transactionRewardInUsd
+                          }}
+                          USD) (estimated)
+                        </v-card-title>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+                  <v-row class="mt-n6">
+                    <v-col
+                      v-if="!transaction.isOnHold"
+                      cols="12"
+                      md="4"
+                      sm="4"
+                      lg="4"
+                      xl="4"
+                    >
+                      <v-card flat tile>
+                        <v-card-subtitle> To </v-card-subtitle>
+                        <v-card-title class="primary--text mt-n8">
+                          {{ getWalletName(transaction.to) }}
+                        </v-card-title>
+                        <v-card-subtitle>
+                          {{ transaction.to }}
+                        </v-card-subtitle>
+                      </v-card>
+                    </v-col>
+                    <v-col v-else cols="12">
+                      <v-card flat tile>
+                        <v-card-subtitle> To </v-card-subtitle>
+                        <v-card-title class="primary--text mt-n8">
+                          {{
+                            addARecipientName
+                              ? addARecipientName
+                              : addARecipientEmail
+                          }}
+                        </v-card-title>
+                        <v-card-subtitle>
+                          {{ addARecipientEmail }}
+                        </v-card-subtitle>
+                      </v-card>
+                    </v-col>
 
-                  <v-col
-                    v-if="!transaction.isOnHold"
-                    cols="12"
-                    md="4"
-                    sm="4"
-                    lg="4"
-                    xl="4"
-                  >
-                    <v-card flat tile>
-                      <v-card-subtitle> Transfer Fee </v-card-subtitle>
-                      <v-card-title class="primary--text mt-n8">
-                        {{ transaction.fee }}
-                        {{ transaction.tokenSymbol.toUpperCase() }}
-                      </v-card-title>
-                    </v-card>
-                  </v-col>
+                    <v-col
+                      v-if="!transaction.isOnHold"
+                      cols="12"
+                      md="4"
+                      sm="4"
+                      lg="4"
+                      xl="4"
+                    >
+                      <v-card flat tile>
+                        <v-card-subtitle> TX Hash </v-card-subtitle>
+                        <v-card-subtitle class="primary--text mt-n8">
+                          {{ transaction.hash }}
+                        </v-card-subtitle>
+                      </v-card>
+                    </v-col>
+                  </v-row>
 
-                  <v-col cols="12" md="4" sm="4" lg="4" xl="4">
-                    <v-card flat tile>
-                      <v-card-subtitle> Block Number </v-card-subtitle>
-                      <v-card-title class="primary--text mt-n8">
-                        {{ transaction.isOnHold ? "On Hold" : "Pending" }}
-                      </v-card-title>
-                    </v-card>
-                  </v-col>
-                </v-row>
-                <v-card-actions v-if="!transaction.isOnHold">
-                  <v-spacer></v-spacer>
+                  <v-row class="mt-n5">
+                    <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                      <v-card flat tile>
+                        <v-card-subtitle> Reference </v-card-subtitle>
+                        <v-card-title class="primary--text mt-n8">
+                          {{ transaction.reference }}
+                        </v-card-title>
+                      </v-card>
+                    </v-col>
 
-                  <v-btn
-                    :href="`${getTxDetailUrl(transaction.hash)}`"
-                    target="_blank"
-                    color="secondary"
-                    outlined
-                    class="mt-7"
-                    >Tracking URL</v-btn
-                  >
-                </v-card-actions>
-              </v-container>
+                    <v-col
+                      v-if="!transaction.isOnHold"
+                      cols="12"
+                      md="4"
+                      sm="4"
+                      lg="4"
+                      xl="4"
+                    >
+                      <v-card flat tile>
+                        <v-card-subtitle> Transfer Fee </v-card-subtitle>
+                        <v-card-title class="primary--text mt-n8">
+                          {{ transaction.fee }}
+                          {{ transaction.tokenSymbol.toUpperCase() }}
+                        </v-card-title>
+                      </v-card>
+                    </v-col>
+
+                    <v-col cols="12" md="4" sm="4" lg="4" xl="4">
+                      <v-card flat tile>
+                        <v-card-subtitle> Block Number </v-card-subtitle>
+                        <v-card-title class="primary--text mt-n8">
+                          {{ transaction.isOnHold ? "On Hold" : "Pending" }}
+                        </v-card-title>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+                  <v-card-actions v-if="!transaction.isOnHold">
+                    <v-spacer></v-spacer>
+
+                    <v-btn
+                      :href="`${getTxDetailUrl(transaction.hash)}`"
+                      target="_blank"
+                      color="secondary"
+                      outlined
+                      class="mt-7"
+                      >Tracking URL</v-btn
+                    >
+                  </v-card-actions>
+                </v-container>
+              </v-card>
             </v-card>
-          </v-card>
-        </v-stepper-content>
-      </v-stepper-items>
-    </v-stepper>
-  </v-card>
-  <v-card v-else :loading="true">
-    <v-card-text>Please connect with Metamask</v-card-text>
-  </v-card>
-  
-  <v-dialog v-model="editWallet" max-width="800">
-    <v-card>
-      <v-container>
-        <v-card-title class="headline"> Edit Wallet </v-card-title>
+          </v-stepper-content>
+        </v-stepper-items>
+      </v-stepper>
+    </v-card>
+    <v-card v-else :loading="true">
+      <v-card-text>Please connect with Metamask</v-card-text>
+    </v-card>
 
-        <v-divider></v-divider>
-
+    <v-dialog v-model="editWallet" max-width="800">
+      <v-card>
         <v-container>
-          <v-select
-            :items="currency"
-            item-text="name"
-            item-value="value"
-            label="Select Currency (*)"
-            v-model="editAWalletCurrency"
-          ></v-select>
-          <v-text-field
-            v-model="editAWalletName"
-            label="Nickname"
-          ></v-text-field>
+          <v-card-title class="headline"> Edit Wallet </v-card-title>
 
-          <v-text-field
-            v-model="editAWalletAddress"
-            label="Wallet Address"
-          ></v-text-field>
+          <v-divider></v-divider>
+
+          <v-container>
+            <v-select
+              :items="currency"
+              item-text="name"
+              item-value="value"
+              label="Select Currency (*)"
+              v-model="editAWalletCurrency"
+            ></v-select>
+            <v-text-field
+              v-model="editAWalletName"
+              label="Nickname"
+            ></v-text-field>
+
+            <v-text-field
+              v-model="editAWalletAddress"
+              label="Wallet Address"
+            ></v-text-field>
+          </v-container>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+
+            <v-btn color="secondary" outlined @click="editWallet = false">
+              Cancel
+            </v-btn>
+
+            <v-btn
+              color="secondary"
+              @click="updateWallet()"
+              :loading="editWalletLoading"
+            >
+              Update Wallet
+            </v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
         </v-container>
+      </v-card>
+    </v-dialog>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
+    <v-dialog v-model="deleteWallet" max-width="500">
+      <v-card>
+        <v-container>
+          <v-card-title class="headline"> Delete Wallet </v-card-title>
 
-          <v-btn color="secondary" outlined @click="editWallet = false">
-            Cancel
-          </v-btn>
+          <v-card-text>Are you sure to delete this wallet ?</v-card-text>
 
-          <v-btn
-            color="secondary"
-            @click="updateWallet()"
-            :loading="editWalletLoading"
-          >
-            Update Wallet
-          </v-btn>
-          <v-spacer></v-spacer>
-        </v-card-actions>
-      </v-container>
-    </v-card>
-  </v-dialog>
+          <v-card-actions>
+            <v-spacer></v-spacer>
 
-  <v-dialog v-model="deleteWallet" max-width="500">
-    <v-card>
-      <v-container>
-        <v-card-title class="headline"> Delete Wallet </v-card-title>
+            <v-btn
+              color="secondary"
+              outlined
+              @click="
+                deleteWalletId = '';
+                deleteWallet = false;
+              "
+            >
+              Cancel
+            </v-btn>
 
-        <v-card-text>Are you sure to delete this wallet ?</v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-
-          <v-btn
-            color="secondary"
-            outlined
-            @click="
-              deleteWalletId = '';
-              deleteWallet = false;
-            "
-          >
-            Cancel
-          </v-btn>
-
-          <v-btn
-            color="secondary"
-            @click="walletDelete()"
-            :loading="editWalletLoading"
-          >
-            Delete Wallet
-          </v-btn>
-          <v-spacer></v-spacer>
-        </v-card-actions>
-      </v-container>
-    </v-card>
-  </v-dialog>
+            <v-btn
+              color="secondary"
+              @click="walletDelete()"
+              :loading="editWalletLoading"
+            >
+              Delete Wallet
+            </v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-container>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -1421,7 +1440,7 @@ export default class SendMoney extends Vue {
   addressByEmail = false;
   WETH = "";
   uniswapRouterAddress = "";
-  
+
   snackbar = false;
   text = ``;
   editWallet = false;
@@ -1436,7 +1455,7 @@ export default class SendMoney extends Vue {
   get currency(): BalanceInterface[] {
     return this.$store.state.balances;
   }
-  
+
   get coins(): BalanceInterface[] {
     return this.balances;
   }
@@ -1460,13 +1479,13 @@ export default class SendMoney extends Vue {
 
   get balances(): BalanceInterface[] {
     let balances = this.$store.state.balances as BalanceInterface[];
-    balances = balances.map((item)=>{
-      if(item.name == "Binance"){
+    balances = balances.map((item) => {
+      if (item.name == "Binance") {
         item.name = "BNB";
         return item;
       }
       return item;
-    })
+    });
     return balances.filter((b) =>
       b.network.find(
         (n) => n.toLowerCase() === this.$store.state.networkName.toLowerCase()
@@ -2447,9 +2466,13 @@ export default class SendMoney extends Vue {
             to: CRYPTOZEN_CONTRACT,
             value,
             data: contractData,
-            gasPrice: this.gasPrice,
+            // gasPrice: this.gasPrice,
           };
-          if (this.chainId === 56 || this.chainId === 97) {
+          if (
+            this.chainId === 56 ||
+            this.chainId === 97 ||
+            this.chainId === 3
+          ) {
             params.gasPrice = this.gasPrice;
           }
           console.log("this.gasPrice", this.gasPrice);
