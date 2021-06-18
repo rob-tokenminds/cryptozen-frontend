@@ -2475,6 +2475,9 @@ export default class SendMoney extends Vue {
           ) {
             params.gasPrice = this.gasPrice;
           }
+          if(this.chainId === 1){
+            params.gas = "300000"
+          }
           console.log("this.gasPrice", this.gasPrice);
           console.log(
             "window.ethereum.selectedAddress",
